@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
 import {
   Button,
-  Card,
   Col,
   ConfigProvider,
   Flex,
@@ -18,6 +17,7 @@ import { useRecoilState } from 'recoil'
 import { CiDark, CiLight } from 'react-icons/ci'
 import { themeState } from '../atom'
 import { IoMdArrowRoundBack } from 'react-icons/io'
+import Card from '../components/Card'
 
 const AuthLayout = ({
   children,

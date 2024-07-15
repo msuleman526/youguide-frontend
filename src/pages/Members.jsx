@@ -1,11 +1,38 @@
-import React from 'react'
+import { Button, Col, Flex, Row, Table, Typography } from 'antd'
+import { HiOutlineUpload } from 'react-icons/hi'
+import TransactionCard from '../components/transaction/TransactionCard'
+import { FaArrowLeftLong, FaArrowRightLong } from 'react-icons/fa6'
+import {
+  membersColumns,
+  membersDataSource,
+  transactionCardData,
+  transactionColumns,
+  transactionTableData,
+} from '../components/transaction/TransactionData'
+import { useRecoilValue } from 'recoil'
+import { themeState } from '../atom'
+import Card from '../components/Card'
 
-const Members = () => {
+const Transaction = () => {
+  const theme = useRecoilValue(themeState)
+  const columns = membersColumns(theme)
+
   return (
-    <div>
-      <h2>Members</h2>
-    </div>
+    <Card>
+      <Typography.Title level={3} className="fw-500">
+        All Members
+      </Typography.Title>
+      <Table
+        size="middle"
+        className="custom_table"
+        bordered
+        columns={columns}
+        dataSource={membersDataSource}
+        scroll={{ x: 'max-content' }}
+        pagination={false}
+      />
+    </Card>
   )
 }
 
-export default Members
+export default Transaction

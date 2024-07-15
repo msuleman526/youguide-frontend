@@ -10,6 +10,7 @@ import Members from './pages/Members'
 import Payment from './pages/Payment'
 import ForgetPassword from './pages/ForgetPassword'
 import SetNewPassword from './pages/SetNewPassword'
+import Settings from './pages/Settings'
 
 const App = () => {
   return (
@@ -26,6 +27,7 @@ const App = () => {
           <Route path="/payment" element={<Payment />} />
           <Route path="/transaction" element={<Transaction />} />
           <Route path="/members" element={<Members />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
       </Routes>
     </BrowserRouter>

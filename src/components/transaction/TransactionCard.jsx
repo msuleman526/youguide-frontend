@@ -1,5 +1,6 @@
-import { Button, Card, Flex, Image, Typography } from 'antd'
+import { Button, Flex, Image, Typography } from 'antd'
 import meezanLogo from '../../assets/meezanLogo.png'
+import Card from '../Card'
 
 const TransactionCard = ({ item, theme }) => {
   const { image, title, lastDate, btnText } = item
@@ -21,7 +22,7 @@ const TransactionCard = ({ item, theme }) => {
       <Typography.Title
         level={5}
         className="text-gray-2 fw-400"
-        style={{ marginTop: '10px', marginBottom: '20px' }}
+        style={{ marginTop: '10px', marginBottom: '10px' }}
       >
         {title}
       </Typography.Title>
@@ -29,7 +30,7 @@ const TransactionCard = ({ item, theme }) => {
         <Typography.Title level={5} className="my-0 text-gray-2">
           Last Date On:
         </Typography.Title>
-        <Typography.Title level={5} className="my-0 text-gray-3 fw-400">
+        <Typography.Title level={5} className="my-0 text-gray-3 fw-400" style={{fontSize: '15px'}}>
           {lastDate}
         </Typography.Title>
       </Flex>
