@@ -1,4 +1,4 @@
-import { Button, Card, Col, Flex, Row, Table, Typography } from 'antd'
+import { Button, Col, Flex, Row, Table, Typography } from 'antd'
 import { HiOutlineUpload } from 'react-icons/hi'
 import TransactionCard from '../components/transaction/TransactionCard'
 import { FaArrowLeftLong, FaArrowRightLong } from 'react-icons/fa6'
@@ -9,6 +9,7 @@ import {
 } from '../components/transaction/TransactionData'
 import { useRecoilValue } from 'recoil'
 import { themeState } from '../atom'
+import Card from '../components/Card'
 
 const Transaction = () => {
   const theme = useRecoilValue(themeState)
@@ -36,7 +37,7 @@ const Transaction = () => {
       </Typography.Text>
       <Row gutter={[16, 16]} style={{ marginBlock: '20px' }}>
         {(transactionCardData || [])?.map((item, index) => (
-          <Col xs={24} md={12} lg={8} xl={6} key={index}>
+          <Col xs={24} md={12} lg={8} xl={4} key={index}>
             <TransactionCard theme={theme} item={item} />
           </Col>
         ))}

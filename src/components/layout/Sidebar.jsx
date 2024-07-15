@@ -1,11 +1,12 @@
 import { Flex, Layout, Menu, Typography } from 'antd'
 import { VscLayout } from 'react-icons/vsc'
-import { FaDollarSign } from 'react-icons/fa'
+import { FaCog, FaDollarSign } from 'react-icons/fa'
 import { GrTransaction } from 'react-icons/gr'
 import { IoMdSettings } from 'react-icons/io'
 import { TbLogout2, TbUsers } from 'react-icons/tb'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { FaGauge } from 'react-icons/fa6'
 
 const Sidebar = ({ collapsed, theme }) => {
   const navigate = useNavigate()
@@ -75,9 +76,9 @@ const Sidebar = ({ collapsed, theme }) => {
                 label: 'Dashboard',
               },
               {
-                key: 'payment',
-                icon: <FaDollarSign {...iconProps} />,
-                label: 'Payment',
+                key: 'settings',
+                icon: <FaCog {...iconProps} />,
+                label: 'Settings',
               },
               {
                 key: 'transaction',

@@ -30,6 +30,7 @@ const DashboardLayout = ({ children }) => {
         components: theme === 'dark' ? dashboardDarkTheme : dashboardLightTheme,
         token: {
           colorPrimary: '#2C87EA',
+          boxShadowCard: theme === 'dark' ? '0 1px 3px rgba(0, 0, 0, 0.8)' : '0 4px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06)',
         },
       }}
     >
