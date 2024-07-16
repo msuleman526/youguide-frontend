@@ -11,6 +11,8 @@ import Payment from './pages/Payment'
 import ForgetPassword from './pages/ForgetPassword'
 import SetNewPassword from './pages/SetNewPassword'
 import Settings from './pages/Settings'
+import Reports from './pages/Reports'
+import Upload from './pages/Upload'
 
 const App = () => {
   return (
@@ -28,6 +30,12 @@ const App = () => {
           <Route path="/transaction" element={<Transaction />} />
           <Route path="/members" element={<Members />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/upload" element={<Upload />} />
+          <Route path="/reports-by-month" element={<Reports />} />
+          <Route path="/reports-by-month-compare" element={<Reports />} />
+          <Route path="/reports-by-category" element={<Reports />} />
+          <Route path="/reports-by-category-group" element={<Reports />} />
+          <Route path="/reports-by-year" element={<Reports />} />
         </Route>
       </Routes>
     </BrowserRouter>
