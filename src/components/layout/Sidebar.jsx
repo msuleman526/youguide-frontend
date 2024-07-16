@@ -1,6 +1,6 @@
 import { Flex, Layout, Menu, Typography } from 'antd'
 import { VscLayout } from 'react-icons/vsc'
-import { FaCog, FaDollarSign } from 'react-icons/fa'
+import { FaCalendarAlt, FaChartBar, FaCog, FaDollarSign, FaFileAlt } from 'react-icons/fa'
 import { GrTransaction } from 'react-icons/gr'
 import { IoMdSettings } from 'react-icons/io'
 import { TbLogout2, TbUsers } from 'react-icons/tb'
@@ -73,12 +73,39 @@ const Sidebar = ({ collapsed, theme }) => {
               {
                 key: 'dashboard',
                 icon: <VscLayout {...iconProps} />,
-                label: 'Dashboard',
+                label: 'Overview',
               },
               {
-                key: 'settings',
-                icon: <FaCog {...iconProps} />,
-                label: 'Settings',
+                key: 'reports',
+                icon: <FaFileAlt {...iconProps} />,
+                label: 'Reports',
+                children: [
+                  {
+                    key: 'reports-by-month',
+                    icon: <FaCalendarAlt {...iconProps} />,
+                    label: 'By Month',
+                  },
+                  {
+                    key: 'reports-by-month-compare',
+                    icon: <FaChartBar {...iconProps} />,
+                    label: 'By Month (Compare)',
+                  },
+                  {
+                    key: 'reports-by-category',
+                    icon: <FaChartBar {...iconProps} />,
+                    label: 'By Category',
+                  },
+                  {
+                    key: 'reports-by-category-group',
+                    icon: <FaChartBar {...iconProps} />,
+                    label: 'By Category Group',
+                  },
+                  {
+                    key: 'reports-by-year',
+                    icon: <FaCalendarAlt {...iconProps} />,
+                    label: 'By Year',
+                  },
+                ],
               },
               {
                 key: 'transaction',
@@ -86,10 +113,20 @@ const Sidebar = ({ collapsed, theme }) => {
                 label: 'Transactions',
               },
               {
-                key: 'members',
-                icon: <TbUsers {...iconProps} />,
-                label: 'Members',
+                key: 'settings',
+                icon: <FaCog {...iconProps} />,
+                label: 'Settings',
               },
+              {
+                key: 'upload',
+                icon: <FaCog {...iconProps} />,
+                label: 'Upload',
+              },
+              // {
+              //   key: 'members',
+              //   icon: <TbUsers {...iconProps} />,
+              //   label: 'Members',
+              // },
             ]}
           />
           <Menu

@@ -18,7 +18,7 @@ const Login = () => {
           <Link to={'/forget-password'}>Forget Password</Link>
         </Flex>
         <Form.Item>
-          <Link to={'/transaction'}><Button type="primary" block>Login</Button></Link>
+          <Link to={'/dashboard'}><Button type="primary" block>Login</Button></Link>
         </Form.Item>
         <Flex gap={'small'} justify="center">
           <Typography.Text type="secondary">
