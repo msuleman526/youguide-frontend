@@ -10,7 +10,7 @@ import Members from './pages/Members'
 import Payment from './pages/Payment'
 import ForgetPassword from './pages/ForgetPassword'
 import SetNewPassword from './pages/SetNewPassword'
-import Settings from './pages/Settings'
+import Settings from './pages/Settings/Settings'
 import Reports from './pages/Reports'
 import Upload from './pages/Upload'
 
