@@ -1,4 +1,4 @@
-import { Flex, Image, Switch } from 'antd'
+import { Flex, Image, Switch, Typography } from 'antd'
 import { FiEdit, FiTrash2 } from 'react-icons/fi'
 import { RxDownload } from 'react-icons/rx'
 import meezanSmallImg from '../../assets/meezan_small.png'
@@ -133,13 +133,20 @@ export const membersColumns = (
 export const groupsAndBanksColumns = (
   theme,
   editRecord,
-  downloadRecord,
   deleteRecord
 ) => [
     {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+      render: (text, record) => {
+        return (
+          <Flex gap="10px" align="center">
+            <Image preview={false} src={record.icon} style={{ width: '30px', border: '1px solid #686868', borderRadius: '17px' }} />
+            <Typography>{record.name}</Typography>
+          </Flex>
+        )
+      },
     },
     {
       title: 'Action',
@@ -152,12 +159,7 @@ export const groupsAndBanksColumns = (
             <FiEdit
               size={18}
               color={iconColor}
-            //onClick={() => editRecord(record.key)}
-            />
-            <RxDownload
-              size={18}
-              color={iconColor}
-            //onClick={() => downloadRecord(record.key)}
+              onClick={() => editRecord(record.bankID)}
             />
             <FiTrash2
               size={18}
@@ -284,54 +286,6 @@ export const groupsDataSource = [
     name: "Personal - Other Expenses",
   },
 ];
-
-export const banksDataSource = [
-  {
-    key: '1',
-    name: "ANZ Bank",
-  },
-  {
-    key: '2',
-    name: "Bankwest Bank",
-  },
-  {
-    key: '3',
-    name: "Bendigo Bank",
-  },
-  {
-    key: '4',
-    name: "Citibank",
-  },
-  {
-    key: '5',
-    name: "Commonwealth Bank of Australia",
-  },
-  {
-    key: '6',
-    name: "HSBC",
-  },
-  {
-    key: '7',
-    name: "Macquarie",
-  },
-  {
-    key: '8',
-    name: "ME Bank",
-  },
-  {
-    key: '9',
-    name: "National Australia Bank",
-  },
-  {
-    key: '10',
-    name: "Westpac Bank",
-  },
-  {
-    key: '11',
-    name: "Woolworths",
-  },
-];
-
 
 export const flaggedCategoryDataSoruce = [
   {

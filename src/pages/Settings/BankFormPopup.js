@@ -1,41 +1,84 @@
-import React, { useState } from 'react';
-import { Modal, Button, Form, Input, notification, Upload, message } from 'antd';
-import axios from 'axios';
-import { toBase64 } from '../../Utils/Utils';
+import React, { useEffect, useState } from 'react';
+import { Modal, Button, Form, Upload, message, Typography } from 'antd';
 import { FaFileUpload } from 'react-icons/fa';
+import { useRecoilState } from 'recoil';
+import CustomInput from '../../components/Input';
+import { ADD_UPDATE_BANK, GET_BANK_BY_ID } from '../../Utils/Apis';
+import { handleErrors, toBase64 } from '../../Utils/Utils';
+import { themeState } from '../../atom';
 
-const BankFormPopup = ({ visible, setVisible }) => {
+const BankFormPopup = ({ visible, setVisible, type, selectedBank, reload }) => {
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
+    const [theme] = useRecoilState(themeState);
+    const [modalLoading, setModalLoading] = useState(false);
+    const [bankData, setBankData] = useState(null)
+
+    useEffect(() => {
+        if (visible && type === "EDIT") {
+            getBankByID();
+        } else {
+            form.resetFields();
+        }
+    }, [type, visible]);
+
+    const getBankByID = async () => {
+        setModalLoading(true);
+        try {
+            const response = await GET_BANK_BY_ID(selectedBank);
+            if (response.isSuccess && response.data) {
+                const { name, icon } = response.data;
+                setBankData(response.data)
+                const file = {
+                    uid: '-1',
+                    name: 'icon.png',
+                    status: 'done',
+                    url: icon,
+                };
+                form.setFieldsValue({
+                    name: name,
+                    icon: [file],
+                });
+            }
+            setModalLoading(false);
+        } catch (err) {
+            setModalLoading(false);
+            handleErrors("Fetching Bank Data", err);
+        }
+    };
 
     const handleOk = async () => {
         try {
             const values = await form.validateFields();
             setLoading(true);
+            let base64Icon = "";
+            let fileType = ""
+            try {
+                base64Icon = await toBase64(values.icon[0].originFileObj);
+                fileType = values.icon[0].type
+            } catch (ee) {
+                base64Icon = values.icon[0].url;
+                fileType = bankData.fileType
+            }
 
-            // Convert the icon file to base64
-            const iconFile = values.icon[0].originFileObj;
-            const base64Icon = await toBase64(iconFile);
+            const data = {
+                ...values,
+                icon: base64Icon,
+                fileHasHeader: true,
+                isActive: true,
+                fileType: fileType,
+                ...(type === "EDIT" && { bankID: selectedBank })
+            };
 
-            const data = { ...values, icon: iconFile };
-            console.log(data)
-
-            // // Call your API here
-            // const response = await axios.post('your-api-endpoint', data);
-            // notification.success({
-            //     message: 'Success',
-            //     description: 'Data submitted successfully',
-            // });
-            setVisible(false);
-            //form.resetFields();
-        } catch (error) {
-            console.error(error);
-            notification.error({
-                message: 'Error',
-                description: 'There was an error submitting your data',
-            });
-        } finally {
+            await ADD_UPDATE_BANK(data);
+            message.success(type === "ADD" ? "Bank added successfully" : 'Bank updated successfully');
+            form.resetFields();
             setLoading(false);
+            setVisible(false);
+            reload();
+        } catch (err) {
+            setLoading(false);
+            handleErrors(type === "ADD" ? "Adding Bank" : "Editing Bank", err);
         }
     };
 
@@ -46,19 +89,22 @@ const BankFormPopup = ({ visible, setVisible }) => {
     return (
         <>
             <Modal
-                open={visible}
-                title="Alied Bank"
+                visible={visible}
+                width={450}
+                loading={modalLoading}
+                title={<Typography.Title level={3} className="fw-500">{type === "ADD" ? "Add Bank" : "Edit Bank"}</Typography.Title>}
                 onOk={handleOk}
+                okText={type === "ADD" ? "Add" : "Update"}
                 onCancel={handleCancel}
                 confirmLoading={loading}
             >
-                <Form form={form} layout="vertical" name="alied_bank_form">
+                <Form form={form} layout="vertical" name="bank_form">
                     <Form.Item
                         name="name"
                         label="Name"
                         rules={[{ required: true, message: 'Please input the name!' }]}
                     >
-                        <Input />
+                        <CustomInput placeholder="Bank Name" />
                     </Form.Item>
                     <Form.Item
                         name="icon"
@@ -68,9 +114,11 @@ const BankFormPopup = ({ visible, setVisible }) => {
                         getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
                     >
                         <Upload
+                            className={theme === 'light' ? 'upload-input-light' : 'upload-input-dark'}
                             listType="picture"
                             beforeUpload={() => false}
                             maxCount={1}
+                            defaultFileList={form.getFieldValue('icon')}
                         >
                             <Button icon={<FaFileUpload />}>Choose Image</Button>
                         </Upload>

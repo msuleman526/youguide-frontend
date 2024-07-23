@@ -139,16 +139,83 @@
   padding: 24px;
 }
 
-.header-search-input-light {
-  background-color: #f1f2f3 !important;
-  max-width: 230px !important;
-  border-color: #f1f2f3 !important;
+.ant-modal-mask {
+  background-color: rgba(0, 0, 0, 0.60) !important;
 }
 
+.header-search-input-light {
+  background-color: transparent !important;
+  border: 1px solid #D2D4D8;
+  color: black;
+  height: 40px !important;
+  border-radius: 8px !important;
+
+}
+
+.header-search-input-dark .ant-select-selector {
+  border: 1px solid #BEDAF800 !important;
+  background: transparent !important;
+}
+
+.header-search-input-dark .ant-select-selection-placeholder {
+  color: #adadad
+}
+
+.header-search-input-light .ant-select-selector {
+  border: 1px solid #BEDAF800 !important;
+  background: transparent !important;
+}
+
+.header-search-input-dark::placeholder {
+  color: #adadad
+}
+
+
 .header-search-input-dark {
-  background-color: #131b2f !important;
-  max-width: 230px !important;
-  border-color: #0f2f52 !important;
+  background-color: #00000000 !important;
+  border: 1px solid #BEDAF8;
+  color: white;
+  height: 40px !important;
+  border-radius: 8px !important;
+}
+
+.upload-input-dark .ant-btn {
+  background: #00000000 !important;
+  border: 1px solid #BEDAF8;
+  color: white;
+  height: 40px;
+  width: 100%;
+}
+
+.upload-input-dark .ant-upload-select {
+  height: 40px;
+  width: 100%;
+}
+
+.upload-input-light .ant-btn {
+  background: transparent !important;
+  border: 1px solid #D2D4D8;
+  color: black;
+  height: 40px;
+  width: 100%;
+}
+
+.upload-input-light .ant-upload-select {
+  height: 40px;
+  width: 100%;
+}
+
+.upload-input-light .ant-upload-list {
+  margin-top: 10px;
+}
+
+.upload-input-dark .ant-upload-list .ant-upload-list-item {
+  color: white;
+  border: 1px solid transparent !important;
+}
+
+.upload-input-dark .ant-upload-list .ant-upload-list-item .anticon-delete {
+  color: white !important;
 }
 
 .header-search-input-dark input::placeholder,
@@ -175,4 +242,8 @@
 .layout-content {
   scrollbar-width: none;
   /* Firefox */
+}
+
+.ant-list-item {
+  padding: 5px 0px !important;
 }
