@@ -58,6 +58,7 @@ const LayoutHeader = ({ collapsed, setCollapsed, theme, toggleTheme }) => {
                 ? 'header-search-input-light'
                 : 'header-search-input-dark'
             }
+            style={{maxWidth: '230px'}}
             prefix={<CiSearch color="#4A4A4C" size={21} />}
             size="large"
             placeholder="Search"

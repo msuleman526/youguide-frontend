@@ -13,6 +13,9 @@ export const dashboardLightTheme = {
     coloTe: '#5E5F61',
     borderColor: '#F1F2F3',
   },
+  List: {
+    colorText: '#000',
+  },
   Typography: {
     colorTextHeading: '#03060E',
     colorTextDescription: '#5e5f61',
@@ -31,6 +34,19 @@ export const dashboardDarkTheme = {
     siderBg: '#131B2F',
     colorBgContainer: '#131B2F',
     bodyBg: '#010912',
+  },
+  Modal: {
+    contentBg: '#05152B',
+    headerBg: '#05152B',
+    colorText: '#fff',
+    titleColor: '#fff',
+    colorIcon: '#fff',
+  },
+  Form: {
+    labelColor: '#fff',
+  },
+  List: {
+    colorText: '#ffff',
   },
   Card: {
     colorBgContainer: '#05152B',
