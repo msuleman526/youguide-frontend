@@ -1,45 +1,45 @@
-import { Flex, Layout, Menu, Typography } from 'antd'
-import { VscLayout } from 'react-icons/vsc'
-import { FaCalendarAlt, FaChartBar, FaCog, FaDollarSign, FaFileAlt } from 'react-icons/fa'
-import { GrTransaction } from 'react-icons/gr'
-import { IoMdSettings } from 'react-icons/io'
-import { TbLogout2, TbUsers } from 'react-icons/tb'
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { FaGauge } from 'react-icons/fa6'
+import { Flex, Layout, Menu, Typography } from 'antd';
+import { VscLayout } from 'react-icons/vsc';
+import { FaCalendarAlt, FaChartBar, FaCog, FaFileAlt } from 'react-icons/fa';
+import { GrTransaction } from 'react-icons/gr';
+import { IoMdSettings } from 'react-icons/io';
+import { TbLogout2 } from 'react-icons/tb';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-const Sidebar = ({ collapsed, theme }) => {
-  const navigate = useNavigate()
-  const [selectMenu, setSelectedMenu] = useState('dashboard')
+const Sidebar = ({ collapsed }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [selectedMenu, setSelectedMenu] = useState('dashboard');
+  const [openKeys, setOpenKeys] = useState([]);
 
   useEffect(() => {
-    loadMenuFromLocalStorage()
-  }, [])
-
-  const loadMenuFromLocalStorage = () => {
-    const menuStorage = localStorage.getItem('menu')
-    if (!menuStorage || menuStorage === undefined) {
-      localStorage.setItem('menu', 'dashboard')
+    const path = location.pathname.split('/');
+    setSelectedMenu(path[1] || 'dashboard');
+    if (path[1].includes('reports')) {
+      setOpenKeys(['reports']);
     } else {
-      setSelectedMenu(menuStorage)
+      setOpenKeys([]);
     }
-  }
+  }, [location.pathname]);
 
   let iconStyle = {
     position: 'relative',
     top: collapsed ? '3.5px' : 0,
     left: collapsed ? '-3px' : 0,
-  }
+  };
+
   let iconProps = {
     style: iconStyle,
     size: 18,
-  }
+  };
 
-  const handleMenuChange = ({ key }) => {
-    navigate('/' + key)
-    setSelectedMenu(key)
-    localStorage.setItem('menu', key)
-  }
+  const handleMenuChange = ({ key, keyPath }) => {
+    navigate('/' + key);
+    setSelectedMenu(key);
+  };
+
   return (
     <div>
       <Layout.Sider
@@ -67,8 +67,10 @@ const Sidebar = ({ collapsed, theme }) => {
             onClick={handleMenuChange}
             mode="inline"
             className="custom_menu_sidebar"
-            selectedKeys={[selectMenu]}
-            defaultSelectedKeys={[selectMenu]}
+            selectedKeys={[selectedMenu]}
+            defaultSelectedKeys={[selectedMenu]}
+            openKeys={openKeys}
+            onOpenChange={setOpenKeys}
             items={[
               {
                 key: 'dashboard',

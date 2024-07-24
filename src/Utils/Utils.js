@@ -15,7 +15,7 @@ export const handleErrors = (type, err) => {
             message.error(error.message || 'There is some issue in ' + type);
         }
     } catch (errr) {
-        message.error(error.message || 'There is some issue in ' + type);
+        message.error(error?.message || 'There is some issue in ' + type);
     }
 }
 

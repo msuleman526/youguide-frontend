@@ -8,7 +8,7 @@ const CustomInput = ({...props}) => {
   return (
     <Input
         className={
-            theme === 'light'
+            theme === 'light' || (theme.length > 0 && theme[0] == "light")
                 ? 'header-search-input-light'
                 : 'header-search-input-dark'
         }

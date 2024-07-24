@@ -42,6 +42,17 @@ export const dashboardDarkTheme = {
     titleColor: '#fff',
     colorIcon: '#fff',
   },
+  Select: {
+    colorText: "#fff",
+    optionSelectedColor: "#000",
+    colorBgElevated: "#05152B"
+  },
+  Collapse: {
+    colorBorder: "#0F2F52",
+    colorTextHeading: "#fff",
+    contentBg: "#95959521",
+    //contentBg: "#2F3762"
+  },
   Form: {
     labelColor: '#fff',
   },

@@ -247,3 +247,7 @@
 .ant-list-item {
   padding: 5px 0px !important;
 }
+
+.ant-list-item-meta-title {
+  font-weight: 400 !important;
+}
