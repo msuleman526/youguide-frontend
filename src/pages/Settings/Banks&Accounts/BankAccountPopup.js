@@ -1,22 +1,50 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Button, Form, Input, notification, Upload, message, Typography, Select } from 'antd';
-import axios from 'axios';
-import { handleErrors, toBase64 } from '../../Utils/Utils';
-import { themeState } from '../../atom';
+import { Modal, Button, Form, Input, notification, Upload, message, Typography, Select, Spin } from 'antd';
+import { handleErrors, toBase64 } from '../../../Utils/Utils';
+import { themeState } from '../../../atom';
 import { useRecoilState } from 'recoil';
-import CustomInput from '../../components/Input';
-import { GET_BANK_LIST } from '../../Utils/Apis';
+import CustomInput from '../../../components/Input';
+import { ADD_UPDATE_BANK_ACCOUNT, GET_BANK_ACCOUNT_BY_ID, GET_BANK_LIST } from '../../../Utils/Apis';
 
-const BankAccountPopup = ({ visible, setVisible, type }) => {
+const BankAccountPopup = ({ visible, setVisible, type, selectedBankAccount, reload }) => {
     const [loading, setLoading] = useState(false);
     const [formLoading, setFormLoading] = useState(false)
     const [form] = Form.useForm();
     const [theme, setTheme] = useRecoilState(themeState)
+    const [modalLoading, setModalLoading] = useState(false)
     const [banks, setBanks] = useState([])
 
     useEffect(() => {
         if (visible) callingBanksListAPI()
     }, [visible])
+
+    useEffect(() => {
+        if (visible && type === "EDIT") {
+            getBankAccountByID();
+        } else {
+            form.resetFields();
+        }
+    }, [type, visible]);
+
+
+    const getBankAccountByID = async () => {
+        setModalLoading(true);
+        try {
+            const response = await GET_BANK_ACCOUNT_BY_ID(selectedBankAccount);
+            if (response.isSuccess && response.data) {
+                const data = response.data;
+                form.setFieldsValue({
+                    name: data.name,
+                    accountAliase: data.accountAliase,
+                    bankID: data.bankID
+                });
+            }
+            setModalLoading(false);
+        } catch (err) {
+            setModalLoading(false);
+            handleErrors("Fetching Bank Data", err);
+        }
+    };
 
     const callingBanksListAPI = async () => {
         setFormLoading(true)
@@ -36,26 +64,28 @@ const BankAccountPopup = ({ visible, setVisible, type }) => {
 
     const handleOk = async () => {
         try {
-            const values = await form.validateFields();
+            let values = await form.validateFields();
+            let newValues = { ...values, ...(type === "EDIT" && { bankAccountID: selectedBankAccount }) }
             setLoading(true);
             try {
-                //await ADD_BANK(values);
+                await ADD_UPDATE_BANK_ACCOUNT(newValues);
                 setLoading(false);
                 form.resetFields();
                 handleCancel()
-                message.success('Bank account added successfully');
+                reload()
+                message.success(type === "EDIT" ? 'Bank account updated successfully' : 'Bank account added successfully');
             } catch (err) {
                 setLoading(false);
-                handleErrors("Adding Bank", err)
+                handleErrors(type === "EDIT" ? "Updating Bank" : "Adding Bank", err)
             }
         } catch (error) {
-            console.error(error);
             message.error('There was an error submitting your data');
         }
     };
 
     const handleCancel = () => {
         setVisible(false);
+
     };
 
     return (
@@ -70,7 +100,7 @@ const BankAccountPopup = ({ visible, setVisible, type }) => {
                 okText={type === "ADD" ? "Add" : "Update"}
                 onCancel={handleCancel}
                 confirmLoading={loading}
-            >
+            >{modalLoading ? <Spin /> :
                 <Form form={form} layout="vertical" name="alied_bank_form">
                     <Form.Item
                         name="name"
@@ -107,7 +137,7 @@ const BankAccountPopup = ({ visible, setVisible, type }) => {
                             ))}
                         </Select>
                     </Form.Item>
-                </Form>
+                </Form>}
             </Modal>
         </>
     );

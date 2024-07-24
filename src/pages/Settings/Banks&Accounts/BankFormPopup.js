@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Button, Form, Upload, message, Typography } from 'antd';
+import { Modal, Button, Form, Upload, message, Typography, Spin } from 'antd';
 import { FaFileUpload } from 'react-icons/fa';
 import { useRecoilState } from 'recoil';
-import CustomInput from '../../components/Input';
-import { ADD_UPDATE_BANK, GET_BANK_BY_ID } from '../../Utils/Apis';
-import { handleErrors, toBase64 } from '../../Utils/Utils';
-import { themeState } from '../../atom';
+import CustomInput from '../../../components/Input';
+import { ADD_UPDATE_BANK, GET_BANK_BY_ID } from '../../../Utils/Apis';
+import { handleErrors, toBase64 } from '../../../Utils/Utils';
+import { themeState } from '../../../atom';
 
 const BankFormPopup = ({ visible, setVisible, type, selectedBank, reload }) => {
     const [loading, setLoading] = useState(false);
@@ -89,7 +89,7 @@ const BankFormPopup = ({ visible, setVisible, type, selectedBank, reload }) => {
     return (
         <>
             <Modal
-                visible={visible}
+                open={visible}
                 width={450}
                 loading={modalLoading}
                 title={<Typography.Title level={3} className="fw-500">{type === "ADD" ? "Add Bank" : "Edit Bank"}</Typography.Title>}
@@ -97,7 +97,7 @@ const BankFormPopup = ({ visible, setVisible, type, selectedBank, reload }) => {
                 okText={type === "ADD" ? "Add" : "Update"}
                 onCancel={handleCancel}
                 confirmLoading={loading}
-            >
+            >{modalLoading ? <Spin /> :
                 <Form form={form} layout="vertical" name="bank_form">
                     <Form.Item
                         name="name"
@@ -123,7 +123,7 @@ const BankFormPopup = ({ visible, setVisible, type, selectedBank, reload }) => {
                             <Button icon={<FaFileUpload />}>Choose Image</Button>
                         </Upload>
                     </Form.Item>
-                </Form>
+                </Form>}
             </Modal>
         </>
     );
