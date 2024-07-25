@@ -5,14 +5,15 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import OTPScreen from './pages/OTPScreen'
 import Dashboard from './pages/Dashboard'
 import DashboardLayout from './layouts/DashboardLayout'
-import Transaction from './pages/Transaction'
+import Transactions from './pages/Transactions'
 import Members from './pages/Members'
 import Payment from './pages/Payment'
 import ForgetPassword from './pages/ForgetPassword'
 import SetNewPassword from './pages/SetNewPassword'
 import Settings from './pages/Settings/Settings'
 import Reports from './pages/Reports'
-import Upload from './pages/Upload'
+import Upload from './pages/Upload/Upload'
+
 
 const App = () => {
   return (
@@ -27,7 +28,7 @@ const App = () => {
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/payment" element={<Payment />} />
-          <Route path="/transaction" element={<Transaction />} />
+          <Route path="/transaction" element={<Transactions />} />
           <Route path="/members" element={<Members />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/upload" element={<Upload />} />

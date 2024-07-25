@@ -1,63 +1,62 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Button, Form, Input, notification, Upload, message, Typography, Select, Spin } from 'antd';
-import { handleErrors, toBase64 } from '../../../Utils/Utils';
+import { Modal, Form, message, Typography, Select, Spin } from 'antd';
+import { handleErrors } from '../../../Utils/Utils';
 import { themeState } from '../../../atom';
 import { useRecoilState } from 'recoil';
 import CustomInput from '../../../components/Input';
-import { ADD_UPDATE_BANK_ACCOUNT, GET_BANK_ACCOUNT_BY_ID, GET_BANK_LIST } from '../../../Utils/Apis';
+import { ADD_UPDATE_CATEGORY, GET_CATEGORY_BY_ID, GET_CATEGORY_GROUPS_LIST } from '../../../Utils/Apis';
 
-const BankAccountPopup = ({ visible, setVisible, type, selectedBankAccount, reload }) => {
+const CategoryFormPopup = ({ visible, setVisible, type, selectedCategory, reload }) => {
     const [loading, setLoading] = useState(false);
     const [formLoading, setFormLoading] = useState(false)
     const [form] = Form.useForm();
     const [theme, setTheme] = useRecoilState(themeState)
     const [modalLoading, setModalLoading] = useState(false)
-    const [banks, setBanks] = useState([])
+    const [groups, setGroups] = useState([])
 
     useEffect(() => {
-        if (visible) callingBanksListAPI()
+        if (visible) callingCategoryGroupListAPI()
     }, [visible])
 
     useEffect(() => {
         if (visible && type === "EDIT") {
-            getBankAccountByID();
+            getCategoryByID();
         } else {
             form.resetFields();
         }
     }, [type, visible]);
 
 
-    const getBankAccountByID = async () => {
+    const getCategoryByID = async () => {
         setModalLoading(true);
         try {
-            const response = await GET_BANK_ACCOUNT_BY_ID(selectedBankAccount);
+            const response = await GET_CATEGORY_BY_ID(selectedCategory);
             if (response.isSuccess && response.data) {
                 const data = response.data;
                 form.setFieldsValue({
                     name: data.name,
-                    accountAliase: data.accountAliase,
-                    bankID: data.bankID
+                    groupID: data.groupID,
                 });
             }
             setModalLoading(false);
         } catch (err) {
             setModalLoading(false);
-            handleErrors("Fetching Bank Data", err);
+            handleErrors("Fetching Category Data", err);
         }
     };
 
-    const callingBanksListAPI = async () => {
+    const callingCategoryGroupListAPI = async () => {
         setFormLoading(true)
         try {
-            let response = await GET_BANK_LIST();
+            let response = await GET_CATEGORY_GROUPS_LIST();
             if (response.isSuccess && response.data) {
-                setBanks(response.data)
+                setGroups(response.data)
             } else {
-                setBanks([])
+                setGroups([])
             }
             setFormLoading(false);
         } catch (err) {
-            setBanks([])
+            setGroups([])
             setFormLoading(false);
         }
     }
@@ -65,18 +64,18 @@ const BankAccountPopup = ({ visible, setVisible, type, selectedBankAccount, relo
     const handleOk = async () => {
         try {
             let values = await form.validateFields();
-            let newValues = { ...values, ...(type === "EDIT" && { bankAccountID: selectedBankAccount }) }
+            let newValues = { ...values, "isTracked": true, "isActive": true, "categoryID": type === "EDIT" ? selectedCategory : 0 }
             setLoading(true);
             try {
-                await ADD_UPDATE_BANK_ACCOUNT(newValues);
+                await ADD_UPDATE_CATEGORY(newValues);
                 setLoading(false);
                 form.resetFields();
                 handleCancel()
                 reload()
-                message.success(type === "EDIT" ? 'Bank account updated successfully' : 'Bank account added successfully');
+                message.success(type === "EDIT" ? 'Category updated successfully' : 'Category added successfully');
             } catch (err) {
                 setLoading(false);
-                handleErrors(type === "EDIT" ? "Updating Bank" : "Adding Bank", err)
+                handleErrors(type === "EDIT" ? "Updating Category" : "Adding Category", err)
             }
         } catch (error) {
             message.error('There was an error submitting your data');
@@ -95,7 +94,7 @@ const BankAccountPopup = ({ visible, setVisible, type, selectedBankAccount, relo
                 width={450}
                 height={360}
                 loading={formLoading}
-                title={<Typography level={3} className="fw-500">{type === "ADD" ? "Add Bank Account" : "Edit Bank Account"}</Typography>}
+                title={<Typography level={3} className="fw-500">{type === "ADD" ? "Add Category" : "Edit Category"}</Typography>}
                 onOk={handleOk}
                 okText={type === "ADD" ? "Add" : "Update"}
                 onCancel={handleCancel}
@@ -108,31 +107,22 @@ const BankAccountPopup = ({ visible, setVisible, type, selectedBankAccount, relo
                         rules={[{ required: true, message: 'Please input the name!' }]}
                     >
                         <CustomInput
-                            placeholder="Bank Name"
+                            placeholder="Category Name"
                         />
                     </Form.Item>
                     <Form.Item
-                        name="accountAliase"
-                        label="Account Alias"
-                        rules={[{ required: true, message: 'Please input the alias!' }]}
+                        name="groupID"
+                        label="Category Group"
+                        rules={[{ required: true, message: 'Please select the group!' }]}
                     >
-                        <CustomInput
-                            placeholder="Account Alias"
-                        />
-                    </Form.Item>
-                    <Form.Item
-                        name="bankID"
-                        label="Bank"
-                        rules={[{ required: true, message: 'Please select the bank!' }]}
-                    >
-                        <Select placeholder="Select a bank" className={
+                        <Select placeholder="Select a group" className={
                             theme === 'light'
                                 ? 'header-search-input-light'
                                 : 'header-search-input-dark'
                         }>
-                            {banks.map(bank => (
-                                <Select.Option key={bank.bankID} value={bank.bankID}>
-                                    {bank.name}
+                            {groups.map(group => (
+                                <Select.Option key={group.categoryGroupID} value={group.categoryGroupID}>
+                                    {group.name}
                                 </Select.Option>
                             ))}
                         </Select>
@@ -143,4 +133,4 @@ const BankAccountPopup = ({ visible, setVisible, type, selectedBankAccount, relo
     );
 };
 
-export default BankAccountPopup;
+export default CategoryFormPopup;

@@ -11,6 +11,14 @@ export const GET_BANK_LIST_API = `${API_URL}/api/admin/Setting/GetBankList`
 export const GET_BANK_ACCOUNTS_LIST_API = `${API_URL}/api/admin/Setting/GetBankAccountList`
 export const GET_BANK_ACCOUNT_BY_ID_API = `${API_URL}/api/admin/Setting/GeBankAccountDetailsById`
 
+//Categories and Groups 
+export const GET_CATEGORIES_LIST_API = `${API_URL}/api/admin/Setting/GetCategoryList`
+export const GET_CATEGORY_GROUP_BY_ID_API = `${API_URL}/api/admin/Setting/GetCategoryGroupDetailsById`
+export const ADD_CATEGORY_GROUP_API = `${API_URL}/api/admin/Setting/SaveCategoryGroupDetails`
+export const GET_SECTIONS_LIST_API = `${API_URL}/api/admin/Setting/GetCategorySectionsList`
+export const GET_CATEGORY_GROUP_LIST_API = `${API_URL}/api/admin/Setting/GetCategoryGroupsList`
+export const GET_CATEGORY_BY_ID_API = `${API_URL}/api/admin/Setting/GetCategoryDetailsById`
+export const ADD_CATEGORY_API = `${API_URL}/api/admin/Setting/SaveCategoryDetails`
 
 //Register User Axios Call
 export const REGISTER_USER = (data) => {
@@ -174,6 +182,185 @@ export const GET_BANK_ACCOUNT_BY_ID = (bankID) => {
         headers: {
             'Content-Type': 'application/json',
         },
+    };
+
+    return axios.request(config)
+        .then((response) => {
+            return response.data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+
+
+export const GET_CATEGORIES_LIST = (groupID) => {
+    let requestData = JSON.stringify({
+        "isActive": null,
+        "name": "",
+        "isExport": true,
+        "pagination": {
+            "pageNo": 0,
+            "pageSize": 0,
+            "sortBy": "",
+            "orderBy": ""
+        }
+    });
+    let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: GET_CATEGORIES_LIST_API,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        data: requestData
+    };
+
+    return axios.request(config)
+        .then((response) => {
+            return response.data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+
+export const GET_CATEGORY_GROUP_BY_ID = (groupID) => {
+    let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: GET_CATEGORY_GROUP_BY_ID_API + "?categoryGroupID=" + groupID,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    };
+
+    return axios.request(config)
+        .then((response) => {
+            return response.data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+export const GET_CATEGORY_BY_ID = (categoryID) => {
+    let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: GET_CATEGORY_BY_ID_API + "?categoryID=" + categoryID,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    };
+
+    return axios.request(config)
+        .then((response) => {
+            return response.data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+
+export const ADD_UPDATE_CATEGORY_GROUP = (data) => {
+    let requestData = JSON.stringify(data);
+
+    let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: ADD_CATEGORY_GROUP_API,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        data: requestData
+    };
+
+    return axios.request(config)
+        .then((response) => {
+            return response.data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+export const ADD_UPDATE_CATEGORY = (data) => {
+    let requestData = JSON.stringify(data);
+
+    let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: ADD_CATEGORY_API,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        data: requestData
+    };
+
+    return axios.request(config)
+        .then((response) => {
+            return response.data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+export const GET_SECTIONS_LIST = () => {
+    let requestData = JSON.stringify({
+        "isActive": null,
+        "name": "",
+        "isExport": null,
+        "pagination": {
+            "pageNo": 0,
+            "pageSize": 0,
+            "sortBy": "",
+            "orderBy": ""
+        }
+    });
+    let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: GET_SECTIONS_LIST_API,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        data: requestData
+    };
+
+    return axios.request(config)
+        .then((response) => {
+            return response.data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+export const GET_CATEGORY_GROUPS_LIST = () => {
+    let requestData = JSON.stringify({
+        "isActive": null,
+        "name": "",
+        "isExport": true,
+        "pagination": {
+            "pageNo": 0,
+            "pageSize": 0,
+            "sortBy": "",
+            "orderBy": ""
+        }
+    });
+    let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: GET_CATEGORY_GROUP_LIST_API,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        data: requestData
     };
 
     return axios.request(config)

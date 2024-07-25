@@ -13,15 +13,15 @@ import { useRecoilValue } from 'recoil'
 import { themeState } from '../atom'
 import Card from '../components/Card'
 
-const Upload = () => {
+const Transactions = () => {
 
   return (
     <Card>
       <Typography.Title level={3} className="fw-500">
-        Upload
+            Transactions
       </Typography.Title>
     </Card>
   )
 }
 
-export default Upload
+export default Transactions
