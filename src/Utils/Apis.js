@@ -1,6 +1,7 @@
 import axios from "axios";
 
 export const API_URL = "https://thedinkumapi.azurewebsites.net"
+//export const API_URL = "https://dinkum.netlify.app"
 
 //All API URLs
 export const REGISTER_USER_API = `${API_URL}/api/admin/UserRegistration/RegisterUser`

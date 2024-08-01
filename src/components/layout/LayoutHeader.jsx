@@ -15,6 +15,7 @@ import { TbLogout2 } from 'react-icons/tb'
 import { GoChevronDown } from 'react-icons/go'
 import { FaChevronCircleLeft, FaChevronCircleRight } from 'react-icons/fa'
 import { CiLight, CiDark } from 'react-icons/ci'
+import { Link } from 'react-router-dom'
 
 const LayoutHeader = ({ collapsed, setCollapsed, theme, toggleTheme }) => {
   const items = [
@@ -25,7 +26,11 @@ const LayoutHeader = ({ collapsed, setCollapsed, theme, toggleTheme }) => {
     },
 
     {
-      label: 'Logout',
+      label: (
+        <Link to="/login" style={{ color: 'inherit', textDecoration: 'none' }}>
+          Logout
+        </Link>
+      ),
       key: 'logout',
       icon: <TbLogout2 size={18} />,
       danger: true,

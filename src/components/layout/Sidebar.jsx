@@ -5,7 +5,7 @@ import { GrTransaction } from 'react-icons/gr';
 import { IoMdSettings } from 'react-icons/io';
 import { TbLogout2 } from 'react-icons/tb';
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const Sidebar = ({ collapsed }) => {
   const navigate = useNavigate();
@@ -136,14 +136,11 @@ const Sidebar = ({ collapsed }) => {
             defaultSelectedKeys={['dashboard']}
             items={[
               {
-                key: 'setting',
-                icon: <IoMdSettings {...iconProps} />,
-                label: 'Setting',
-              },
-              {
                 key: 'logout',
                 icon: <TbLogout2 {...iconProps} />,
-                label: 'Logout',
+                label: <Link to="/login" style={{ color: 'inherit', textDecoration: 'none' }}>
+                    Logout
+                  </Link>,
                 danger: true,
               },
             ]}
