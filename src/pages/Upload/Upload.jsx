@@ -1,22 +1,75 @@
-import { Button, Col, Flex, Row, Table, Typography } from 'antd'
+import { Button, Col, Flex, Row, Skeleton, Spin, Table, Typography } from 'antd'
 import { HiOutlineUpload } from 'react-icons/hi'
 import TransactionCard from '../../components/transaction/TransactionCard'
 import { FaArrowLeftLong, FaArrowRightLong } from 'react-icons/fa6'
 import {
-  transactionCardData,
   transactionColumns,
-  transactionTableData,
 } from '../../components/transaction/TransactionData'
 import { useRecoilValue } from 'recoil'
 import { themeState } from '../../atom'
 import CustomCard from '../../components/Card'
 import UploadFormPopup from './UploadFormPopup'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { GET_BANK_LIST, GET_UPLOADED_FILES_LIST } from '../../Utils/Apis'
+import { handleErrors } from '../../Utils/Utils'
 
 const Upload = () => {
   const theme = useRecoilValue(themeState)
   const columns = transactionColumns(theme)
   const [visible, setVisible] = useState(false)
+  const [bankLoading, setBankLoading] = useState(false)
+  const [banks, setBanks] = useState([])
+  const scrollContainerRef = useRef(null);
+  const [uploadedFiles, setUploadedFiles] = useState([])
+  const [tableLoading, setTableLoading] = useState(false)
+
+  useEffect(() => {
+    const fetchBank = async () => {
+      try {
+        setBankLoading(true)
+        let response = await GET_BANK_LIST();
+        if (response.isSuccess && response.data) {
+          setBanks(response.data);
+        } else {
+          setBanks([]);
+        }
+        setBankLoading(false)
+      } catch (err) {
+        setBanks([]);
+        setBankLoading(false)
+        handleErrors('Getting Banks', err);
+      }
+    };
+
+    const fetchUploadedFiles = async () => {
+      try {
+        setTableLoading(true)
+        let response = await GET_UPLOADED_FILES_LIST();
+        if (response.isSuccess && response.data) {
+          setUploadedFiles(response.data);
+        } else {
+          setUploadedFiles([]);
+        }
+        setTableLoading(false)
+      } catch (err) {
+        setUploadedFiles([]);
+        setTableLoading(false)
+        handleErrors('Getting Files', err);
+      }
+    };
+
+    fetchBank()
+    fetchUploadedFiles()
+  }, [])
+
+  const scroll = (direction) => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: direction === 'left' ? -200 : 200,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   return (
     <>
@@ -40,19 +93,36 @@ const Upload = () => {
           affects our entire family’s financial stability!
         </Typography.Text>
         <Row gutter={[16, 16]} style={{ marginBlock: '20px' }}>
-          {(transactionCardData || [])?.map((item, index) => (
-            <Col xs={24} md={12} lg={8} xl={4} key={index}>
-              <TransactionCard theme={theme} item={item} />
-            </Col>
-          ))}
+          <div
+            style={{
+              display: 'flex',
+              overflowX: 'auto',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              whiteSpace: 'nowrap',
+              paddingBottom: '10px'
+            }}
+            ref={scrollContainerRef}
+          >
+            {bankLoading ? (
+              <Spin />
+            ) : (
+              banks.map((item, index) => (
+                <div style={{ display: 'inline-block', padding: '0 8px' }} key={index}>
+                  <TransactionCard theme={theme} item={item} />
+                </div>
+              ))
+            )}
+          </div>
           <Col xs={24}>
             <Flex justify="end" align="center" gap={'small'}>
               <Button
+                onClick={() => scroll('left')}
                 style={{ backgroundColor: '#EAF3FD', borderColor: '#EAF3FD' }}
               >
                 <FaArrowLeftLong color="#4A4A4C" />
               </Button>
-              <Button type="primary">
+              <Button type="primary" onClick={() => scroll('right')}>
                 <FaArrowRightLong />
               </Button>
             </Flex>
@@ -66,12 +136,12 @@ const Upload = () => {
           className="custom_table"
           bordered
           columns={columns}
-          dataSource={transactionTableData}
+          dataSource={uploadedFiles}
           scroll={{ x: 'max-content' }}
           pagination={false}
         />
       </CustomCard>
-      <UploadFormPopup visible={visible} setVisible={setVisible}/>
+      <UploadFormPopup banks={banks} visible={visible} setVisible={setVisible}/>
     </>
   )
 }
