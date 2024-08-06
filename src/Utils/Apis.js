@@ -1,7 +1,8 @@
 import axios from "axios";
+import { formatDate } from "./Utils";
 
-export const API_URL = "https://thedinkumapi.azurewebsites.net"
-//export const API_URL = "https://dinkum.netlify.app"
+//export const API_URL = "https://thedinkumapi.azurewebsites.net"
+export const API_URL = "https://dinkum.netlify.app"
 
 //All API URLs
 export const REGISTER_USER_API = `${API_URL}/api/admin/UserRegistration/RegisterUser`
@@ -20,6 +21,11 @@ export const GET_SECTIONS_LIST_API = `${API_URL}/api/admin/Setting/GetCategorySe
 export const GET_CATEGORY_GROUP_LIST_API = `${API_URL}/api/admin/Setting/GetCategoryGroupsList`
 export const GET_CATEGORY_BY_ID_API = `${API_URL}/api/admin/Setting/GetCategoryDetailsById`
 export const ADD_CATEGORY_API = `${API_URL}/api/admin/Setting/SaveCategoryDetails`
+
+//Upload Transactions
+export const UPLOAD_TRANSACTION_FILE_API = `${API_URL}/api/admin/Upload/UploadTransactionsFile`
+export const UPLOADED_FILES_LIST = `${API_URL}/api/admin/Upload/GetUploadedFilesList`
+export const GET_TRANSACTION_LIST_API = `${API_URL}/api/Transaction/GetTransactionsList`
 
 //Register User Axios Call
 export const REGISTER_USER = (data) => {
@@ -372,3 +378,81 @@ export const GET_CATEGORY_GROUPS_LIST = () => {
             throw error;
         });
 }
+
+export const UPLOAD_TRANSACTION_FILE = (data) => {
+    let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: UPLOAD_TRANSACTION_FILE_API,
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        },
+        data: data
+    };
+
+    return axios.request(config)
+        .then((response) => {
+            return response.data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+export const GET_UPLOADED_FILES_LIST = () => {
+
+    const currentDate = new Date();
+    const currentDateTime = formatDate(currentDate);
+
+    let requestData = JSON.stringify({
+        "fileName": "",
+        "importedOn": currentDateTime,
+        "bankId": 0,
+        "pagination": {
+            "pageNo": 0,
+            "pageSize": 0,
+            "sortBy": "",
+            "orderBy": ""
+        }
+    });
+    let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: UPLOADED_FILES_LIST,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        data: requestData
+    };
+
+    return axios.request(config)
+        .then((response) => {
+            return response.data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+export const GET_TRANSACTION_LIST = (data) => {
+    let requestData = JSON.stringify(data);
+    let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: GET_TRANSACTION_LIST_API,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        data: requestData
+    };
+
+    return axios.request(config)
+        .then((response) => {
+            return response.data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+

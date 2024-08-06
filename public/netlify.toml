@@ -96,6 +96,27 @@
   force = true
   headers = {X-From = "Netlify"}
 
+[[redirects]]
+  from = "/api/admin/Upload/UploadTransactionsFile"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/Upload/UploadTransactionsFile"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/admin/Upload/GetUploadedFilesList"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/Upload/GetUploadedFilesList"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/Transaction/GetTransactionsList"
+  to = "https://thedinkumapi.azurewebsites.net/api/Transaction/GetTransactionsList"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}  
+
 [[headers]]
   for = "/*"
   [headers.values]

@@ -1,0 +1,130 @@
+[[redirects]]
+  from = "/api/admin/UserRegistration/RegisterUser"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/UserRegistration/RegisterUser"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/admin/Setting/SaveBankDetails"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/Setting/SaveBankDetails"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/admin/Setting/SaveBankAccountDetails"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/Setting/SaveBankAccountDetails"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/admin/Setting/GeBankDetailsById"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/Setting/GeBankDetailsById"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/admin/Setting/GetBankList"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/Setting/GetBankList"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/admin/Setting/GetBankAccountList"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/Setting/GetBankAccountList"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/admin/Setting/GeBankAccountDetailsById"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/Setting/GeBankAccountDetailsById"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/admin/Setting/GetCategoryList"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/Setting/GetCategoryList"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/admin/Setting/GetCategoryGroupDetailsById"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/Setting/GetCategoryGroupDetailsById"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/admin/Setting/SaveCategoryGroupDetails"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/Setting/SaveCategoryGroupDetails"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/admin/Setting/GetCategorySectionsList"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/Setting/GetCategorySectionsList"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/admin/Setting/GetCategoryGroupsList"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/Setting/GetCategoryGroupsList"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/admin/Setting/GetCategoryDetailsById"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/Setting/GetCategoryDetailsById"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/admin/Setting/SaveCategoryDetails"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/Setting/SaveCategoryDetails"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/admin/Upload/UploadTransactionsFile"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/Upload/UploadTransactionsFile"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/admin/Upload/GetUploadedFilesList"
+  to = "https://thedinkumapi.azurewebsites.net/api/admin/Upload/GetUploadedFilesList"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/Transaction/GetTransactionsList"
+  to = "https://thedinkumapi.azurewebsites.net/api/Transaction/GetTransactionsList"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}  
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type"
+    
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

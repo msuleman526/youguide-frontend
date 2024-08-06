@@ -3,6 +3,7 @@ import { FiEdit, FiTrash2 } from 'react-icons/fi'
 import { RxDownload } from 'react-icons/rx'
 import meezanSmallImg from '../../assets/meezan_small.png'
 import { HiChevronRight } from 'react-icons/hi'
+import { convertDateToDateTime, convertDateToNormal } from '../../Utils/Utils'
 
 export const transactionColumns = (
   theme,
@@ -11,13 +12,12 @@ export const transactionColumns = (
   deleteRecord
 ) => [
     {
-      title: 'Bank Account',
-      dataIndex: 'bankAccount',
-      key: 'bankAccount',
+      title: 'Bank',
+      dataIndex: 'bankName',
+      key: 'bankName',
       render: text => {
         return (
           <Flex gap={'10px'} align="center">
-            <Image src={meezanSmallImg} alt="meezan" />
             <span>{text}</span>
             <HiChevronRight color="#5E5F61" size={18} />
           </Flex>
@@ -26,24 +26,33 @@ export const transactionColumns = (
     },
     {
       title: 'Transactions From',
-      dataIndex: 'transactionsFrom',
-      key: 'transactionsFrom',
+      dataIndex: 'dateFrom',
+      key: 'dateFrom',
+      render: (text, record) => <span>{convertDateToNormal(record.dateFrom)}</span>,
     },
     {
       title: 'Transaction To',
-      dataIndex: 'transactionTo',
-      key: 'transactionTo',
+      dataIndex: 'dateTo',
+      key: 'dateTo',
+      render: (text, record) => <span>{convertDateToNormal(record.dateTo)}</span>,
     },
     {
       title: 'Total Record Imported',
-      dataIndex: 'totalRecordImported',
-      key: 'totalRecordImported',
-      render: (text, record) => <span>{record.totalRecordImported}</span>,
+      dataIndex: 'numberOfRecords',
+      key: 'numberOfRecords',
+      render: (text, record) => <span>{record.numberOfRecords}</span>,
+    },
+    {
+      title: 'Duplicate Records',
+      dataIndex: 'duplicateRecords',
+      key: 'duplicateRecords',
+      render: (text, record) => <span>{record.duplicateRecords}</span>,
     },
     {
       title: 'Import Date',
-      dataIndex: 'importDate',
-      key: 'importDate',
+      dataIndex: 'importedOn',
+      key: 'importedOn',
+      render: (text, record) => <span>{convertDateToDateTime(record.importedOn)}</span>,
     },
     {
       title: 'Action',
@@ -53,7 +62,7 @@ export const transactionColumns = (
         let iconColor = theme === 'light' ? '#A8AAAD' : '#D2D4D8'
         return (
           <Flex gap="10px" align="center">
-            <FiEdit
+            {/* <FiEdit
               size={18}
               color={iconColor}
             //onClick={() => editRecord(record.key)}
@@ -62,7 +71,7 @@ export const transactionColumns = (
               size={18}
               color={iconColor}
             //onClick={() => downloadRecord(record.key)}
-            />
+            /> */}
             <FiTrash2
               size={18}
               color="#E14545"
@@ -412,90 +421,5 @@ export const categoryGroupDataSoruce = [
     thiscy: '$0.0',
     may: '-$314',
     april: '-$297',
-  },
-]
-
-export const transactionCardData = [
-  {
-    id: 1,
-    title: 'Meezan bank',
-    lastDate: '03/05/2024',
-    btnText: 'Drop to Upload',
-  },
-  {
-    id: 2,
-    title: 'Meezan bank',
-    lastDate: '03/05/2024',
-    btnText: 'Drop to Upload',
-  },
-  {
-    id: 3,
-    title: 'Meezan bank',
-    lastDate: '03/05/2024',
-    btnText: 'Drop to Upload',
-  },
-  {
-    id: 4,
-    title: 'Meezan bank',
-    lastDate: '03/05/2024',
-    btnText: 'Drop to Upload',
-  },
-  {
-    id: 5,
-    title: 'Meezan bank',
-    lastDate: '03/05/2024',
-    btnText: 'Drop to Upload',
-  },
-
-]
-
-export const transactionTableData = [
-  {
-    key: '1',
-    bankAccount: 'Meezan Bank',
-    transactionsFrom: '22/04/2024',
-    transactionTo: '22/04/2024',
-    totalRecordImported: 'Fill x 48',
-    importDate: '22/04/2024',
-  },
-  {
-    key: '2',
-    bankAccount: 'Meezan Bank',
-    transactionsFrom: '22/04/2024',
-    transactionTo: '22/04/2024',
-    totalRecordImported: 4542,
-    importDate: '22/04/2024',
-  },
-  {
-    key: '3',
-    bankAccount: 'Meezan Bank',
-    transactionsFrom: '22/04/2024',
-    transactionTo: '22/04/2024',
-    totalRecordImported: 454,
-    importDate: '22/04/2024',
-  },
-  {
-    key: '4',
-    bankAccount: 'Meezan Bank',
-    transactionsFrom: '22/04/2024',
-    transactionTo: '22/04/2024',
-    totalRecordImported: 345,
-    importDate: '22/04/2024',
-  },
-  {
-    key: '5',
-    bankAccount: 'Meezan Bank',
-    transactionsFrom: '22/04/2024',
-    transactionTo: '22/04/2024',
-    totalRecordImported: 744,
-    importDate: '22/04/2024',
-  },
-  {
-    key: '6',
-    bankAccount: 'Meezan Bank',
-    transactionsFrom: '22/04/2024',
-    transactionTo: '22/04/2024',
-    totalRecordImported: 454,
-    importDate: '22/04/2024',
   },
 ]

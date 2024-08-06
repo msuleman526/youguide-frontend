@@ -3,21 +3,24 @@ import { useRecoilValue } from 'recoil';
 import { themeState } from '../atom';
 import CustomCard from '../components/Card';
 import { useEffect, useState } from 'react';
-import { DownOutlined, FlagOutlined, ShareAltOutlined } from '@ant-design/icons';
-import { GET_BANK_LIST, GET_CATEGORIES_LIST } from '../Utils/Apis';
-import { handleErrors } from '../Utils/Utils';
+import { DownOutlined } from '@ant-design/icons';
+import { GET_BANK_LIST, GET_CATEGORIES_LIST, GET_TRANSACTION_LIST } from '../Utils/Apis';
+import { convertDateToNormal, formatDate, handleErrors } from '../Utils/Utils';
 import { BiFlag } from 'react-icons/bi';
-import { FiShare, FiShare2 } from 'react-icons/fi';
+import { FiShare2 } from 'react-icons/fi';
 
 const Transactions = () => {
   const theme = useRecoilValue(themeState);
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 15 }, (_, i) => currentYear - i);
-  const [selectedMonth, setSelectedMonth] = useState("May 2024");
-  const [selectedYear, setSelectedYear] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState("August 2024");
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [selectedBankID, setSelectedBankID] = useState(0);
   const [banks, setBanks] = useState([]);
   const [categories, setCategories] = useState([]);
-  let [iconColor, setIconColor] = useState(theme === 'light' ? '#A8AAAD' : '#D2D4D8')
+  let [iconColor, setIconColor] = useState(theme === 'light' ? '#A8AAAD' : '#D2D4D8');
+  const [transactions, setTransactions] = useState([]);
+  const [visibleDropdowns, setVisibleDropdowns] = useState({});
 
   useEffect(() => {
     const fetchBank = async () => {
@@ -33,6 +36,7 @@ const Transactions = () => {
         handleErrors('Getting Banks', err);
       }
     };
+
     const getCategories = async () => {
       try {
         let response = await GET_CATEGORIES_LIST();
@@ -50,9 +54,46 @@ const Transactions = () => {
     fetchBank();
   }, []);
 
+  useEffect(() => {
+    getTransactions();
+  }, [selectedBankID, selectedMonth]);
+
+  const getTransactions = async () => {
+    const [month, year] = selectedMonth.split(' ');
+    const firstDate = new Date(`${month} 1, ${year}`);
+    const lastDate = new Date(firstDate.getFullYear(), firstDate.getMonth() + 1, 0);
+
+    const data = {
+      "description": "",
+      "transactionFromDate": firstDate.toISOString(),
+      "transactionToDate": lastDate.toISOString(),
+      "categoryId": 0,
+      "bankId": selectedBankID,
+      "pagination": {
+        "pageNo": 0,
+        "pageSize": 0,
+        "sortBy": "",
+        "orderBy": ""
+      }
+    };
+
+    try {
+      let response = await GET_TRANSACTION_LIST(data);
+      if (response.isSuccess && response.data) {
+        setTransactions(response.data);
+      } else {
+        setTransactions([]);
+      }
+    } catch (err) {
+      setTransactions([]);
+      handleErrors('Getting Transactions', err);
+    }
+  };
+
   const handleMenuClick = (e, year) => {
     setSelectedMonth(`${e.key} ${year}`);
-    setSelectedYear(null);
+    setSelectedYear(year);
+    setVisibleDropdowns(prev => ({ ...prev, [year]: false }));
   };
 
   const menu = (year) => (
@@ -68,8 +109,9 @@ const Transactions = () => {
   const columns = [
     {
       title: 'Date',
-      dataIndex: 'date',
-      key: 'date',
+      dataIndex: 'transactionDate',
+      key: 'transactionDate',
+      render: (text, record) => (<span>{convertDateToNormal(record.transactionDate)}</span>)
     },
     {
       title: 'Description',
@@ -80,28 +122,17 @@ const Transactions = () => {
       title: 'Amount',
       dataIndex: 'amount',
       key: 'amount',
+      render: (text, record) => (<span>{record.amount}$</span>)
     },
     {
-      title: 'Category',
-      dataIndex: 'category',
-      key: 'category',
-      render: (text, record) => (
-        <Select
-          defaultValue={text}
-          style={{ width: '160px' }}
-          className={
-            theme === 'light'
-              ? 'header-search-input-light'
-              : 'header-search-input-dark'
-          }
-        >
-          {categories.map(category => (
-            <Select.Option key={category.id} value={category.name}>
-              {category.name}
-            </Select.Option>
-          ))}
-        </Select>
-      ),
+      title: 'Bank',
+      dataIndex: 'bankName',
+      key: 'bankName',
+    },
+    {
+      title: 'Bank Account',
+      dataIndex: 'bankAccountName',
+      key: 'bankAccountName',
     },
     {
       title: 'Actions',
@@ -115,62 +146,9 @@ const Transactions = () => {
             <FiShare2
               size={18}
               color={iconColor}
-            //onClick={() => deleteRecord(record.key)}
             />
           </Flex>
       ),
-    },
-  ];
-
-  const data = [
-    {
-      key: '1',
-      date: '2024-05-01',
-      description: 'Grocery shopping',
-      amount: '$100',
-      category: 'Food',
-    },
-    {
-      key: '2',
-      date: '2024-05-02',
-      description: 'Electricity bill',
-      amount: '$50',
-      category: 'Utilities',
-    },
-    {
-      key: '3',
-      date: '2024-05-03',
-      description: 'Gym membership',
-      amount: '$30',
-      category: 'Health',
-    },
-    {
-      key: '3',
-      date: '2024-05-03',
-      description: 'Gym membership',
-      amount: '$30',
-      category: 'Health',
-    },
-    {
-      key: '4',
-      date: '2024-05-03',
-      description: 'Gym membership',
-      amount: '$30',
-      category: 'Health',
-    },
-    {
-      key: '5',
-      date: '2024-05-03',
-      description: 'Gym membership',
-      amount: '$30',
-      category: 'Health',
-    },
-    {
-      key: '6',
-      date: '2024-05-03',
-      description: 'Gym membership',
-      amount: '$30',
-      category: 'Health',
     },
   ];
 
@@ -182,8 +160,8 @@ const Transactions = () => {
             <Dropdown
               overlay={menu(year)}
               trigger={['click']}
-              open={selectedYear === year}
-              onOpenChange={(visible) => setSelectedYear(visible ? year : null)}
+              visible={visibleDropdowns[year]}
+              onClick={() => setVisibleDropdowns(prev => ({ ...prev, [year]: !prev[year] }))}
               key={year}
             >
               <Button
@@ -216,6 +194,7 @@ const Transactions = () => {
                 ? 'header-search-input-light'
                 : 'header-search-input-dark'
             }
+            onChange={value => setSelectedBankID(value)}
           >
             <Select.Option key={0} value={0}>
               Transactions from all banks
@@ -242,7 +221,7 @@ const Transactions = () => {
           className="custom_table"
           bordered
           columns={columns}
-          dataSource={data}
+          dataSource={transactions}
           scroll={{ x: 'max-content' }}
           pagination={false}
         />
