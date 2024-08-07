@@ -9,15 +9,15 @@ import {
   Typography,
 } from 'antd'
 import profile from '../../assets/profile.png'
-import { CiSearch } from 'react-icons/ci'
 import { IoMdContact } from 'react-icons/io'
 import { TbLogout2 } from 'react-icons/tb'
 import { GoChevronDown } from 'react-icons/go'
 import { FaChevronCircleLeft, FaChevronCircleRight } from 'react-icons/fa'
 import { CiLight, CiDark } from 'react-icons/ci'
 import { Link } from 'react-router-dom'
+import { MenuOutlined } from '@ant-design/icons';
 
-const LayoutHeader = ({ collapsed, setCollapsed, theme, toggleTheme }) => {
+const LayoutHeader = ({ isMobile, collapsed, setCollapsed, theme, toggleTheme, showDrawer}) => {
   const items = [
     {
       label: 'Profile',
@@ -36,11 +36,13 @@ const LayoutHeader = ({ collapsed, setCollapsed, theme, toggleTheme }) => {
       danger: true,
     },
   ]
+  
   let iconColor = theme === 'dark' && '#D2D4D8'
+
   return (
     <Layout.Header>
       <Flex justify="space-between" align="center" gap={'small'}>
-        <Button
+        {!isMobile ? <Button
           type="text"
           icon={
             collapsed ? (
@@ -52,12 +54,25 @@ const LayoutHeader = ({ collapsed, setCollapsed, theme, toggleTheme }) => {
           onClick={() => setCollapsed(!collapsed)}
           style={{
             fontSize: '16px',
-            width: 64,
-            height: 64,
+            width: 40,
+            marginTop: '10px',
+            height: 40,
+            marginLeft: '-55px'
           }}
-        />
-        <Flex gap={'small'} align="center">
-          <Input
+        /> : <Button
+            type="primary"
+            icon={<MenuOutlined />}
+            onClick={showDrawer}
+            style={{
+              fontSize: '16px',
+              marginTop: '10px',
+              width: 40,
+              height: 40,
+              marginLeft: '-40px'
+            }}
+        />}
+        <Flex gap={'small'} align="center" style={{marginTop: '15px', marginRight: '-20px'}}>
+          {/* <Input
             className={
               theme === 'light'
                 ? 'header-search-input-light'
@@ -67,7 +82,7 @@ const LayoutHeader = ({ collapsed, setCollapsed, theme, toggleTheme }) => {
             prefix={<CiSearch color="#4A4A4C" size={21} />}
             size="large"
             placeholder="Search"
-          />
+          /> */}
           <Dropdown menu={{ items }}>
             <Flex gap={'large'} align="center" style={{ cursor: 'pointer' }}>
               <Flex gap={'small'} align="center" flex={1}>

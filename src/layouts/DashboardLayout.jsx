@@ -12,8 +12,10 @@ import {
 const { Content } = Layout
 
 const DashboardLayout = ({ children }) => {
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed, setCollapsed] = useState(true)
   const [theme, setTheme] = useRecoilState(themeState)
+  const [isMobile, setIsMobile] = useState(false)
+  const [drawerVisible, setDrawerVisible] = useState(false)
 
   const toggleTheme = () => {
     setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'))
@@ -23,20 +25,43 @@ const DashboardLayout = ({ children }) => {
     localStorage.setItem('theme', JSON.stringify(theme))
   }, [theme])
 
+  useEffect(() => {
+    updateWidthElements()
+    const handleResize = () => {
+      updateWidthElements()
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  let updateWidthElements = () => {
+    window.innerWidth < 1400 ? setCollapsed(true) : setCollapsed(false);
+    setIsMobile(window.innerWidth < 550)
+  }
+
+  const showDrawer = () => {
+    setDrawerVisible(true);
+  };
 
   return (
     <ConfigProvider
       theme={{
         components: theme === 'dark' ? dashboardDarkTheme : dashboardLightTheme,
         token: {
-          colorPrimary: '#2C87EA',
+          colorPrimary: '#ff7800',
         },
       }}
     >
       <Layout style={{ minHeight: '100vh' }}>
-        <Sidebar collapsed={collapsed} />
+        <Sidebar collapsed={collapsed} drawerVisible={drawerVisible} setDrawerVisible={setDrawerVisible}/>
         <Layout>
           <LayoutHeader
+            isMobile={isMobile}
+            showDrawer={showDrawer}
             toggleTheme={toggleTheme}
             theme={theme}
             collapsed={collapsed}
