@@ -8,7 +8,7 @@ import {
   Table,
   Typography,
 } from 'antd'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   ExpensesSvg,
   IncomeSvg,
@@ -24,18 +24,32 @@ const Dashboard = () => {
   const theme = useRecoilState(themeState)
   const columns = categoryGroupColumns(theme)
   const columns1 = flaggedColumns(theme)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 700)
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 700)
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   let data = [
     {
       label: 'INCOME FY 2025',
       value: '$0.0',
-      color: '#2C87EA',
+      color: '#ff7800',
       icon: <IncomeSvg />,
     },
     {
       label: 'INCOME FY 2024',
       value: '$0.0',
-      color: '#2C87EA',
+      color: '#ff7800',
       icon: <IncomeSvg />,
     },
     {
@@ -128,7 +142,7 @@ const Dashboard = () => {
     <Row gutter={[16, 16]}>
       <Col xs={24}>
         <Flex justify="space-between" align="center">
-          <Typography.Title level={3}>Compare Range</Typography.Title>
+          {!isMobile && <Typography.Title level={4} >Dashboard</Typography.Title>}
           <Flex gap={'small'} align="center">
             <DatePicker.RangePicker size="large" />
             <Button type="primary" size="large">
@@ -138,7 +152,7 @@ const Dashboard = () => {
         </Flex>
       </Col>
       {data.map(({ label, value, color, icon }, index) => (
-        <Col xs={24} md={12} lg={4} key={index}>
+        <Col xs={24} sm={12} md={12} lg={8} xl={4} xxl={4}  key={index}>
           <Card
             style={{
               maxHeight: '200px',
@@ -188,7 +202,7 @@ const Dashboard = () => {
               <Progress
                 style={{ paddingTop: 0 }}
                 percent={value}
-                strokeColor={'#2C87EA'}
+                strokeColor={'#ff7800'}
                 showInfo={false}
               />
             </Flex>

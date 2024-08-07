@@ -1,4 +1,4 @@
-import { Button, Col, Flex, Row, Typography, Collapse, Spin } from 'antd';
+import { Button, Col, Flex, Row, Typography, Collapse, Spin, Tabs } from 'antd';
 import { useRecoilValue } from 'recoil';
 import Card from '../../components/Card';
 import { themeState } from '../../atom';
@@ -12,16 +12,14 @@ import BankAccounts from './Banks&Accounts/BankAccounts';
 import Categories from './Groups&Categories/Categories';
 import CategoryGroupPopup from './Groups&Categories/CategoryGroupPopup';
 import CategoryFormPopup from './Groups&Categories/CategoryFormPopup';
+import NoCategories from './NoCategories';
 
 const Settings = () => {
-  const theme = useRecoilValue(themeState);
-  const [bankPopupVisible, setBankPopupVisible] = useState(false);
   const [bankAccountPopupVisible, setBankAccountPopupVisible] = useState(false);
   const [categoryGroupPopupVisible, setCategoryGroupPopupVisible] = useState(false);
   const [categoryPopupVisible, setCategoryPopupVisible] = useState(false);
-  const [popupType, setPopupType] = useState({ bank: 'ADD', bankAccount: 'ADD' });
+  const [popupType, setPopupType] = useState({ bankAccount: 'ADD' });
   const [categoryPopupType, setCategoryPopupType] = useState({ group: 'ADD', category: 'ADD' });
-  const [selectedBank, setSelectedBank] = useState(null);
   const [selectedBankAccount, setSelectedBankAccount] = useState(null)
   const [selectedCategoryGroup, setSelectedCategoryGroup] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null)
@@ -76,12 +74,7 @@ const Settings = () => {
         key: item.bankID,
         label: item.name,
         children: <div>Loading...</div>,
-        extra: (
-          <div style={{gap: '5px', display: 'flex'}}>
-            <FiEdit size={18} color={theme.iconColor} onClick={(bankID) => openBankPopup("EDIT", item.bankID)} />
-            <FiTrash2 size={18} color={"red"} />
-          </div>
-        ),
+        extra: "",
       });
     });
     setBanks(tmp);
@@ -96,19 +89,12 @@ const Settings = () => {
         children: <div>Loading...</div>,
         extra: (
           <div style={{gap: '5px', display: 'flex'}}>
-            <FiEdit size={18} color={theme.iconColor} onClick={() => openCategoryGroupPopup("EDIT", item.categoryGroupID)} />
-            <FiTrash2 size={18} color={"red"} />
+            <Button size='small' type='primary' onClick={() => openCategoryGroupPopup("EDIT", item.categoryGroupID)}>Edit</Button>
           </div>
         ),
       });
     });
     setCategoryGroups(tmp);
-  };
-
-  const openBankPopup = (type, id = null) => {
-    setPopupType(prev => ({ ...prev, bank: type }));
-    setSelectedBank(id);
-    setBankPopupVisible(true);
   };
 
   const openCategoryGroupPopup = (type, id = null) => {
@@ -174,49 +160,57 @@ const Settings = () => {
 
   return (
     <>
-      <Row gutter={[16, 16]}>
-        <Col xs={24} md={12}>
-          <Card>
-            <Flex justify="space-between" align="center">
-              <Typography.Title level={3} className="fw-500">
-                Groups & Categories
-              </Typography.Title>
-              <div style={{ marginTop: '-10px' }}>
-                <Button type="primary" style={{ marginRight: 8 }} onClick={() => openCategoryGroupPopup("ADD")}>Add Category Group</Button>
-                <Button type="primary" onClick={() => openCategoryPopup("ADD")}>Add Category</Button>
-              </div>
-            </Flex>
-            {groupsLoading ? <Spin /> : <Collapse
-              style={{marginTop: "10px"}}
-              onChange={onChangeGroups}
-              activeKey={cExpandedKeys}
-              items={categoryGroups}
-            />}
-          </Card>
-        </Col>
-        <Col xs={24} md={12}>
-          <Card>
-            <Flex justify="space-between" align="center">
-              <Typography.Title level={3} className="fw-500">
-                Bank & Bank Accounts
-              </Typography.Title>
-              <div style={{ marginTop: '-10px' }}>
-                <Button type="primary" style={{ marginRight: 8 }} onClick={() => openBankPopup("ADD")}>Add Bank</Button>
-                <Button type="primary" onClick={() => openBankAccountPopup("ADD")}>Add Bank Account</Button>
-              </div>
-            </Flex>
-            {loading ? <Spin /> : <Collapse
-              style={{marginTop: "10px"}}
-              onChange={onChangeBank}
-              activeKey={expandedKeys}
-              items={banks}
-            />}
-          </Card>
-        </Col>
-      </Row>
+      <Tabs
+        defaultActiveKey="1"
+        type="card"
+        size={"large"}
+        items={[
+          {
+            label: `Bank Accounts`,
+            key: 1,
+            children: <Card>
+              <Flex justify="space-between" align="center">
+                <Typography.Title level={3} className="fw-500">
+                  Bank & Bank Accounts
+                </Typography.Title>
+                <div style={{ marginTop: '-10px' }}>
+                  <Button type="primary" onClick={() => openBankAccountPopup("ADD")}>Add Bank Account</Button>
+                </div>
+              </Flex>
+              {loading ? <Spin /> : <Collapse
+                style={{marginTop: "10px"}}
+                onChange={onChangeBank}
+                activeKey={expandedKeys}
+                items={banks}
+              />}
+            </Card>,
+          },
+          {
+            label: `Groups & Categories`,
+            key: 2,
+            children: <Card>
+              <Flex justify="space-between" align="center">
+                <Typography.Title level={3} className="fw-500">
+                  Groups & Categories
+                </Typography.Title>
+                <div style={{ marginTop: '-10px' }}>
+                  <Button type="primary" style={{ marginRight: 8 }} onClick={() => openCategoryGroupPopup("ADD")}>Add Group</Button>
+                  <Button type="primary" onClick={() => openCategoryPopup("ADD")}>Add Category</Button>
+                </div>
+              </Flex>
+              {categoryGroups.length == 0 ? <NoCategories addClick={() => openCategoryGroupPopup("ADD")}/> : 
+              groupsLoading ? <Spin /> : <Collapse
+                style={{marginTop: "10px"}}
+                onChange={onChangeGroups}
+                activeKey={cExpandedKeys}
+                items={categoryGroups}
+              />}
+            </Card>,
+          }
+        ]}
+      />
       <CategoryGroupPopup visible={categoryGroupPopupVisible} setVisible={setCategoryGroupPopupVisible} type={categoryPopupType.group} selectedGroup={selectedCategoryGroup} reload={callingCategoryGroupsListAPI} />
       <CategoryFormPopup visible={categoryPopupVisible} setVisible={setCategoryPopupVisible} selectedCategory={selectedCategory} type={categoryPopupType.category} reload={() => onChangeGroups([])} />
-      <BankFormPopup visible={bankPopupVisible} setVisible={setBankPopupVisible} type={popupType.bank} selectedBank={selectedBank} reload={callingBanksListAPI} />
       <BankAccountPopup visible={bankAccountPopupVisible} setVisible={setBankAccountPopupVisible} selectedBankAccount={selectedBankAccount} type={popupType.bankAccount} reload={() => onChangeBank([])} />
     </>
   );

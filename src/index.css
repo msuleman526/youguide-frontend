@@ -4,7 +4,9 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Poppins', sans-serif !important;
+  /* font-family: 'Avenir' !important; */
+  /* font-family: system-ui !important; */
+  font-family: 'Poppins' !important;
 }
 
 :root {
@@ -67,11 +69,11 @@
 }
 
 .custom_menu_sidebar .ant-menu-item .ant-menu-title-content {
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .custom_menu_sidebar .ant-menu-item {
-  height: 50px !important;
+  height: 38px !important;
 }
 
 .text-black {

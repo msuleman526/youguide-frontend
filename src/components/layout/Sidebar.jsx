@@ -1,18 +1,30 @@
-import { Flex, Layout, Menu, Typography } from 'antd';
+import { Flex, Image, Layout, Menu, Typography, Drawer, Button } from 'antd';
 import { VscLayout } from 'react-icons/vsc';
 import { FaCalendarAlt, FaChartBar, FaCog, FaFileAlt } from 'react-icons/fa';
 import { GrTransaction } from 'react-icons/gr';
-import { IoMdSettings } from 'react-icons/io';
 import { TbLogout2 } from 'react-icons/tb';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useLayoutEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import smallLogo from '../../assets/small_logo.png';
+import largeLogo from '../../assets/large_logo.png';
 
-const Sidebar = ({ collapsed }) => {
+const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
   const navigate = useNavigate();
   const location = useLocation();
-
   const [selectedMenu, setSelectedMenu] = useState('dashboard');
   const [openKeys, setOpenKeys] = useState([]);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 550);
+
+  let iconStyle = {
+    position: 'relative',
+    top: collapsed ? '3.5px' : 0,
+    left: collapsed ? '-3px' : 0,
+  };
+  
+  let iconProps = {
+    style: iconStyle,
+    size: 18,
+  };
 
   useEffect(() => {
     const path = location.pathname.split('/');
@@ -24,131 +36,164 @@ const Sidebar = ({ collapsed }) => {
     }
   }, [location.pathname]);
 
-  let iconStyle = {
-    position: 'relative',
-    top: collapsed ? '3.5px' : 0,
-    left: collapsed ? '-3px' : 0,
-  };
+  useLayoutEffect(() => {
+    const updateIsMobile = () => {
+      setIsMobile(window.innerWidth < 550);
+    };
 
-  let iconProps = {
-    style: iconStyle,
-    size: 18,
+    window.addEventListener('resize', updateIsMobile);
+    return () => window.removeEventListener('resize', updateIsMobile);
+  }, []);
+
+
+  const onClose = () => {
+    setDrawerVisible(false);
   };
 
   const handleMenuChange = ({ key, keyPath }) => {
     navigate('/' + key);
     setSelectedMenu(key);
+    if (isMobile) {
+      onClose();
+    }
+  };
+
+  const menuItems = [
+    {
+      key: 'dashboard',
+      icon: <VscLayout {...iconProps} />,
+      label: 'Overview',
+    },
+    {
+      key: 'reports',
+      icon: <FaFileAlt {...iconProps} />,
+      label: 'Reports',
+      children: [
+        {
+          key: 'reports-by-month',
+          icon: <FaCalendarAlt {...iconProps} />,
+          label: 'By Month',
+        },
+        {
+          key: 'reports-by-month-compare',
+          icon: <FaChartBar {...iconProps} />,
+          label: 'By Month (Compare)',
+        },
+        {
+          key: 'reports-by-category',
+          icon: <FaChartBar {...iconProps} />,
+          label: 'By Category',
+        },
+        {
+          key: 'reports-by-category-group',
+          icon: <FaChartBar {...iconProps} />,
+          label: 'By Category Group',
+        },
+        {
+          key: 'reports-by-year',
+          icon: <FaCalendarAlt {...iconProps} />,
+          label: 'By Year',
+        },
+      ],
+    },
+    {
+      key: 'transaction',
+      icon: <GrTransaction {...iconProps} />,
+      label: 'Transactions',
+    },
+    {
+      key: 'settings',
+      icon: <FaCog {...iconProps} />,
+      label: 'Settings',
+    },
+    {
+      key: 'upload',
+      icon: <FaCog {...iconProps} />,
+      label: 'Upload',
+    },
+  ];
+
+  const logoutItem = {
+    key: 'logout',
+    icon: <TbLogout2 {...iconProps} />,
+    label: (
+      <Link to="/login" style={{ color: 'inherit', textDecoration: 'none' }}>
+        Logout
+      </Link>
+    ),
+    danger: true,
   };
 
   return (
     <div>
-      <Layout.Sider
-        width={249}
-        theme="light"
-        trigger={null}
-        collapsible
-        collapsed={collapsed}
-        style={{ minHeight: '100vh' }}
-      >
-        <Flex
-          style={{ padding: '20px 20px 5px 20px' }}
-          justify={collapsed ? 'center' : 'start'}
+      {isMobile ? (
+        <>
+          <Drawer
+            title="Menu"
+            placement="left"
+            closable={true}
+            onClose={onClose}
+            open={drawerVisible}
+            bodyStyle={{ padding: 0 }}
+          >
+            <Menu
+              onClick={handleMenuChange}
+              mode="inline"
+              className="custom_menu_sidebar"
+              selectedKeys={[selectedMenu]}
+              defaultSelectedKeys={[selectedMenu]}
+              openKeys={openKeys}
+              onOpenChange={setOpenKeys}
+              items={[...menuItems, logoutItem]}
+            />
+          </Drawer>
+        </>
+      ) : (
+        <Layout.Sider
+          width={200}
+          theme="light"
+          trigger={null}
+          collapsible
+          collapsed={collapsed}
+          style={{ minHeight: '100vh' }}
         >
-          <Typography.Title level={3}>
-            {collapsed ? 'L' : 'LOGO'}
-          </Typography.Title>
-        </Flex>
-        <Flex
-          vertical
-          justify="space-between"
-          style={{ height: 'calc(100vh - 90px)' }}
-        >
-          <Menu
-            onClick={handleMenuChange}
-            mode="inline"
-            className="custom_menu_sidebar"
-            selectedKeys={[selectedMenu]}
-            defaultSelectedKeys={[selectedMenu]}
-            openKeys={openKeys}
-            onOpenChange={setOpenKeys}
-            items={[
-              {
-                key: 'dashboard',
-                icon: <VscLayout {...iconProps} />,
-                label: 'Overview',
-              },
-              {
-                key: 'reports',
-                icon: <FaFileAlt {...iconProps} />,
-                label: 'Reports',
-                children: [
-                  {
-                    key: 'reports-by-month',
-                    icon: <FaCalendarAlt {...iconProps} />,
-                    label: 'By Month',
-                  },
-                  {
-                    key: 'reports-by-month-compare',
-                    icon: <FaChartBar {...iconProps} />,
-                    label: 'By Month (Compare)',
-                  },
-                  {
-                    key: 'reports-by-category',
-                    icon: <FaChartBar {...iconProps} />,
-                    label: 'By Category',
-                  },
-                  {
-                    key: 'reports-by-category-group',
-                    icon: <FaChartBar {...iconProps} />,
-                    label: 'By Category Group',
-                  },
-                  {
-                    key: 'reports-by-year',
-                    icon: <FaCalendarAlt {...iconProps} />,
-                    label: 'By Year',
-                  },
-                ],
-              },
-              {
-                key: 'transaction',
-                icon: <GrTransaction {...iconProps} />,
-                label: 'Transactions',
-              },
-              {
-                key: 'settings',
-                icon: <FaCog {...iconProps} />,
-                label: 'Settings',
-              },
-              {
-                key: 'upload',
-                icon: <FaCog {...iconProps} />,
-                label: 'Upload',
-              },
-              // {
-              //   key: 'members',
-              //   icon: <TbUsers {...iconProps} />,
-              //   label: 'Members',
-              // },
-            ]}
-          />
-          <Menu
-            mode="inline"
-            defaultSelectedKeys={['dashboard']}
-            items={[
-              {
-                key: 'logout',
-                icon: <TbLogout2 {...iconProps} />,
-                label: <Link to="/login" style={{ color: 'inherit', textDecoration: 'none' }}>
-                    Logout
-                  </Link>,
-                danger: true,
-              },
-            ]}
-          />
-        </Flex>
-      </Layout.Sider>
+          <Flex
+            style={{ padding: '20px 20px 5px 20px' }}
+            justify={collapsed ? 'center' : 'start'}
+          >
+            <Typography.Title level={3}>
+              {collapsed ? (
+                <Image src={smallLogo} preview={false} style={{ marginTop: '-20px' }} />
+              ) : (
+                <Image src={largeLogo} style={{ marginTop: '-20px' }} preview={false} />
+              )}
+            </Typography.Title>
+          </Flex>
+          <Flex
+            vertical
+            justify="space-between"
+            style={{ height: 'calc(100vh - 90px)' }}
+          >
+            <Menu
+              onClick={handleMenuChange}
+              mode="inline"
+              className="custom_menu_sidebar"
+              selectedKeys={[selectedMenu]}
+              defaultSelectedKeys={[selectedMenu]}
+              openKeys={openKeys}
+              onOpenChange={setOpenKeys}
+              items={menuItems}
+            />
+            <Menu
+              mode="inline"
+              defaultSelectedKeys={['dashboard']}
+              items={[logoutItem]}
+            />
+          </Flex>
+        </Layout.Sider>
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default Sidebar
+export default Sidebar;

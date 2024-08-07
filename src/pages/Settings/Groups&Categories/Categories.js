@@ -1,7 +1,7 @@
-import { List } from 'antd';
+import { Button, List } from 'antd';
 import { useRecoilValue } from 'recoil';
 import { useEffect, useState } from 'react';
-import { FiEdit, FiTrash2 } from 'react-icons/fi';
+import { FiEdit, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { GET_CATEGORIES_LIST } from '../../../Utils/Apis';
 import { handleErrors } from '../../../Utils/Utils';
 import { themeState } from '../../../atom';
@@ -36,8 +36,7 @@ const Categories = ({ groupID, editCategoryClick }) => {
             renderItem={(item) => (
                 <List.Item
                     actions={[
-                        <FiEdit size={18} color={"#b1b1b1c9"} onClick={() => editCategoryClick(item.categoryID)} />,
-                        <FiTrash2 size={18} color={"red"} />
+                        <Button size='small' type='primary' onClick={() => editCategoryClick(item.categoryID)}>Edit</Button>,
                     ]}
                     style={{ borderBottom: `1px solid ${theme.iconColor}` }}
                 >
