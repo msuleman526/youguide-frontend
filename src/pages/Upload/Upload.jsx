@@ -10,33 +10,33 @@ import { themeState } from '../../atom'
 import CustomCard from '../../components/Card'
 import UploadFormPopup from './UploadFormPopup'
 import { useEffect, useRef, useState } from 'react'
-import { GET_BANK_LIST, GET_UPLOADED_FILES_LIST } from '../../Utils/Apis'
+import { GET_BANK_ACCOUNTS_LIST, GET_BANK_LIST, GET_UPLOADED_FILES_LIST } from '../../Utils/Apis'
 import { handleErrors } from '../../Utils/Utils'
 
 const Upload = () => {
   const theme = useRecoilValue(themeState)
   const columns = transactionColumns(theme)
   const [visible, setVisible] = useState(false)
-  const [bankLoading, setBankLoading] = useState(false)
-  const [banks, setBanks] = useState([])
+  const [accountLoading, setAccountLoading] = useState(false)
+  const [bankAccounts, setBankAccounts] = useState([])
   const scrollContainerRef = useRef(null);
   const [uploadedFiles, setUploadedFiles] = useState([])
   const [tableLoading, setTableLoading] = useState(false)
 
   useEffect(() => {
-    const fetchBank = async () => {
+    const fetchBankAccounts = async () => {
       try {
-        setBankLoading(true)
-        let response = await GET_BANK_LIST();
+        setAccountLoading(true)
+        let response = await GET_BANK_ACCOUNTS_LIST();
         if (response.isSuccess && response.data) {
-          setBanks(response.data);
+          setBankAccounts(response.data);
         } else {
-          setBanks([]);
+          setBankAccounts([]);
         }
-        setBankLoading(false)
+        setAccountLoading(false)
       } catch (err) {
-        setBanks([]);
-        setBankLoading(false)
+        setBankAccounts([]);
+        setAccountLoading(false)
         handleErrors('Getting Banks', err);
       }
     };
@@ -58,7 +58,7 @@ const Upload = () => {
       }
     };
 
-    fetchBank()
+    fetchBankAccounts()
     fetchUploadedFiles()
   }, [])
 
@@ -104,10 +104,10 @@ const Upload = () => {
             }}
             ref={scrollContainerRef}
           >
-            {bankLoading ? (
+            {accountLoading ? (
               <Spin />
             ) : (
-              banks.map((item, index) => (
+              bankAccounts.map((item, index) => (
                 <div style={{ display: 'inline-block', padding: '0 8px', marginTop: '4px'}} key={index}>
                   <TransactionCard theme={theme} item={item} />
                 </div>
@@ -141,7 +141,7 @@ const Upload = () => {
           pagination={false}
         />
       </CustomCard>
-      <UploadFormPopup banks={banks} visible={visible} setVisible={setVisible}/>
+      <UploadFormPopup bankAccounts={bankAccounts} visible={visible} setVisible={setVisible}/>
     </>
   )
 }

@@ -1,4 +1,4 @@
-import { Button, List } from 'antd';
+import { Button, List, Tag } from 'antd';
 import { useRecoilValue } from 'recoil';
 import { useEffect, useState } from 'react';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';
@@ -34,7 +34,10 @@ const BankAccounts = ({ bankID, editBankAccountClick }) => {
             renderItem={(item) => (
                 <List.Item
                     actions={[
-                        <Button size='small' type='primary' onClick={() => editBankAccountClick(item.bankAccountID)}>Edit</Button>
+                        <div style={{ gap: '5px', display: 'flex' }}>
+                            <Tag color={(item.isActive) ? 'green' : 'red'}>{(item.isActive) ? 'Active' : 'Not Active'}</Tag>
+                            <Button size='small' type='primary' onClick={() => editBankAccountClick(item.bankAccountID)}>Edit</Button>
+                        </div>,
                     ]}
                     style={{ borderBottom: `1px solid ${theme.iconColor}` }}
                 >
