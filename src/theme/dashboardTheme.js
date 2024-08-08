@@ -35,6 +35,12 @@ export const dashboardDarkTheme = {
     colorBgContainer: '#131B2F',
     bodyBg: '#010912',
   },
+  Tabs: {
+    colorText: '#fff'
+  },
+  Drawer: {
+    colorBgElevated: "#05152B"
+  },
   Modal: {
     contentBg: '#05152B',
     headerBg: '#05152B',
