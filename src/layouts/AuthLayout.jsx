@@ -18,6 +18,7 @@ import { CiDark, CiLight } from 'react-icons/ci'
 import { themeState } from '../atom'
 import { IoMdArrowRoundBack } from 'react-icons/io'
 import Card from '../components/Card'
+import logo from '../assets/large_logo.png'
 
 const AuthLayout = ({
   children,
@@ -94,8 +95,11 @@ const AuthLayout = ({
                   justify="center"
                 >
                   <Flex justify="center" style={{ marginTop: marginTop }}>
+                    <Image src={logo} style={{width: '250px'}} preview={false}/>
+                  </Flex>
+                  <Flex justify="center" style={{ marginTop: marginTop }}>
                     <Typography.Title
-                      level={1}
+                      level={2}
                       style={{ color: theme === 'light' && '#494949' }}
                     >
                       {title}

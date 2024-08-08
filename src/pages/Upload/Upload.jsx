@@ -108,7 +108,7 @@ const Upload = () => {
               <Spin />
             ) : (
               banks.map((item, index) => (
-                <div style={{ display: 'inline-block', padding: '0 8px' }} key={index}>
+                <div style={{ display: 'inline-block', padding: '0 8px', marginTop: '4px'}} key={index}>
                   <TransactionCard theme={theme} item={item} />
                 </div>
               ))

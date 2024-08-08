@@ -1,4 +1,4 @@
-import { Button, List } from 'antd';
+import { Button, List, Tag } from 'antd';
 import { useRecoilValue } from 'recoil';
 import { useEffect, useState } from 'react';
 import { FiEdit, FiEdit2, FiTrash2 } from 'react-icons/fi';
@@ -29,6 +29,8 @@ const Categories = ({ groupID, editCategoryClick }) => {
         fetchCategories();
     }, []);
 
+
+
     return (
         <List
             style={{ margin: '5px' }}
@@ -36,7 +38,11 @@ const Categories = ({ groupID, editCategoryClick }) => {
             renderItem={(item) => (
                 <List.Item
                     actions={[
-                        <Button size='small' type='primary' onClick={() => editCategoryClick(item.categoryID)}>Edit</Button>,
+                        <div style={{ gap: '5px', display: 'flex' }}>
+                            <Tag color={(item.isTracked) ? 'green' : 'red'}>{(item.isTracked) ? 'Tracked' : 'Not Tracked'}</Tag>
+                            <Tag color={(item.isActive) ? 'green' : 'red'}>{(item.isActive) ? 'Active' : 'Not Active'}</Tag>
+                            <Button size='small' type='primary' onClick={() => editCategoryClick(item.categoryID)}>Edit</Button>
+                        </div>,
                     ]}
                     style={{ borderBottom: `1px solid ${theme.iconColor}` }}
                 >

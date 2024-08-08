@@ -46,7 +46,7 @@ const TransactionCard = ({ item, theme }) => {
 
   return (
     <Card
-      style={{ boxShadow: theme === 'dark' && '0px 6px 32px 0px #31608A4D' }}
+      style={{ boxShadow: theme === 'dark' && '0px 1px 6px 1px #31608A4D' }}
       className={
         theme === 'light' ? 'transaction-card' : 'transaction-card-dark'
       }
