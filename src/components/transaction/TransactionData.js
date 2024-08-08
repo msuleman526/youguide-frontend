@@ -12,9 +12,9 @@ export const transactionColumns = (
   deleteRecord
 ) => [
     {
-      title: 'Bank',
-      dataIndex: 'bankName',
-      key: 'bankName',
+      title: 'Bank Account',
+      dataIndex: 'bankAccountName',
+      key: 'bankAccountName',
       render: text => {
         return (
           <Flex gap={'10px'} align="center">

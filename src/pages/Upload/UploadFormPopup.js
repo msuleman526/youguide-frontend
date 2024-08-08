@@ -7,7 +7,7 @@ import { themeState } from '../../atom';
 import { UPLOAD_TRANSACTION_FILE } from '../../Utils/Apis';
 import { handleErrors } from '../../Utils/Utils';
 
-const UploadFormPopup = ({ banks, visible, setVisible }) => {
+const UploadFormPopup = ({ bankAccounts, visible, setVisible }) => {
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
     const [theme] = useRecoilState(themeState);
@@ -24,8 +24,8 @@ const UploadFormPopup = ({ banks, visible, setVisible }) => {
             setLoading(true);
 
             let data = new FormData();
-            data.append('BankID', parseInt(values.bankID));
-            data.append('BankAccountID', 10);
+            data.append('BankID', 1);
+            data.append('BankAccountID', parseInt(values.bankAccountID));
             data.append('file', values.icon[0].originFileObj);
 
             let response = await UPLOAD_TRANSACTION_FILE(data);
@@ -64,17 +64,17 @@ const UploadFormPopup = ({ banks, visible, setVisible }) => {
                 {modalLoading ? <Spin /> :
                     <Form form={form} layout="vertical" name="bank_form">
                         <Form.Item
-                            name="bankID"
+                            name="bankAccountID"
                             label="Transaction file for"
-                            rules={[{ required: true, message: 'Please select a bank!' }]}
+                            rules={[{ required: true, message: 'Please select a bank account!' }]}
                         >
-                            <Select placeholder="Select a bank" className={
+                            <Select placeholder="Select a bank account" className={
                                 theme === 'light'
                                     ? 'header-search-input-light'
                                     : 'header-search-input-dark'
                             }>
-                                {banks.map(bank => (
-                                    <Select.Option key={bank.bankID} value={bank.bankID}>
+                                {bankAccounts.map(bank => (
+                                    <Select.Option key={bank.bankAccountID} value={bank.bankAccountID}>
                                         {bank.name}
                                     </Select.Option>
                                 ))}
