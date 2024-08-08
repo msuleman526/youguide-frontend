@@ -1,4 +1,4 @@
-import { Button, Col, Flex, Row, Typography, Collapse, Spin, Tabs } from 'antd';
+import { Button, Col, Flex, Row, Typography, Collapse, Spin, Tabs, Table, Tag } from 'antd';
 import { useRecoilValue } from 'recoil';
 import Card from '../../components/Card';
 import { themeState } from '../../atom';
@@ -13,6 +13,8 @@ import Categories from './Groups&Categories/Categories';
 import CategoryGroupPopup from './Groups&Categories/CategoryGroupPopup';
 import CategoryFormPopup from './Groups&Categories/CategoryFormPopup';
 import NoCategories from './NoCategories';
+import { render } from '@testing-library/react';
+import { width } from '@mui/system';
 
 const Settings = () => {
   const [bankAccountPopupVisible, setBankAccountPopupVisible] = useState(false);
@@ -29,6 +31,44 @@ const Settings = () => {
   const [expandedKeys, setExpandedKeys] = useState([]);
   const [cExpandedKeys, setCExpandedKeys] = useState([]);
   const [groupsLoading, setGroupsLoading] = useState(false)
+
+  const mainColumns = [
+    {
+      title: 'DISPLAY NAME',
+      width: '25%',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: 'DESCRIPTION',
+      dataIndex: 'description',
+      width: '40%',
+      key: 'description',
+    },
+    {
+      title: 'TREAT AS ACTIVE',
+      dataIndex: 'isActive',
+      width: '12.5%',
+      key: 'isActive',
+      render: (text, record) => (<Tag color={record.isActive ? 'green' : 'red'}>{record.isActive ? "Active": 'Not Active'}</Tag>),
+    },
+    {
+      title: 'TREAT AS TRACKED',
+      dataIndex: 'isTracked',
+      width: '12.5%',
+      key: 'isTracked',
+      render: (text, record) => (<Tag color={record.isTracked ? 'green' : 'red'}>{record.isTracked ? "Tracked": 'Not Tracked'}</Tag>),
+    },
+    {
+      title: 'ACTIONS',
+      dataIndex: 'action',
+      width: '10%',
+      key: 'action',
+      render: (text, item) => (
+        <Button size='small' type='primary' onClick={() => openCategoryGroupPopup("EDIT", item.categoryGroupID)}>Edit</Button>
+      ),
+    },
+  ];
 
   useEffect(() => {
     callingBanksListAPI();
@@ -57,7 +97,8 @@ const Settings = () => {
       let response = await GET_CATEGORY_GROUPS_LIST();
       if (response.isSuccess && response.data) {
         let data = response.data;
-        manageGroups(data);
+        setCategoryGroups(data)
+        //manageGroups(data);
       }
       setGroupsLoading(false);
     } catch (err) {
@@ -199,11 +240,20 @@ const Settings = () => {
                 </div>
               </Flex>
               {categoryGroups.length == 0 ? <NoCategories addClick={() => openCategoryGroupPopup("ADD")}/> : 
-              groupsLoading ? <Spin /> : <Collapse
-                style={{marginTop: "10px"}}
-                onChange={onChangeGroups}
-                activeKey={cExpandedKeys}
-                items={categoryGroups}
+               groupsLoading ? <Spin /> : 
+               //<Collapse
+              //   style={{marginTop: "10px"}}
+              //   onChange={onChangeGroups}
+              //   activeKey={cExpandedKeys}
+              //   items={categoryGroups}
+              // />}
+              <Table
+                columns={mainColumns}
+                // expandable={{
+                //   expandedRowRender,
+                // }}
+                dataSource={categoryGroups}
+                pagination={false}
               />}
             </Card>,
           }
