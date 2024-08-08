@@ -1,4 +1,4 @@
-import { Button, Col, Flex, Row, Typography, Collapse, Spin, Tabs } from 'antd';
+import { Button, Col, Flex, Row, Typography, Collapse, Spin, Tabs, Tag } from 'antd';
 import { useRecoilValue } from 'recoil';
 import Card from '../../components/Card';
 import { themeState } from '../../atom';
@@ -89,6 +89,8 @@ const Settings = () => {
         children: <div>Loading...</div>,
         extra: (
           <div style={{gap: '5px', display: 'flex'}}>
+            <Tag color={(item.isTracked) ? 'green' : 'red'}>{(item.isTracked) ? 'Tracked' : 'Not Tracked'}</Tag>
+            <Tag color={(item.isActive) ? 'green' : 'red'}>{(item.isActive) ? 'Active' : 'Not Active'}</Tag>
             <Button size='small' type='primary' onClick={() => openCategoryGroupPopup("EDIT", item.categoryGroupID)}>Edit</Button>
           </div>
         ),

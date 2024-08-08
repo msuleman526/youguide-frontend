@@ -6,6 +6,7 @@ import { ADD_UPDATE_CATEGORY_GROUP, GET_CATEGORY_GROUP_BY_ID, GET_SECTIONS_LIST 
 import { handleErrors } from '../../../Utils/Utils';
 import { useRecoilState } from 'recoil';
 import { themeState } from '../../../atom';
+import CustomCard from '../../../components/Card';
 
 const CategoryGroupDrawer = ({ visible, setVisible, type, selectedGroup, reload }) => {
     const [theme] = useRecoilState(themeState);
@@ -13,41 +14,43 @@ const CategoryGroupDrawer = ({ visible, setVisible, type, selectedGroup, reload 
     const [drawerLoading, setDrawerLoading] = useState(false);
     const [sections, setSections] = useState([]);
     const [form] = Form.useForm();
+    const [isActive, setIsActive] = useState(false);
+    const [isTracked, setIsTracked] = useState(false);
 
     useEffect(() => {
         if (visible) {
+            form.resetFields();
             if (type === "EDIT") {
-                getGroupByID();
-            } else {
-                form.resetFields();
+                fetchGroupByID();
             }
-            callingSectionsListAPI();
+            fetchSectionsList();
         }
-    }, [type, visible]);
+    }, [visible, type]);
 
-    const callingSectionsListAPI = async () => {
+    const fetchSectionsList = async () => {
         setDrawerLoading(true);
         try {
             const response = await GET_SECTIONS_LIST();
-            if (response.isSuccess && response.data) {
+            if (response.isSuccess) {
                 setSections(response.data);
             } else {
                 setSections([]);
             }
         } catch (err) {
             handleErrors("Fetching Sections List", err);
-            setSections([]);
         } finally {
             setDrawerLoading(false);
         }
     };
 
-    const getGroupByID = async () => {
+    const fetchGroupByID = async () => {
         setDrawerLoading(true);
         try {
             const response = await GET_CATEGORY_GROUP_BY_ID(selectedGroup);
-            if (response.isSuccess && response.data) {
-                const { name, sectionID } = response.data;
+            if (response.isSuccess) {
+                const { name, sectionID, isActive, isTracked } = response.data;
+                setIsActive(isActive);
+                setIsTracked(isTracked);
                 form.setFieldsValue({ name, sectionID });
             }
         } catch (err) {
@@ -61,7 +64,12 @@ const CategoryGroupDrawer = ({ visible, setVisible, type, selectedGroup, reload 
         try {
             const values = await form.validateFields();
             setLoading(true);
-            const data = { ...values, isActive: true, isTracked: true, categoryGroupID: type === "EDIT" ? selectedGroup : 0 };
+            const data = {
+                ...values,
+                isActive,
+                isTracked,
+                categoryGroupID: type === "EDIT" ? selectedGroup : 0,
+            };
             await ADD_UPDATE_CATEGORY_GROUP(data);
             message.success(type === "ADD" ? "Category group added successfully" : "Category group updated successfully");
             form.resetFields();
@@ -85,7 +93,7 @@ const CategoryGroupDrawer = ({ visible, setVisible, type, selectedGroup, reload 
             closeIcon={null}
             onClose={handleCancel}
             title={
-                <Typography.Title level={3} className="fw-500" style={{ marginTop: '10px', marginLeft: '-25px' }}>
+                <Typography.Title level={3} className="fw-500" style={{ marginTop: '10px' }}>
                     {type === "ADD" ? "Add Category Group" : "Edit Category Group"}
                 </Typography.Title>
             }
@@ -109,7 +117,7 @@ const CategoryGroupDrawer = ({ visible, setVisible, type, selectedGroup, reload 
                 <Spin />
             ) : (
                 <Form form={form} layout="vertical" name="group_form">
-                    <Card>
+                    <CustomCard>
                         <Form.Item
                             name="name"
                             label="Category Group Name"
@@ -133,21 +141,24 @@ const CategoryGroupDrawer = ({ visible, setVisible, type, selectedGroup, reload 
                                 ))}
                             </Select>
                         </Form.Item>
-                        <label htmlFor="group_form_label">
-                            <span>
+                        <Form.Item
+                            style={{ height: '20px' }}
+                            label={<span>
                                 Category Group Properties
                                 <Tooltip title="Category group will inherit these properties.">
                                     <BsQuestionCircle style={{ marginLeft: 8, color: '#1890ff' }} />
                                 </Tooltip>
-                            </span>
-                        </label>
+                            </span>}
+                            valuePropName="checked" />
                         <Form.Item
-                            style={{ marginTop: '5px' }}
                             name="isActive"
                             valuePropName="checked"
                         >
-                            <span>
-                                <Switch /> <span style={{ fontSize: '13px', marginLeft: '5px' }}>Treat as Active</span>
+                            <span style={{ display: 'inline-flex' }}>
+                                <Switch checked={isActive} onChange={(val) => setIsActive(val)} /> <Typography.Title style={{ fontSize: '13px', marginLeft: '5px', marginTop: '3px', fontWeight: '300' }}>TREAT AS ACTIVE</Typography.Title>
+                                <Tooltip title="Category group will treated as active, All the transaction will considered as active.">
+                                    <BsQuestionCircle style={{ marginLeft: 8, marginTop: '4px', color: '#1890ff' }} />
+                                </Tooltip>
                             </span>
                         </Form.Item>
                         <Form.Item
@@ -155,11 +166,14 @@ const CategoryGroupDrawer = ({ visible, setVisible, type, selectedGroup, reload 
                             name="isTracked"
                             valuePropName="checked"
                         >
-                            <span>
-                                <Switch /> <span style={{ fontSize: '13px', marginLeft: '5px' }}>Treat as Tracked</span>
+                            <span style={{ display: 'inline-flex' }}>
+                                <Switch checked={isTracked} onChange={(val) => setIsTracked(val)} /> <Typography.Title style={{ fontSize: '13px', marginLeft: '5px', marginTop: '3px', fontWeight: '300' }}>TREAT AS TRACKED</Typography.Title>
+                                <Tooltip title="Category group will treated as tracked, all the transactions will tracked.">
+                                    <BsQuestionCircle style={{ marginLeft: 8, marginTop: '4px', color: '#1890ff' }} />
+                                </Tooltip>
                             </span>
                         </Form.Item>
-                    </Card>
+                    </CustomCard>
                 </Form>
             )}
         </Drawer>
