@@ -117,11 +117,25 @@
   force = true
   headers = {X-From = "Netlify"}  
 
+[[redirects]]
+  from = "/api/Transaction/UpdateTransactionCategory"
+  to = "https://thedinkumapi.azurewebsites.net/api/Transaction/UpdateTransactionCategory"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}  
+
+[[redirects]]
+  from = "/api/Transaction/GetTransactionYearMonthsList"
+  to = "https://thedinkumapi.azurewebsites.net/api/Transaction/GetTransactionYearMonthsList"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}  
+
 [[headers]]
   for = "/*"
   [headers.values]
     Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS, PUT"
     Access-Control-Allow-Headers = "Content-Type"
     
 [[redirects]]
