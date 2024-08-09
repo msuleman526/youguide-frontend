@@ -24,7 +24,6 @@ const UploadFormPopup = ({ bankAccounts, visible, setVisible }) => {
             setLoading(true);
 
             let data = new FormData();
-            data.append('BankID', 1);
             data.append('BankAccountID', parseInt(values.bankAccountID));
             data.append('file', values.icon[0].originFileObj);
 

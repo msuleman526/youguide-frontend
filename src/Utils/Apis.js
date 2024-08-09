@@ -1,8 +1,8 @@
 import axios from "axios";
 import { formatDate } from "./Utils";
 
-export const API_URL = "https://thedinkumapi.azurewebsites.net"
-//export const API_URL = "https://dinkum.netlify.app"
+//export const API_URL = "https://thedinkumapi.azurewebsites.net"
+export const API_URL = "https://dinkum.netlify.app"
 
 //All API URLs
 export const REGISTER_USER_API = `${API_URL}/api/admin/UserRegistration/RegisterUser`
@@ -26,6 +26,10 @@ export const ADD_CATEGORY_API = `${API_URL}/api/admin/Setting/SaveCategoryDetail
 export const UPLOAD_TRANSACTION_FILE_API = `${API_URL}/api/admin/Upload/UploadTransactionsFile`
 export const UPLOADED_FILES_LIST = `${API_URL}/api/admin/Upload/GetUploadedFilesList`
 export const GET_TRANSACTION_LIST_API = `${API_URL}/api/Transaction/GetTransactionsList`
+
+//Transaction
+export const GET_TRANSACTION_YEARS_API = `${API_URL}/api/Transaction/GetTransactionYearMonthsList`
+export const UPDATE_TRANSACTION_CATEGORY_API = `${API_URL}/api/Transaction/UpdateTransactionCategory`
 
 //Register User Axios Call
 export const REGISTER_USER = (data) => {
@@ -135,7 +139,7 @@ export const GET_BANK_ACCOUNTS_LIST = (bankID) => {
         "isActive": null,
         "name": "",
         "bankId": bankID,
-        "isExport": true,
+        "isExport": null,
         "pagination": {
             "pageNo": 0,
             "pageSize": 0,
@@ -406,7 +410,7 @@ export const GET_UPLOADED_FILES_LIST = () => {
 
     let requestData = JSON.stringify({
         "fileName": "",
-        "importedOn": currentDateTime,
+        "importedOn": null,
         "bankId": 0,
         "pagination": {
             "pageNo": 0,
@@ -455,4 +459,45 @@ export const GET_TRANSACTION_LIST = (data) => {
         });
 }
 
+export const GET_TRANSACTION_YEARS_LIST = () => {
+    let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: GET_TRANSACTION_YEARS_API,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    };
 
+    return axios.request(config)
+        .then((response) => {
+            return response.data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}
+
+export const UPDATE_TRANSACTION_CATEGORY = (categoryID, transactionID) => {
+    let requestData = JSON.stringify({
+        "transactionId": transactionID,
+        "categoryId": categoryID,
+    });
+    let config = {
+        method: 'put',
+        maxBodyLength: Infinity,
+        url: UPDATE_TRANSACTION_CATEGORY_API,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        data: requestData
+    };
+
+    return axios.request(config)
+        .then((response) => {
+            return response.data;
+        })
+        .catch((error) => {
+            throw error;
+        });
+}

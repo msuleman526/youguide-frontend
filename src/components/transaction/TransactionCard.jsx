@@ -14,7 +14,6 @@ const TransactionCard = ({ item, theme }) => {
     try {
       setLoading(true);
       let data = new FormData();
-      data.append('BankID', parseInt(item.bankID));
       data.append('BankAccountID', parseInt(item.bankAccountID));
       data.append('file', selectedFile);
 

@@ -1,4 +1,4 @@
-import { Button, Col, Flex, Row, Skeleton, Spin, Table, Typography } from 'antd'
+import { Button, Col, Flex, Row, Select, Skeleton, Spin, Table, Typography } from 'antd'
 import { HiOutlineUpload } from 'react-icons/hi'
 import TransactionCard from '../../components/transaction/TransactionCard'
 import { FaArrowLeftLong, FaArrowRightLong } from 'react-icons/fa6'
@@ -22,6 +22,7 @@ const Upload = () => {
   const scrollContainerRef = useRef(null);
   const [uploadedFiles, setUploadedFiles] = useState([])
   const [tableLoading, setTableLoading] = useState(false)
+  const [selectedBankAccountName, setSelectedBankAccountName] = useState(0)
 
   useEffect(() => {
     const fetchBankAccounts = async () => {
@@ -70,6 +71,11 @@ const Upload = () => {
       });
     }
   };
+
+  // Filtered uploaded files based on selectedBankAccountID
+  const filteredUploadedFiles = selectedBankAccountName === 0 
+    ? uploadedFiles 
+    : uploadedFiles.filter(file => file.bankAccountName === selectedBankAccountName);
 
   return (
     <>
@@ -128,15 +134,36 @@ const Upload = () => {
             </Flex>
           </Col>
         </Row>
-        <Typography.Title level={3} className="fw-500">
-          Previously Uploaded Transactions
-        </Typography.Title>
+        <Flex justify='space-between'>
+          <Typography.Title level={3} className="fw-500">
+            Previously Uploaded Transactions
+          </Typography.Title>
+          <Select
+            defaultValue={0}
+            style={{ width: '250px' }}
+            className={
+              theme === 'light'
+                ? 'header-search-input-light'
+                : 'header-search-input-dark'
+            }
+            onChange={value => setSelectedBankAccountName(value)}
+          >
+            <Select.Option key={0} value={0}>
+              All Accounts Files
+            </Select.Option>
+            {bankAccounts.map(account => (
+              <Select.Option key={account.bankAccountID} value={account.name}>
+                {account.name}
+              </Select.Option>
+            ))}
+          </Select>
+        </Flex>
         <Table
           size="middle"
           className="custom_table"
           bordered
           columns={columns}
-          dataSource={uploadedFiles}
+          dataSource={filteredUploadedFiles}
           scroll={{ x: 'max-content' }}
           pagination={false}
         />
