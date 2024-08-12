@@ -1,8 +1,8 @@
 import axios from "axios";
 import { formatDate } from "./Utils";
 
-//export const API_URL = "https://thedinkumapi.azurewebsites.net"
-export const API_URL = "https://dinkum.netlify.app"
+export const API_URL = "https://thedinkumapi.azurewebsites.net"
+//export const API_URL = "https://dinkum.netlify.app"
 
 //All API URLs
 export const REGISTER_USER_API = `${API_URL}/api/admin/UserRegistration/RegisterUser`
@@ -30,6 +30,7 @@ export const GET_TRANSACTION_LIST_API = `${API_URL}/api/Transaction/GetTransacti
 //Transaction
 export const GET_TRANSACTION_YEARS_API = `${API_URL}/api/Transaction/GetTransactionYearMonthsList`
 export const UPDATE_TRANSACTION_CATEGORY_API = `${API_URL}/api/Transaction/UpdateTransactionCategory`
+export const TOGGLE_TRANSACTION_API = `${API_URL}/api/Transaction/UpdateTransactionCategory`
 
 //Register User Axios Call
 export const REGISTER_USER = (data) => {

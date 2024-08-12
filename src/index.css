@@ -151,7 +151,6 @@
   color: black;
   height: 40px !important;
   border-radius: 8px !important;
-
 }
 
 .header-search-input-dark .ant-select-selector {
@@ -252,4 +251,8 @@
 
 .ant-list-item-meta-title {
   font-weight: 400 !important;
+}
+
+.split_dropdown {
+  height: 32px !important;
 }
