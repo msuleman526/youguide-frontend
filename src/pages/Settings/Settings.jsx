@@ -169,12 +169,15 @@ const Settings = () => {
             label: 'Bank Accounts',
             key: 1,
             children: (
-              <Card>
-                <Flex justify="space-between" align="center">
+              <Card bodyStyle={{overflowY: 'scroll'}}>
+                <Flex direction={{ base: 'column', md: 'row' }}  // stack items on small screens, row on medium and up
+                  justify="space-between"
+                  align="center"
+                  className="mb-2">
                   <Typography.Title level={3} className="fw-500">
                     Bank & Bank Accounts
                   </Typography.Title>
-                  <div style={{ marginTop: '-10px' }}>
+                  <div style={{ marginTop: '0px' }}>
                     <Button type="primary" onClick={() => openBankAccountPopup('ADD')}>
                       Add Bank Account
                     </Button>
@@ -201,12 +204,15 @@ const Settings = () => {
             label: 'Groups & Categories',
             key: 2,
             children: (
-              <Card>
-                <Flex justify="space-between" align="center">
+              <Card bodyStyle={{overflowY: 'scroll'}}>
+                <Flex direction={{ base: 'column', md: 'row' }}  // stack items on small screens, row on medium and up
+                  justify="space-between"
+                  align="center"
+                  className="mb-2">
                   <Typography.Title level={3} className="fw-500">
                     Groups & Categories
                   </Typography.Title>
-                  <div style={{ marginTop: '-10px' }}>
+                  <div style={{ marginTop: '0px' }}>
                     <Button type="primary" style={{ marginRight: 8 }} onClick={() => openCategoryGroupPopup('ADD')}>
                       Add Group
                     </Button>
