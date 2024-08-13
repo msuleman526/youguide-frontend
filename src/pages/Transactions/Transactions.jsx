@@ -4,23 +4,19 @@ import { themeState } from '../../atom';
 import CustomCard from '../../components/Card';
 import { useEffect, useState } from 'react';
 import { DownOutlined } from '@ant-design/icons';
-import { GET_BANK_ACCOUNTS_LIST, GET_BANK_LIST, GET_CATEGORIES_LIST, GET_TRANSACTION_LIST, GET_TRANSACTION_YEARS_LIST, UPDATE_TRANSACTION_CATEGORY } from '../../Utils/Apis';
-import { convertDateToNormal, formatDate, handleErrors } from '../../Utils/Utils';
-import { BiFlag } from 'react-icons/bi';
+import { GET_BANK_ACCOUNTS_LIST, GET_CATEGORIES_LIST, GET_TRANSACTION_LIST, GET_TRANSACTION_YEARS_LIST, UPDATE_TRANSACTION_CATEGORY } from '../../Utils/Apis';
+import { convertDateToNormal, handleErrors } from '../../Utils/Utils';
 import { FiShare2 } from 'react-icons/fi';
 import SplitTransaction from './SplitTransaction';
-import { render } from '@testing-library/react';
-import { GiSplitArrows, GiSplitCross } from 'react-icons/gi';
+import { GiSplitArrows } from 'react-icons/gi';
 
 const Transactions = () => {
   const theme = useRecoilValue(themeState);
-  const currentYear = new Date().getFullYear();
   const [selectedMonth, setSelectedMonth] = useState("August 2024");
-  const [selectedYear, setSelectedYear] = useState(currentYear);
+  //const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedBankAccountID, setSelectedBankAccountID] = useState(0);
   const [bankAccounts, setBankAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
-  let [iconColor, setIconColor] = useState(theme === 'light' ? '#A8AAAD' : '#D2D4D8');
   const [transactions, setTransactions] = useState([]);
   const [visibleDropdowns, setVisibleDropdowns] = useState({});
   const [years, setYears] = useState([])
@@ -120,7 +116,7 @@ const Transactions = () => {
 
   const handleMenuClick = (e, year) => {
     setSelectedMonth(`${e.key} ${year}`);
-    setSelectedYear(year);
+    //setSelectedYear(year);
     setVisibleDropdowns(prev => ({ ...prev, [year]: false }));
   };
 
@@ -220,12 +216,12 @@ const Transactions = () => {
         <Flex gap="10px" align="center">
             <GiSplitArrows
               size={18}
-              color={iconColor}
+              color={theme === 'light' ? '#A8AAAD' : '#D2D4D8'}
               onClick={() => openSplit(record)}
             />
             <FiShare2
               size={18}
-              color={iconColor}
+              color={theme === 'light' ? '#A8AAAD' : '#D2D4D8'}
             />
           </Flex>
       ),
@@ -244,7 +240,7 @@ const Transactions = () => {
   let manageTransactions = () => {
     let filteredTransactions = allTransactions.filter(transaction => {
       if (isUnassigned) {
-        return transaction.categoryID == null || transaction.categoryID == 0;
+        return transaction.categoryID === null || transaction.categoryID === 0;
       }
       return true;
     });
