@@ -256,3 +256,19 @@
 .split_dropdown {
   height: 32px !important;
 }
+
+@media (max-width: 710px) {
+  .mb-2 {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-search-input-light,
+  .header-search-input-dark {
+    width: 100%;
+  }
+
+  .mb-2 div {
+    margin-top: 0px;
+  }
+}

@@ -280,37 +280,44 @@ const Transactions = () => {
             Why are you categorizing expenses now? You should have been more responsible with our spending in the first place! This is not a game where you can just shuffle around numbers to make yourself look better. We need to talk about our financial decisions and how we can improve them together!
           </Typography.Paragraph>
         </Flex>
-        <Flex justify="space-between" align="center" className="mb-2">
-          <Select
-            defaultValue={0}
-            style={{ width: '310px' }}
-            className={
-              theme === 'light'
-                ? 'header-search-input-light'
-                : 'header-search-input-dark'
-            }
-            onChange={value => setSelectedBankAccountID(value)}
+        <Flex
+            direction={{ base: 'column', md: 'row' }}  // stack items on small screens, row on medium and up
+            justify="space-between"
+            align="center"
+            className="mb-2"
           >
-            <Select.Option key={0} value={0}>
-              Transactions from all banks accounts
-            </Select.Option>
-            {bankAccounts.map(account => (
-              <Select.Option key={account.bankAccountID} value={account.bankAccountID}>
-                {account.name}
+            <Select
+              defaultValue={0}
+              style={{ width: '100%', maxWidth: '310px' }}  // full width on small screens
+              className={
+                theme === 'light'
+                  ? 'header-search-input-light'
+                  : 'header-search-input-dark'
+              }
+              onChange={value => setSelectedBankAccountID(value)}
+            >
+              <Select.Option key={0} value={0}>
+                Transactions from all banks accounts
               </Select.Option>
-            ))}
-          </Select>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <Space direction="horizontal" size="small">
-              <Typography.Text>Flagged</Typography.Text>
-              <Switch defaultChecked />
-            </Space>
-            <Space direction="horizontal" size="small">
-              <Typography.Text>Unassign</Typography.Text>
-              <Switch checked={isUnassigned} onChange={handleUnassignedSwitch}/>
-            </Space>
-          </div>
-        </Flex>
+              {bankAccounts.map(account => (
+                <Select.Option key={account.bankAccountID} value={account.bankAccountID}>
+                  {account.name}
+                </Select.Option>
+              ))}
+            </Select>
+            
+            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+              <Space direction="horizontal" size="small">
+                <Typography.Text>Flagged</Typography.Text>
+                <Switch defaultChecked />
+              </Space>
+              <Space direction="horizontal" size="small">
+                <Typography.Text>Unassign</Typography.Text>
+                <Switch checked={isUnassigned} onChange={handleUnassignedSwitch}/>
+              </Space>
+            </div>
+          </Flex>
+
         <Table
           size="middle"
           className="custom_table"
