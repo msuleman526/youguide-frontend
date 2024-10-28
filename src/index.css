@@ -21,6 +21,26 @@
   overflow: auto;
 }
 
+.ant-input,
+.ant-input-password,
+.ant-input-password {
+  height: 40px;
+}
+
+.ant-input-password {
+  padding: 0px 11px;
+  ;
+}
+
+.side-login .ant-image {
+  width: 100%;
+}
+
+.card_login {
+  padding-left: 150px !important;
+  padding-right: 150px !important;
+}
+
 .h-100 {
   height: 100vh;
   overflow: auto;
@@ -89,7 +109,7 @@
 }
 
 .custom-primary-btn {
-  height: 52px;
+  height: 40px;
   padding: 5px 40px;
 }
 
@@ -271,4 +291,26 @@
   .mb-2 div {
     margin-top: 0px;
   }
+}
+
+.book-badge {
+  width: 25px;
+  height: 25px;
+  background: #BB5215;
+  color: white;
+  text-align: center;
+  border-radius: 12.5px;
+  padding-top: 2px;
+}
+
+.ant-layout {
+  background: #E9ECEF;
+}
+
+.ant-typography {
+  color: #aa3c43 !important;
+}
+
+.ant-card {
+  border-radius: 15px;
 }

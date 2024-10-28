@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect } from "react";
 import {
   Button,
   Col,
@@ -9,65 +9,60 @@ import {
   Row,
   Tooltip,
   Typography,
-} from 'antd'
-import authImg from '../assets/auth.svg'
-import { authDarkTheme, authLightTheme } from '../theme/authTheme'
-import { Link } from 'react-router-dom'
-import { useRecoilState } from 'recoil'
-import { CiDark, CiLight } from 'react-icons/ci'
-import { themeState } from '../atom'
-import { IoMdArrowRoundBack } from 'react-icons/io'
-import Card from '../components/Card'
-import logo from '../assets/large_logo.png'
+} from "antd";
+import authImg from "../assets/login-background.svg";
+import { authDarkTheme, authLightTheme } from "../theme/authTheme";
+import { Link } from "react-router-dom";
+import { useRecoilState } from "recoil";
+import { CiDark, CiLight } from "react-icons/ci";
+import { themeState } from "../atom";
+import { IoMdArrowRoundBack } from "react-icons/io";
+import Card from "../components/Card";
+import logo from "../assets/large_logo.png";
 
 const AuthLayout = ({
   children,
   title,
   backToLogin = false,
-  customCenterClassName = '',
-  marginTop = '20px',
+  customCenterClassName = "",
+  marginTop = "20px",
 }) => {
-  const [theme, setTheme] = useRecoilState(themeState)
+  const [theme, setTheme] = useRecoilState(themeState);
 
   const toggleTheme = () => {
-    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'))
-  }
+    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
+  };
 
   useEffect(() => {
-    localStorage.setItem('theme', JSON.stringify(theme))
-  }, [theme])
+    localStorage.setItem("theme", JSON.stringify(theme));
+  }, [theme]);
 
   return (
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: '#ff7800',
+          colorPrimary: "#AA3C43",
         },
-        components: theme === 'dark' ? authDarkTheme : authLightTheme,
+        components: theme === "dark" ? authDarkTheme : authLightTheme,
       }}
     >
-      <Layout>
-        <Layout.Content className="min-h-100">
-          <Row>
-            <Col xs={0} sm={0} md={12}>
-              <Flex justify="center" align="center" className="min-h-100">
-                <Image preview={false} src={authImg} />
-              </Flex>
-            </Col>
+      <Layout style={{ minHeight: "100vh" }}>
+        <Layout.Content>
+          <Row style={{ height: "100vh" }}>
             <Col xs={24} md={12}>
-              <Card className="h-100 card-border-radius">
+              <Card className="h-100 card-border-radius" style={{height: '100%'}} height={"100%"}>
                 <Flex justify="end">
                   <Button
                     style={{
-                      backgroundColor: theme === 'dark' && '#05152b',
-                      borderColor: theme === 'dark' && '#143D69',
-                      borderRadius: '8px',
-                      height: '30px',
+                      backgroundColor: theme === "dark" && "#05152b",
+                      borderColor: theme === "dark" && "#143D69",
+                      borderRadius: "8px",
+                      height: "30px",
                     }}
                     onClick={toggleTheme}
                     size="small"
                   >
-                    {theme === 'dark' ? (
+                    {theme === "dark" ? (
                       <Tooltip title="Light Mode">
                         <CiLight color="#fff" size={18} />
                       </Tooltip>
@@ -79,11 +74,11 @@ const AuthLayout = ({
                   </Button>
                 </Flex>
                 {backToLogin && (
-                  <Link to={'/login'}>
-                    <Flex gap={'small'} align="center">
+                  <Link to={"/login"}>
+                    <Flex gap={"small"} align="center">
                       <IoMdArrowRoundBack
                         size={19}
-                        color={theme === 'dark' ? '#fff' : '#353535'}
+                        color={theme === "dark" ? "#fff" : "#353535"}
                       />
                       <Typography.Text>Back to Login</Typography.Text>
                     </Flex>
@@ -91,16 +86,21 @@ const AuthLayout = ({
                 )}
                 <Flex
                   vertical
-                  className={`w-100 ${customCenterClassName}`}
+                  style={{height: '100%'}}
+                  className={`card_login w-100 ${customCenterClassName}`}
                   justify="center"
                 >
                   <Flex justify="center" style={{ marginTop: marginTop }}>
-                    <Image src={logo} style={{width: '250px'}} preview={false}/>
+                    <Image
+                      src={logo}
+                      style={{ width: "150px" }}
+                      preview={false}
+                    />
                   </Flex>
                   <Flex justify="center" style={{ marginTop: marginTop }}>
                     <Typography.Title
                       level={2}
-                      style={{ color: theme === 'light' && '#494949' }}
+                      style={{ color: theme === "light" && "#494949" }}
                     >
                       {title}
                     </Typography.Title>
@@ -109,11 +109,18 @@ const AuthLayout = ({
                 </Flex>
               </Card>
             </Col>
+            <Col xs={0} sm={0} md={12} className="side-login">
+              <Image
+                preview={false}
+                src={authImg}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            </Col>
           </Row>
         </Layout.Content>
       </Layout>
     </ConfigProvider>
-  )
-}
+  );
+};
 
-export default AuthLayout
+export default AuthLayout;

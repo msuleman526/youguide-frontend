@@ -1,4 +1,4 @@
-import { Button, Flex, Form, Input, Typography, message } from 'antd';
+import { Button, Checkbox, Col, Form, Input, Row, Typography, message } from 'antd';
 import React, { useState } from 'react';
 import AuthLayout from '../layouts/AuthLayout';
 import OtherRegisterOption from '../components/OtherRegisterOption';
@@ -11,7 +11,6 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
 
   const onFinish = async (values) => {
-    
     const data = {
       isActive: true,
       firstName: values.firstName,
@@ -19,6 +18,8 @@ const Register = () => {
       email: values.email,
       mobileNo: values.mobileNo,
       password: values.password,
+      affiliate: values.affiliate,
+      termsAccepted: values.termsAccepted,
     };
 
     setLoading(true);
@@ -30,7 +31,7 @@ const Register = () => {
       // Handle successful registration, e.g., redirect to OTP page
     } catch (err) {
       setLoading(false);
-      handleErrors("User Registeration", err)
+      handleErrors("User Registration", err);
     }
   };
 
@@ -42,61 +43,118 @@ const Register = () => {
         onFinish={onFinish}
         initialValues={{ remember: true }}
       >
-        <Form.Item
-          label="First Name"
-          name="firstName"
-          rules={[{ required: true, message: 'Please enter your first name!' }]}
-        >
-          <Input placeholder="First name" />
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="First Name"
+              name="firstName"
+              rules={[{ required: true, message: 'Please enter your first name!' }]}
+            >
+              <Input placeholder="First name" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Last Name"
+              name="lastName"
+              rules={[{ required: true, message: 'Please enter your last name!' }]}
+            >
+              <Input placeholder="Last name" />
+            </Form.Item>
+          </Col>
+        </Row>
+        
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[
+                { required: true, message: 'Please enter your email!' },
+                { type: 'email', message: 'Please enter a valid email!' },
+              ]}
+            >
+              <Input placeholder="Your email" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Mobile Number"
+              name="mobileNo"
+              rules={[
+                { required: true, message: 'Please enter your mobile number!' },
+                { pattern: /^[0-9]{10,}$/, message: 'Please enter a valid mobile number!' },
+              ]}
+            >
+              <Input placeholder="Your mobile number" />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[{ required: true, message: 'Please enter your password!' }]}
+            >
+              <Input.Password placeholder="Your password" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Confirm Password"
+              name="confirmPassword"
+              dependencies={['password']}
+              rules={[
+                { required: true, message: 'Please confirm your password!' },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue('password') === value) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(new Error('Passwords do not match!'));
+                  },
+                }),
+              ]}
+            >
+              <Input.Password placeholder="Confirm password" />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Form.Item name="affiliate" valuePropName="checked">
+          <Checkbox>Affiliate</Checkbox>
         </Form.Item>
+
         <Form.Item
-          label="Last Name"
-          name="lastName"
-          rules={[{ required: true, message: 'Please enter your last name!' }]}
-        >
-          <Input placeholder="Last name" />
-        </Form.Item>
-        <Form.Item
-          label="Email"
-          name="email"
+          name="termsAccepted"
+          valuePropName="checked"
           rules={[
-            { required: true, message: 'Please enter your email!' },
-            { type: 'email', message: 'Please enter a valid email!' },
+            {
+              validator: (_, value) =>
+                value ? Promise.resolve() : Promise.reject(new Error('You must accept the terms and conditions!')),
+            },
           ]}
         >
-          <Input placeholder="Your email" />
+          <Checkbox>
+            I agree with the <Link to={'/terms'}>terms of use</Link>
+          </Checkbox>
         </Form.Item>
-        <Form.Item
-          label="Mobile Number"
-          name="mobileNo"
-          rules={[
-            { required: true, message: 'Please enter your mobile number!' },
-            { pattern: /^[0-9]{10,}$/, message: 'Please enter a valid mobile number!' },
-          ]}
-        >
-          <Input placeholder="Your mobile number" />
-        </Form.Item>
-        <Form.Item
-          label="Password"
-          name="password"
-          rules={[{ required: true, message: 'Please enter your password!' }]}
-        >
-          <Input.Password placeholder="Your password" />
-        </Form.Item>
-        <Flex justify="end" className="mb-2">
-          <Link to={'/forget-password'}>Forget Password</Link>
-        </Flex>
+
         <Form.Item>
           <Button loading={loading} type="primary" block htmlType="submit">
             Sign Up
           </Button>
         </Form.Item>
-        <Flex gap={'small'} justify="center">
+
+        <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
           <Typography.Text type="secondary">
             Already have an account?
           </Typography.Text>
-          <Link to={'/login'}>Login</Link>
-        </Flex>
+          <Link to={'/login'}> Login</Link>
+        </div>
+
         <OtherRegisterOption />
       </Form>
     </AuthLayout>
