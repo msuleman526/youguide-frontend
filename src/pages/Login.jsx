@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom'
 
 const Login = () => {
   return (
-    <AuthLayout title={'Login'} customCenterClassName="auth-card-height">
+    <AuthLayout title={'Sign in'} customCenterClassName="auth-card-height">
       <Form layout="vertical">
         <Form.Item label="Name" name={'name'}>
           <Input placeholder="Your name" />
@@ -18,7 +18,7 @@ const Login = () => {
           <Link to={'/forget-password'}>Forget Password</Link>
         </Flex>
         <Form.Item>
-          <Link to={'/dashboard'}><Button type="primary" block>Login</Button></Link>
+          <Link to={'/roles'}><Button type="primary" block>Login</Button></Link>
         </Form.Item>
         <Flex gap={'small'} justify="center">
           <Typography.Text type="secondary">

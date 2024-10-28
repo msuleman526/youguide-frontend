@@ -1,12 +1,13 @@
 import { Flex, Image, Layout, Menu, Typography, Drawer, Button } from 'antd';
 import { VscLayout } from 'react-icons/vsc';
-import { FaCalendarAlt, FaChartBar, FaCog, FaFileAlt } from 'react-icons/fa';
+import { FaBook, FaCalendarAlt, FaChartBar, FaCog, FaFileAlt } from 'react-icons/fa';
 import { GrTransaction } from 'react-icons/gr';
 import { TbLogout2 } from 'react-icons/tb';
 import { useEffect, useState, useLayoutEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import smallLogo from '../../assets/small_logo.png';
 import largeLogo from '../../assets/large_logo.png';
+import { BiUser } from 'react-icons/bi';
 
 const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
   const navigate = useNavigate();
@@ -60,51 +61,51 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
 
   const menuItems = [
     {
-      key: 'dashboard',
+      key: 'roles',
       icon: <VscLayout {...iconProps} />,
-      label: 'Overview',
+      label: 'Manage Roles',
+    },
+    // {
+    //   key: 'reports',
+    //   icon: <FaFileAlt {...iconProps} />,
+    //   label: 'Reports',
+    //   children: [
+    //     {
+    //       key: 'reports-by-month',
+    //       icon: <FaCalendarAlt {...iconProps} />,
+    //       label: 'By Month',
+    //     },
+    //     {
+    //       key: 'reports-by-month-compare',
+    //       icon: <FaChartBar {...iconProps} />,
+    //       label: 'By Month (Compare)',
+    //     },
+    //     {
+    //       key: 'reports-by-category',
+    //       icon: <FaChartBar {...iconProps} />,
+    //       label: 'By Category',
+    //     },
+    //     {
+    //       key: 'reports-by-category-group',
+    //       icon: <FaChartBar {...iconProps} />,
+    //       label: 'By Category Group',
+    //     },
+    //     {
+    //       key: 'reports-by-year',
+    //       icon: <FaCalendarAlt {...iconProps} />,
+    //       label: 'By Year',
+    //     },
+    //   ],
+    // },
+    {
+      key: 'users',
+      icon: <BiUser {...iconProps} />,
+      label: 'Manage Users',
     },
     {
-      key: 'reports',
-      icon: <FaFileAlt {...iconProps} />,
-      label: 'Reports',
-      children: [
-        {
-          key: 'reports-by-month',
-          icon: <FaCalendarAlt {...iconProps} />,
-          label: 'By Month',
-        },
-        {
-          key: 'reports-by-month-compare',
-          icon: <FaChartBar {...iconProps} />,
-          label: 'By Month (Compare)',
-        },
-        {
-          key: 'reports-by-category',
-          icon: <FaChartBar {...iconProps} />,
-          label: 'By Category',
-        },
-        {
-          key: 'reports-by-category-group',
-          icon: <FaChartBar {...iconProps} />,
-          label: 'By Category Group',
-        },
-        {
-          key: 'reports-by-year',
-          icon: <FaCalendarAlt {...iconProps} />,
-          label: 'By Year',
-        },
-      ],
-    },
-    {
-      key: 'transaction',
-      icon: <GrTransaction {...iconProps} />,
-      label: 'Transactions',
-    },
-    {
-      key: 'settings',
-      icon: <FaCog {...iconProps} />,
-      label: 'Settings',
+      key: 'books',
+      icon: <FaBook {...iconProps} />,
+      label: 'Manage Books',
     },
     {
       key: 'upload',

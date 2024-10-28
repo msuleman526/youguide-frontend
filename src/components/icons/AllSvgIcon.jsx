@@ -33,7 +33,7 @@ export function IncomeSvg(props) {
       />
       <path
         d="M.243 26.19A30 30 0 1038.384 1.194l-4.073 13.993A15.427 15.427 0 1114.7 28.04L.243 26.19z"
-        fill="#ff7800"
+        fill="#AA3C43"
       />
     </svg>
   )
