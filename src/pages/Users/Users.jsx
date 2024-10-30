@@ -1,27 +1,40 @@
-import { Button, Flex, Select, Table, Typography, Modal, Tag } from 'antd'
+import { Button, Flex, Select, Table, Typography, Modal, Tag, message } from 'antd'
 import { FaEdit, FaTrashAlt } from 'react-icons/fa'
 import { useRecoilValue } from 'recoil'
 import { themeState } from '../../atom'
 import CustomCard from '../../components/Card'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import UsersPopup from './UsersPopup'
+import ApiService from '../../APIServices/ApiService'
 
 const Users = () => {
   const theme = useRecoilValue(themeState)
-  const [users, setUsers] = useState([
-    { id: 1, name: 'John Doe', role: 'Admin', openBooks: 12, downloadBooks: 5, offlineView: 8, created_at: '2024-01-01' },
-    { id: 2, name: 'Jane Smith', role: 'SuperAdmin', openBooks: 20, downloadBooks: 15, offlineView: 12, created_at: '2024-01-05' },
-    { id: 3, name: 'Emily Johnson', role: 'User', openBooks: 5, downloadBooks: 2, offlineView: 3, created_at: '2024-02-10' },
-    { id: 4, name: 'Michael Brown', role: 'Affiliate', openBooks: 8, downloadBooks: 3, offlineView: 5, created_at: '2024-02-15' }
-  ])
+  const [users, setUsers] = useState([])
   const [tableLoading, setTableLoading] = useState(false)
   const [selectedUserRole, setSelectedUserRole] = useState('all')
   const [popupVisible, setPopupVisible] = useState(false)
+  const [popupType, setPopupType] = useState("Add")
+  const [selectedUser, setSelectedUser] = useState(null)
 
-  const deleteUser = (userId) => {
+  useEffect(() => {
+      setTableLoading(true)
+      ApiService.getAllUsers().then((response) => {
+        console.log(response)
+          setUsers(response)
+          setTableLoading(false)
+      }).catch(error => {
+          setTableLoading(false)
+          message.error(error?.response?.data?.message || "Users Failed.")
+          setUsers([])
+      });
+  }, [])
+
+  const deleteUser = async (userId) => {
     setTableLoading(true)
     try {
-      setUsers(prevUsers => prevUsers.filter(user => user.id !== userId))
+      await ApiService.deleteUser(userId)
+      message.success('User deleted successfully.')
+      setUsers(prevUsers => prevUsers.filter(user => user._id !== userId))
     } catch (err) {
       console.error('Deleting User', err)
     } finally {
@@ -43,13 +56,16 @@ const Users = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+      render: (index, record) => (
+        <Tag color='blue'>{record.firstName + " " + record.lastName}</Tag>
+      ),
     },
     {
       title: 'Role',
       dataIndex: 'role',
       key: 'role',
       render: (role) => (
-        <Tag color='blue'>{role}</Tag>
+        <Tag color='blue'>{role.name}</Tag>
       ),
     },
     {
@@ -58,7 +74,7 @@ const Users = () => {
       key: 'openBooks',
       render: (openBooks) => (
         <div className='book-badge'>
-          {openBooks}
+          {openBooks || "0"}
         </div>
       ),
     },
@@ -68,7 +84,7 @@ const Users = () => {
       dataIndex: 'downloadBooks',
       render: (downloadBooks) => (
         <div className='book-badge'>
-          {downloadBooks}
+          {downloadBooks || "0"}
         </div>
       ),
     },
@@ -78,24 +94,24 @@ const Users = () => {
       dataIndex: 'offlineView',
       render: (offlineView) => (
         <div className='book-badge'>
-          {offlineView}
+          {offlineView || "0"}
         </div>
       ),
     },
     {
       title: 'Created At',
-      dataIndex: 'created_at',
-      key: 'created_at',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
     },
     {
       title: 'Action',
       key: 'action',
       render: (_, record) => (
         <Flex>
-          <Button type="link" onClick={() => handleEdit(record.id)}>
+          <Button type="link" onClick={() => handleEdit(record)}>
             <FaEdit />
           </Button>
-          <Button type="link" danger onClick={() => confirmDelete(record.id)}>
+          <Button type="link" danger onClick={() => confirmDelete(record._id)}>
             <FaTrashAlt />
           </Button>
         </Flex>
@@ -103,12 +119,29 @@ const Users = () => {
     },
   ];
 
-  const handleEdit = (id) => {
-    // Handle edit functionality here
+  let addUser = (user) => {
+    if (popupType === "Edit") {
+      setUsers(prevUsers => prevUsers.map(r => {
+        if (r._id === user._id) {
+          return user
+        }
+        return r
+      }))
+    }else{
+      setUsers(prevUsers => [...prevUsers, user])
+    }
+    setPopupVisible(false)
   }
 
-  let addUser = (values) => {
+  const handleEdit = (user) => {
+    setSelectedUser(user)
+    setPopupType("Edit")
+    setPopupVisible(true)
+  }
 
+  const onAddUser= () => {
+    setPopupType("Add")
+    setPopupVisible(true)
   }
 
   // Filter users based on selected role
@@ -161,7 +194,7 @@ const Users = () => {
             className="custom-primary-btn"
             type="primary"
             size="large"
-            onClick={() => setPopupVisible(true)}
+            onClick={onAddUser}
           >
             <Flex gap="small" align="center">
               <span>Create User</span>
@@ -182,7 +215,7 @@ const Users = () => {
         pagination={{ pageSize: 10 }}
       />
     </CustomCard>
-    <UsersPopup visible={popupVisible} onClose={() => setPopupVisible(false)} onAddUser={addUser} />
+    <UsersPopup open={popupVisible} type={popupType} user={selectedUser} setOpen={() => setPopupVisible(false)} onSaveUser={addUser} />
     </>
   )
 }

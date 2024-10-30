@@ -1,6 +1,6 @@
 import { Flex, Image, Layout, Menu, Typography, Drawer, Button } from 'antd';
 import { VscLayout } from 'react-icons/vsc';
-import { FaBook, FaCalendarAlt, FaChartBar, FaCog, FaFileAlt } from 'react-icons/fa';
+import { FaBook, FaCalendarAlt, FaChartBar, FaCog, FaFileAlt, FaList } from 'react-icons/fa';
 import { GrTransaction } from 'react-icons/gr';
 import { TbLogout2 } from 'react-icons/tb';
 import { useEffect, useState, useLayoutEffect } from 'react';
@@ -59,48 +59,27 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
     }
   };
 
+  const logoutClick = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
+
   const menuItems = [
     {
       key: 'roles',
       icon: <VscLayout {...iconProps} />,
       label: 'Manage Roles',
     },
-    // {
-    //   key: 'reports',
-    //   icon: <FaFileAlt {...iconProps} />,
-    //   label: 'Reports',
-    //   children: [
-    //     {
-    //       key: 'reports-by-month',
-    //       icon: <FaCalendarAlt {...iconProps} />,
-    //       label: 'By Month',
-    //     },
-    //     {
-    //       key: 'reports-by-month-compare',
-    //       icon: <FaChartBar {...iconProps} />,
-    //       label: 'By Month (Compare)',
-    //     },
-    //     {
-    //       key: 'reports-by-category',
-    //       icon: <FaChartBar {...iconProps} />,
-    //       label: 'By Category',
-    //     },
-    //     {
-    //       key: 'reports-by-category-group',
-    //       icon: <FaChartBar {...iconProps} />,
-    //       label: 'By Category Group',
-    //     },
-    //     {
-    //       key: 'reports-by-year',
-    //       icon: <FaCalendarAlt {...iconProps} />,
-    //       label: 'By Year',
-    //     },
-    //   ],
-    // },
     {
       key: 'users',
       icon: <BiUser {...iconProps} />,
       label: 'Manage Users',
+    },
+    {
+      key: 'categories',
+      icon: <FaList {...iconProps} />,
+      label: 'Manage Categories',
     },
     {
       key: 'books',
@@ -118,7 +97,7 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
     key: 'logout',
     icon: <TbLogout2 {...iconProps} />,
     label: (
-      <Link to="/login" style={{ color: 'inherit', textDecoration: 'none' }}>
+      <Link onClick={logoutClick} style={{ color: 'inherit', textDecoration: 'none' }}>
         Logout
       </Link>
     ),
@@ -151,7 +130,7 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
         </>
       ) : (
         <Layout.Sider
-          width={200}
+          width={220}
           theme="light"
           trigger={null}
           collapsible
