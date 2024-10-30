@@ -1,52 +1,49 @@
-import { Button, Col, Flex, Row, Select, Skeleton, Spin, Table, Typography, Modal, Tag, message } from 'antd'
+import { Button, Flex, Table, Typography, Modal, Tag, message } from 'antd'
 import { HiOutlineUpload } from 'react-icons/hi'
 import { FaEdit, FaTrashAlt } from 'react-icons/fa'
 import { useRecoilValue } from 'recoil'
 import { themeState } from '../../atom'
 import CustomCard from '../../components/Card'
 import { useEffect, useState } from 'react'
-import { handleErrors } from '../../Utils/Utils'
 import ApiService from '../../APIServices/ApiService'
-import RolesPopup from './RolesPopup'
+import CategoryPopup from './CategoriesPopup'
 
-const RoleManagement = () => {
+const Categories = () => {
   const theme = useRecoilValue(themeState)
-  const [roles, setRoles] = useState([])
+  const [categories, setCategories] = useState([])
   const [tableLoading, setTableLoading] = useState(false)
   const [visible, setVisible] = useState(false)
-  const [selectedRoleStatus, setSelectedRoleStatus] = useState('all')
-  const [deletingRoleId, setDeletingRoleId] = useState(null)
-  const [selectedRole, setSelectedRole] = useState(null)
+  const [selectedCategory, setSelectedCategory] = useState(null)
   const [popupType, setPopupType] = useState("Add")
 
   useEffect(() => {
       setTableLoading(true)
-      ApiService.getAllRoles().then((response) => {
-          setRoles(response)
+      ApiService.getAllCategories().then((response) => {
+          setCategories(response)
           setTableLoading(false)
       }).catch(error => {
           setTableLoading(false)
-          message.error(error?.response?.data?.message || "Roles Failed.")
-          setRoles([])
+          message.error(error?.response?.data?.message || "Categories Failed.")
+          setCategories([])
       });
   }, [])
 
-  const deleteRole = async (roleId) => {
+  const deleteRole = async (categoryID) => {
     setTableLoading(true)
     try {
-      await ApiService.deleteRole(roleId)
-      message.success('Role deleted successfully.')
-      setRoles(prevRoles => prevRoles.filter(role => role._id !== roleId))
+      await ApiService.deleteCategory(categoryID)
+      message.success('Category deleted successfully.')
+      setCategories(prevCategories => prevCategories.filter(category => category._id !== categoryID))
     } catch (err) {
     } finally {
       setTableLoading(false)
     }
   }
 
-  const confirmDelete = (roleId) => {
+  const confirmDelete = (categoryId) => {
     Modal.confirm({
-      title: 'Are you sure you want to delete this role?',
-      onOk: () => deleteRole(roleId),
+      title: 'Are you sure you want to delete this category?',
+      onOk: () => deleteRole(categoryId),
       okText: 'Yes',
       cancelText: 'No',
     });
@@ -62,14 +59,6 @@ const RoleManagement = () => {
       title: 'Slug',
       dataIndex: 'slug',
       key: 'slug',
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: (_, record) => (
-        <Tag color={record.status ? 'blue' : 'red'}>{record.status ? 'Active' : 'Inactive'}</Tag>
-      ),
     },
     {
       title: 'Created At',
@@ -95,34 +84,30 @@ const RoleManagement = () => {
     },
   ];
 
-  const handleEdit = (role) => {
-      setSelectedRole(role)
+  const handleEdit = (category) => {
+      setSelectedCategory(category)
       setPopupType("Edit")
       setVisible(true)
   }
 
-  const onAddRole = () => {
+  const onAddCategory = () => {
     setPopupType("Add")
     setVisible(true)
   }
 
-  const onSaveRole = (role) => {
+  const onSaveCategory= (category) => {
     if (popupType === "Edit") {
-      setRoles(prevRoles => prevRoles.map(r => {
-        if (r._id === role._id) {
-          return role
+      setCategories(prevCategories => prevCategories.map(r => {
+        if (r._id === category._id) {
+          return category
         }
         return r
       }))
     }else{
-      setRoles(prevRoles => [...prevRoles, role])
+      setCategories(prevCategories => [...prevCategories, category])
     }
     setVisible(false)
   }
-
-  const filteredRoles = selectedRoleStatus === 'all'
-    ? roles
-    : roles.filter(role => role.status === (selectedRoleStatus === 'active'));
 
   return (
     <>
@@ -130,43 +115,21 @@ const RoleManagement = () => {
       <Flex justify="space-between" align="center" className="mb-2">
         <div>
           <Typography.Title level={2} className="my-0 fw-500">
-            Role Management
+            Category Management
           </Typography.Title>
           <Typography.Title level={4} className="my-0 fw-500">
-            Manage all roles in you guide.
+            Manage all categories in you guide.
           </Typography.Title>
         </div>
         <div style={{display: 'flex', gap: '10px'}}>
-          <Flex justify="end" align="center" gap="small" className="mb-2">
-            <Select
-              defaultValue="all"
-              style={{ width: '250px' }}
-              className={
-                theme === 'light'
-                  ? 'header-search-input-light'
-                  : 'header-search-input-dark'
-              }
-              onChange={value => setSelectedRoleStatus(value)}
-            >
-              <Select.Option key="all" value="all">
-                All Roles
-              </Select.Option>
-              <Select.Option key="active" value="active">
-                Active Roles
-              </Select.Option>
-              <Select.Option key="inactive" value="inactive">
-                Inactive Roles
-              </Select.Option>
-            </Select>
-          </Flex>
           <Button
             className="custom-primary-btn"
             type="primary"
             size="large"
-            onClick={onAddRole}
+            onClick={onAddCategory}
           >
             <Flex gap="small" align="center">
-              <span>Create Role</span>
+              <span>Create Category</span>
               <HiOutlineUpload size={20} color="#fff" />
             </Flex>
           </Button>
@@ -179,15 +142,15 @@ const RoleManagement = () => {
         className="custom_table"
         bordered
         columns={columns}
-        dataSource={filteredRoles}
+        dataSource={categories}
         loading={tableLoading}
         scroll={{ x: 'max-content' }}
         pagination={{ pageSize: 10 }}
       />
     </CustomCard>
-    <RolesPopup open={visible} setOpen={() => setVisible(false)} onSaveRole={onSaveRole} role={selectedRole} type={popupType} />
+    <CategoryPopup open={visible} setOpen={() => setVisible(false)} onSaveCategory={onSaveCategory} category={selectedCategory} type={popupType} />
     </>
   )
 }
 
-export default RoleManagement
+export default Categories

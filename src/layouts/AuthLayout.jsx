@@ -12,7 +12,7 @@ import {
 } from "antd";
 import authImg from "../assets/login-background.svg";
 import { authDarkTheme, authLightTheme } from "../theme/authTheme";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useRecoilState } from "recoil";
 import { CiDark, CiLight } from "react-icons/ci";
 import { themeState } from "../atom";
@@ -27,6 +27,7 @@ const AuthLayout = ({
   customCenterClassName = "",
   marginTop = "20px",
 }) => {
+  const navigate = useNavigate();
   const [theme, setTheme] = useRecoilState(themeState);
 
   const toggleTheme = () => {
@@ -36,6 +37,15 @@ const AuthLayout = ({
   useEffect(() => {
     localStorage.setItem("theme", JSON.stringify(theme));
   }, [theme]);
+
+  useEffect(() => {
+    const accessToken = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+
+    if (accessToken && user) {
+      navigate('/roles');
+    }
+  }, [navigate]);
 
   return (
     <ConfigProvider

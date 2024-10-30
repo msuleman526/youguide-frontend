@@ -1,35 +1,73 @@
-import { Button, Flex, Form, Input, Typography } from 'antd'
-import React from 'react'
-import AuthLayout from '../layouts/AuthLayout'
-import OtherRegisterOption from '../components/OtherRegisterOption'
-import { Link } from 'react-router-dom'
+import React, { useState } from 'react';
+import { Button, Form, Input, Typography, message } from 'antd';
+import { Link, useNavigate } from 'react-router-dom';
+import AuthLayout from '../layouts/AuthLayout';
+import OtherRegisterOption from '../components/OtherRegisterOption';
+import ApiService from '../APIServices/ApiService';
 
 const Login = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false)
+
+  const onFinish = async (values) => {
+    setLoading(true)
+    try {
+      ApiService.loginUser(values)
+        .then(response => {
+           setLoading(false)
+           message.success("Welcome " + response.user.firstName + " " + response.user.lastName);
+           localStorage.setItem("token", response.token);
+           localStorage.setItem("user", JSON.stringify(response.user));
+           navigate('/roles');
+        })
+        .catch(error => {
+            setLoading(false)
+            message.error(error?.response?.data?.message || "Login Failed.")
+        });
+    } catch (error) {
+      setLoading(false)
+      console.log("Error", error)
+    }
+  };
+
   return (
-    <AuthLayout title={'Sign in'} customCenterClassName="auth-card-height">
-      <Form layout="vertical">
-        <Form.Item label="Name" name={'name'}>
-          <Input placeholder="Your name" />
+    <AuthLayout title="Sign in" customCenterClassName="auth-card-height">
+      <Form layout="vertical" onFinish={onFinish}>
+        <Form.Item
+          label="Email Address"
+          name="email"
+          rules={[
+            { required: true, message: 'Please enter your email' },
+          ]}
+        >
+          <Input placeholder="Your email" />
         </Form.Item>
-        <Form.Item label="Password" name={'password'}>
-          <Input placeholder="Your password" />
+        <Form.Item
+          label="Password"
+          name="password"
+          rules={[
+            { required: true, message: 'Please enter your password' },
+            { min: 6, message: 'Password must be at least 6 characters' },
+          ]}
+        >
+          <Input.Password placeholder="Your password" />
         </Form.Item>
-        <Flex justify="end" className="mb-2">
-          <Link to={'/forget-password'}>Forget Password</Link>
-        </Flex>
+        <div className="flex justify-end mb-2">
+          <Link to="/forget-password">Forget Password</Link>
+        </div>
         <Form.Item>
-          <Link to={'/roles'}><Button type="primary" block>Login</Button></Link>
+          <Button loading={loading} type="primary" htmlType="submit" block>
+            Login
+          </Button>
         </Form.Item>
-        <Flex gap={'small'} justify="center">
-          <Typography.Text type="secondary">
-            Do not have an account?
-          </Typography.Text>
-          <Link to={'/register'}>Sign up</Link>
-        </Flex>
+        <div className="flex justify-center gap-1">
+          <Typography.Text type="secondary">Do not have an account?</Typography.Text>
+          <Link to="/register">Sign up</Link>
+        </div>
         <OtherRegisterOption />
       </Form>
     </AuthLayout>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;
