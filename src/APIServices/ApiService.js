@@ -2,6 +2,7 @@ import axios from 'axios';
 
 class ApiService {
     static baseURL = 'http://localhost:5000/api'; // Set your base URL here
+    static dcoumentURL = 'http://localhost:5000/';
 
     static async loginUser(data) {
         try {
@@ -16,6 +17,7 @@ class ApiService {
             throw error;
         }
     }
+
 
     static async getAllRoles() {
         try {
@@ -219,10 +221,15 @@ class ApiService {
     // Fetch all books with their categories
     static async getAllBooks() {
         try {
-            const response = await axios.get(`${this.baseURL}/books`);
+            const response = await axios.get(`${this.baseURL}/books`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
             return response.data;
         } catch (error) {
-            console.error('Error fetching books:', error.response?.data || error.message);
+            console.error('Error get roles:', error.response?.data || error.message);
             throw error;
         }
     }
