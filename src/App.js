@@ -10,6 +10,8 @@ import Roles from './pages/Roles/Roles'
 import Users from './pages/Users/Users'
 import Books from './pages/Books/Books'
 import Categories from './pages/Categories/Categories'
+import PaymentSuccess from './pages/Payment/PaymentSuccess'
+import PaymentError from './pages/Payment/PaymentError'
 
 
 const App = () => {
@@ -17,6 +19,8 @@ const App = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/payment/success" element={<PaymentSuccess />} />
+        <Route path="/payment/cancel" element={<PaymentError />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/otp" element={<OTPScreen />} />

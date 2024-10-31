@@ -1,45 +1,36 @@
-import React, { useState } from 'react';
-import { Button, Flex, Select, Table, Typography, Modal, Tag, Form, Input } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Button, Flex, Select, Table, Typography, Modal, Tag, Form, Input, message, Image } from 'antd';
 import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 import { useRecoilValue } from 'recoil';
 import { themeState } from '../../atom';
 import CustomCard from '../../components/Card';
 import BookPopup from './BookPopup';
 import UploadFormPopup from './UploadFormPopup';
+import ApiService from '../../APIServices/ApiService';
+import { Link } from 'react-router-dom';
 
 const Books = () => {
   const theme = useRecoilValue(themeState);
   const [uploadVisible, setUploadVisible] = useState(false)
-  const [books, setBooks] = useState([
-    {
-      id: 1,
-      name: 'The complete travel guide for Afghanistan',
-      address: 'Kabul Afghanistan',
-      status: 'Active',
-      openBooks: 15,
-      offlineBooks: 5,
-      downloadBooks: 2,
-      created_at: '2024-01-01',
-      language: 'English, Phasto',
-      rating: 4.8,
-    },
-    {
-      id: 2,
-      name: 'The complete travel guide for Alabama',
-      address: 'Montgomery, Albama',
-      status: 'Active',
-      openBooks: 20,
-      offlineBooks: 7,
-      downloadBooks: 5,
-      created_at: '2024-02-01',
-      language: 'English',
-      rating: 4.5,
-    },
-  ]);
+  const [books, setBooks] = useState([]);
   const [tableLoading, setTableLoading] = useState(false);
   const [selectedBookStatus, setSelectedBookStatus] = useState('all');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
+  const user = JSON.parse(localStorage.getItem("user"))
+
+  useEffect(() => {
+    setTableLoading(true)
+    ApiService.getAllBooks().then((response) => {
+        setBooks(response)
+        setTableLoading(false)
+    }).catch(error => {
+        setTableLoading(false)
+        message.error(error?.response?.data?.message || "Books Failed.")
+        setBooks([])
+    });
+}, [])
+
 
   const deleteBook = (bookId) => {
     setTableLoading(true);
@@ -89,9 +80,21 @@ const Books = () => {
 
   const columns = [
     {
+      title: '#',
+      dataIndex: 'imagePath',
+      key: 'imagePath',
+      render: (imagePath) => <Image src={imagePath} style={{width: '80px', borderRadius: '10px'}}/>,
+    },
+    {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+    },
+    {
+      title: 'Category',
+      dataIndex: 'category',
+      key: 'category',
+      render: (category) => <Tag color='blue'>{category.name}</Tag>
     },
     {
       title: 'Address',
@@ -103,42 +106,38 @@ const Books = () => {
       dataIndex: 'status',
       key: 'status',
       render: (status) => (
-        <Tag color={status === 'Active' ? 'green' : 'volcano'}>{status}</Tag>
+        <Tag color={status ? 'green' : 'volcano'}>{status ? "Active" : "Not Active"}</Tag>
       ),
     },
     {
       title: 'Open Books',
       dataIndex: 'openBooks',
       key: 'openBooks',
-      render: (openBooks) => <div className='book-badge'>{openBooks}</div>,
+      render: (openBooks) => <div className='book-badge'>{openBooks ||"0"}</div>,
     },
     {
       title: 'Offline Books',
       key: 'offlineBooks',
       dataIndex: 'offlineBooks',
-      render: (offlineBooks) => <div className='book-badge'>{offlineBooks}</div>,
+      render: (offlineBooks) => <div className='book-badge'>{offlineBooks ||"0"}</div>,
     },
     {
       title: 'Download Books',
       key: 'downloadBooks',
       dataIndex: 'downloadBooks',
-      render: (downloadBooks) => <div className='book-badge'>{downloadBooks}</div>,
+      render: (downloadBooks) => <div className='book-badge'>{downloadBooks ||"0"}</div>,
     },
     {
-      title: 'Langauge',
-      dataIndex: 'language',
-      key: 'language',
+      title: 'Langauges',
+      dataIndex: 'languages',
+      key: 'languages',
+      render: (languages) => <div>{languages.join(', ')}</div>,
     },
     {
-      title: 'Rating',
-      dataIndex: 'rating',
-      key: 'rating',
-      render: (rating) => <div className='book-badge'>{rating}</div>,
-    },
-    {
-      title: 'Created At',
-      dataIndex: 'created_at',
-      key: 'created_at',
+      title: 'Documents',
+      dataIndex: 'filePath',
+      key: 'filePath',
+      render: (index, record) => <Button size='small'><Link to={record.filePath+"?id="+user.id} target="_blank">PDF</Link></Button>,
     },
     {
       title: 'Action',
@@ -182,8 +181,8 @@ const Books = () => {
                 onChange={value => setSelectedBookStatus(value)}
               >
                 <Select.Option key="all" value="all">All Statuses</Select.Option>
-                <Select.Option key="Active" value="Active">Active</Select.Option>
-                <Select.Option key="Not Active" value="Not Active">Not Active</Select.Option>
+                <Select.Option key="Active" value={true}>Active</Select.Option>
+                <Select.Option key="Not Active" value={false}>Not Active</Select.Option>
               </Select>
             </Flex>
             <Button
