@@ -83,7 +83,7 @@ const Books = () => {
       title: '#',
       dataIndex: 'imagePath',
       key: 'imagePath',
-      render: (imagePath) => <Image src={imagePath} style={{width: '80px', borderRadius: '10px'}}/>,
+      render: (imagePath) => <Image src={"http://localhost:5000/" + imagePath} style={{width: '80px', borderRadius: '10px'}}/>,
     },
     {
       title: 'Name',
@@ -137,7 +137,7 @@ const Books = () => {
       title: 'Documents',
       dataIndex: 'filePath',
       key: 'filePath',
-      render: (index, record) => <Button size='small'><Link to={record.filePath+"?id="+user.id} target="_blank">PDF</Link></Button>,
+      render: (index, record) => <Button size='small'><Link to={"http://localhost:5000/" + record.filePath+"?id="+user.id} target="_blank">PDF</Link></Button>,
     },
     {
       title: 'Action',
