@@ -84,12 +84,12 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
     {
       key: 'books',
       icon: <FaBook {...iconProps} />,
-      label: 'Manage Books',
+      label: 'Manage Guides',
     },
     {
-      key: 'upload',
+      key: 'transactions',
       icon: <FaCog {...iconProps} />,
-      label: 'Upload',
+      label: 'Transactions',
     },
   ];
 

@@ -1,24 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Drawer, Typography, Button, Form, Input, Divider, Alert, Upload, InputNumber, Select } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
+import ApiService from '../../APIServices/ApiService';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-const BookPopup = ({ visible, onClose, onFinish, loading, onAddBook}) => {
+const BookPopup = ({ visible, onClose, loading, onAddBook }) => {
     const [form] = Form.useForm();
-
-    // State for city and country
     const [locationDetails, setLocationDetails] = useState({ city: '', country: '' });
+    const [categories, setCategories] = useState([]);
+
+    // Fetch categories when drawer is opened
+    useEffect(() => {
+        if (visible) {
+            ApiService.getAllCategories()
+                .then(response => {
+                    setCategories(response || []);
+                })
+                .catch(error => {
+                    setCategories([]);
+                    console.error("Error fetching categories:", error);
+                });
+        }
+    }, [visible]);
 
     // Handle the selection of address
     const handleAddressSelect = (value) => {
         const address = value.value.label;
         const components = value.value.terms;
       
-        // Extract city and country from the address components
-        console.log(components)
         let city = '';
         let country = '';
         if (components.length >= 2) {
@@ -28,6 +40,40 @@ const BookPopup = ({ visible, onClose, onFinish, loading, onAddBook}) => {
 
         setLocationDetails({ city, country });
         form.setFieldsValue({ address, city, country });
+    };
+
+    // Handle form submission
+    const handleFinish = (values) => {
+        const formData = new FormData();
+        
+        // Append form data fields
+        formData.append('name', values.name);
+        formData.append('address', values.city + ", " +  values.country);
+        formData.append('city', values.city);
+        formData.append('country', values.country);
+        formData.append('languages', values.languages);
+        formData.append('category_id', values.category_id);
+        formData.append('price', values.price);
+        
+        // Append image and file
+        if (values.image?.file) {
+            formData.append('image', values.image.file);
+        }
+        if (values.file?.file) {
+            formData.append('file', values.file.file);
+        }
+
+        // Call API to create the book
+        ApiService.createBook(formData)
+            .then((response) => {
+                form.resetFields();
+                setLocationDetails({ city: '', country: '' });
+                onClose();
+                onAddBook(response);
+            })
+            .catch(error => {
+                console.error("Error creating book:", error);
+            });
     };
 
     return (
@@ -56,7 +102,7 @@ const BookPopup = ({ visible, onClose, onFinish, loading, onAddBook}) => {
             <Form
                 form={form}
                 layout="vertical"
-                onFinish={onFinish}
+                onFinish={handleFinish}
             >
                 <Form.Item
                     name="name"
@@ -69,7 +115,7 @@ const BookPopup = ({ visible, onClose, onFinish, loading, onAddBook}) => {
                 <Form.Item
                     name="address"
                     label="Address"
-                    rules={[{ required: true, message: 'Address is required' }]}
+                    rules={[{ message: 'Address is required' }]}
                 >
                     <GooglePlacesAutocomplete
                         apiKey="AIzaSyAo1viD-Ut0TzXTyihevwuf-9tv_J3dPa0"
@@ -110,8 +156,11 @@ const BookPopup = ({ visible, onClose, onFinish, loading, onAddBook}) => {
                     rules={[{ required: true, message: 'Category is required' }]}
                 >
                     <Select placeholder="Select a category">
-                        <Option value="6720cc933a4aa8aba2a7368f">Travel Guide</Option>
-                        <Option value="other">Other</Option>
+                        {categories.map(category => (
+                            <Option key={category._id} value={category._id}>
+                                {category.name}
+                            </Option>
+                        ))}
                     </Select>
                 </Form.Item>
 

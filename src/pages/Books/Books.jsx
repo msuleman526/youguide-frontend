@@ -11,34 +11,39 @@ import { Link } from 'react-router-dom';
 
 const Books = () => {
   const theme = useRecoilValue(themeState);
-  const [uploadVisible, setUploadVisible] = useState(false)
+  const [uploadVisible, setUploadVisible] = useState(false);
   const [books, setBooks] = useState([]);
+  const [categories, setCategories] = useState([]); // New state for categories
   const [tableLoading, setTableLoading] = useState(false);
   const [selectedBookStatus, setSelectedBookStatus] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState('all'); // New state for selected category
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
-  const user = JSON.parse(localStorage.getItem("user"))
+  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
-    setTableLoading(true)
-    ApiService.getAllBooks().then((response) => {
-        setBooks(response)
-        setTableLoading(false)
-    }).catch(error => {
-        setTableLoading(false)
-        message.error(error?.response?.data?.message || "Books Failed.")
-        setBooks([])
-    });
-}, [])
+    // Fetch all books
+    fetchAllBooks();
 
+    // Fetch all categories
+    ApiService.getAllCategories()
+      .then((response) => {
+        setCategories(response);
+      })
+      .catch((error) => {
+        message.error("Failed to load categories.");
+      });
+  }, []);
 
-  const deleteBook = (bookId) => {
+  const deleteBook = async (bookId) => {
     setTableLoading(true);
     try {
-      setBooks((prevBooks) => prevBooks.filter((book) => book.id !== bookId));
+      await ApiService.deleteBook(bookId);
+      message.success('Book deleted successfully.');
+      setBooks((prevBooks) => prevBooks.filter((book) => book._id !== bookId));
+      setTableLoading(false);
     } catch (err) {
-      console.error('Deleting Book', err);
-    } finally {
+      message.error("There is some issue while deleting.");
       setTableLoading(false);
     }
   };
@@ -56,14 +61,19 @@ const Books = () => {
     setIsModalVisible(true);
   };
 
+  const onAddBook = (book) => {
+    message.success("Book added successfully.");
+    setBooks((prevBooks) => [...prevBooks, book]);
+  };
+
   const handleOk = () => {
     form
       .validateFields()
       .then((values) => {
         const newBook = {
           ...values,
-          id: books.length + 1, // Simple ID assignment
-          created_at: new Date().toISOString().split('T')[0], // Current date
+          id: books.length + 1,
+          created_at: new Date().toISOString().split('T')[0],
         };
         setBooks([...books, newBook]);
         form.resetFields();
@@ -72,7 +82,7 @@ const Books = () => {
       .catch((info) => {
         console.log('Validate Failed:', info);
       });
- };
+  };
 
   const handleCancel = () => {
     setIsModalVisible(false);
@@ -147,7 +157,7 @@ const Books = () => {
           <Button type="link" onClick={() => console.log('Edit functionality here')}>
             <FaEdit />
           </Button>
-          <Button type="link" danger onClick={() => confirmDelete(record.id)}>
+          <Button type="link" danger onClick={() => confirmDelete(record._id)}>
             <FaTrashAlt />
           </Button>
         </Flex>
@@ -155,10 +165,27 @@ const Books = () => {
     },
   ];
 
-  // Filter books based on selected status
-  const filteredBooks = selectedBookStatus === 'all'
-    ? books
-    : books.filter(book => book.status === selectedBookStatus);
+  const fetchAllBooks = () => {
+    setTableLoading(true);
+    ApiService.getAllBooks()
+      .then((response) => {
+        setBooks(response);
+        setTableLoading(false);
+      })
+      .catch((error) => {
+        setTableLoading(false);
+        message.error(error?.response?.data?.message || "Books Failed.");
+        setBooks([]);
+      });
+  }
+
+  // Filter books based on selected status and category
+  const filteredBooks = books.filter((book) => {
+    return (
+      (selectedBookStatus === 'all' || book.status === selectedBookStatus) &&
+      (selectedCategory === 'all' || book.category._id === selectedCategory)
+    );
+  });
 
   return (
     <>
@@ -173,27 +200,36 @@ const Books = () => {
             </Typography.Title>
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <Flex justify="end" align="center" gap="small" className="mb-2">
-              <Select
-                defaultValue="all"
-                style={{ width: '250px' }}
-                className={theme === 'light' ? 'header-search-input-light' : 'header-search-input-dark'}
-                onChange={value => setSelectedBookStatus(value)}
-              >
-                <Select.Option key="all" value="all">All Statuses</Select.Option>
-                <Select.Option key="Active" value={true}>Active</Select.Option>
-                <Select.Option key="Not Active" value={false}>Not Active</Select.Option>
-              </Select>
-            </Flex>
+            <Select
+              defaultValue="all"
+              style={{ width: '250px' }}
+              onChange={(value) => setSelectedBookStatus(value)}
+              className={theme === 'light' ? 'header-search-input-light' : 'header-search-input-dark'}
+            >
+              <Select.Option value="all">All Statuses</Select.Option>
+              <Select.Option value={true}>Active</Select.Option>
+              <Select.Option value={false}>Not Active</Select.Option>
+            </Select>
+            <Select
+              defaultValue="all"
+              style={{ width: '250px' }}
+              onChange={(value) => setSelectedCategory(value)}
+              className={theme === 'light' ? 'header-search-input-light' : 'header-search-input-dark'}
+            >
+              <Select.Option value="all">All Categories</Select.Option>
+              {categories.map((category) => (
+                <Select.Option key={category._id} value={category._id}>
+                  {category.name}
+                </Select.Option>
+              ))}
+            </Select>
             <Button
               className="custom-primary-btn"
               type="primary"
               size="large"
               onClick={() => setUploadVisible(true)}
             >
-              <Flex gap="small" align="center">
-                <span>Upload Books</span>
-              </Flex>
+              <span>Upload Books</span>
             </Button>
             <Button
               className="custom-primary-btn"
@@ -201,9 +237,7 @@ const Books = () => {
               size="large"
               onClick={handleAddBook}
             >
-              <Flex gap="small" align="center">
-                <span>Add Book</span>
-              </Flex>
+              <span>Add Book</span>
             </Button>
           </div>
         </Flex>
@@ -220,8 +254,8 @@ const Books = () => {
           pagination={{ pageSize: 10 }}
         />
       </CustomCard>
-      <UploadFormPopup visible={uploadVisible} setVisible={() => setUploadVisible(false)} />
-      <BookPopup visible={isModalVisible} onClose={handleCancel} onAddBook={handleAddBook} />
+      <UploadFormPopup visible={uploadVisible} setVisible={() => setUploadVisible(false)} fetchAllBooks={fetchAllBooks} />
+      <BookPopup visible={isModalVisible} onClose={handleCancel} onAddBook={onAddBook} />
     </>
   );
 };
