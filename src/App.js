@@ -12,6 +12,7 @@ import Books from './pages/Books/Books'
 import Categories from './pages/Categories/Categories'
 import PaymentSuccess from './pages/Payment/PaymentSuccess'
 import PaymentError from './pages/Payment/PaymentError'
+import Transactions from './pages/Transactions/Transactions'
 
 
 const App = () => {
@@ -29,6 +30,7 @@ const App = () => {
         <Route element={<DashboardLayout />}>
           <Route path="/roles" element={<Roles />} />
           <Route path="/categories" element={<Categories />} />
+          <Route path="/transactions" element={<Transactions />} />
           <Route path="/users" element={<Users />} />
           <Route path="/books" element={<Books />} />
         </Route>

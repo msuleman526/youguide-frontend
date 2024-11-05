@@ -234,6 +234,21 @@ class ApiService {
         }
     }
 
+    static async getAllTransactions() {
+        try {
+            const response = await axios.get(`${this.baseURL}/books/purchases`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get roles:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
     // Fetch a single book by ID with category
     static async getBookById(id) {
         try {
@@ -256,6 +271,20 @@ class ApiService {
             return response.data;
         } catch (error) {
             console.error(`Error updating book with ID ${id}:`, error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async uploadBook(data) {
+        try {
+            const response = await axios.post(`${this.baseURL}/books/upload`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data', // If there are files in the payload
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error(`Error uploading book`, error.response?.data || error.message);
             throw error;
         }
     }
