@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 class ApiService {
-    static baseURL = 'http://localhost:5000/api'; // Set your base URL here
-    static dcoumentURL = 'http://localhost:5000/';
+    static baseURL = 'https://appapi.youguide.com/api'; // Set your base URL here
+    static dcoumentURL = 'https://appapi.youguide.com/';
 
     static async loginUser(data) {
         try {
