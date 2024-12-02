@@ -43,13 +43,13 @@ const Dashboard = () => {
     {
       label: 'INCOME FY 2025',
       value: '$0.0',
-      color: '#AA3C43',
+      color: '#29b8e3',
       icon: <IncomeSvg />,
     },
     {
       label: 'INCOME FY 2024',
       value: '$0.0',
-      color: '#AA3C43',
+      color: '#29b8e3',
       icon: <IncomeSvg />,
     },
     {
@@ -202,7 +202,7 @@ const Dashboard = () => {
               <Progress
                 style={{ paddingTop: 0 }}
                 percent={value}
-                strokeColor={'#AA3C43'}
+                strokeColor={'#29b8e3'}
                 showInfo={false}
               />
             </Flex>

@@ -1,6 +1,6 @@
 export const dashboardLightTheme = {
   Menu: {
-    itemSelectedBg: '#AA3C43',
+    itemSelectedBg: '#29b8e3',
     itemSelectedColor: '#fff',
   },
   Layout: {
@@ -24,7 +24,7 @@ export const dashboardLightTheme = {
 
 export const dashboardDarkTheme = {
   Menu: {
-    itemSelectedBg: '#AA3C43',
+    itemSelectedBg: '#29b8e3',
     itemSelectedColor: '#fff',
     colorBgContainer: '#131B2F',
     itemColor: '#fff',

@@ -62,7 +62,7 @@ const DashboardLayout = ({ children }) => {
       theme={{
         components: theme === 'dark' ? dashboardDarkTheme : dashboardLightTheme,
         token: {
-          colorPrimary: '#AA3C43',
+          colorPrimary: '#29b8e3',
         },
       }}
     >

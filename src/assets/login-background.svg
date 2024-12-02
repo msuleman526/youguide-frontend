@@ -76,9 +76,9 @@
 <feBlend mode="normal" in2="shape" result="effect1_innerShadow_1_330"/>
 </filter>
 <radialGradient id="paint0_radial_1_330" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(480 540) rotate(90) scale(540 480)">
-<stop stop-color="#AA3C43"/>
-<stop offset="0.77" stop-color="#AA3C43"/>
-<stop offset="1" stop-color="#AA3C43"/>
+<stop stop-color="#29b8e3"/>
+<stop offset="0.77" stop-color="#29b8e3"/>
+<stop offset="1" stop-color="#29b8e3"/>
 </radialGradient>
 <clipPath id="clip0_1_330">
 <rect width="960" height="1080" fill="white"/>

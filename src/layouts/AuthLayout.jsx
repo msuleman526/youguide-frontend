@@ -51,7 +51,7 @@ const AuthLayout = ({
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: "#AA3C43",
+          colorPrimary: "#29b8e3",
         },
         components: theme === "dark" ? authDarkTheme : authLightTheme,
       }}
