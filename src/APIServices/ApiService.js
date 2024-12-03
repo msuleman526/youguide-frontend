@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 class ApiService {
-    static baseURL = 'https://appapi.youguide.com/api'; // Set your base URL here
-    static dcoumentURL = 'https://appapi.youguide.com/';
+    static baseURL = 'http://localhost:5000/api'; // Set your base URL here
+    static dcoumentURL = 'http://localhost:5000/';
 
     static async loginUser(data) {
         try {
@@ -219,9 +219,9 @@ class ApiService {
     }
 
     // Fetch all books with their categories
-    static async getAllBooks() {
+    static async getAllBooks(page = 1, language = "en", query = "") {
         try {
-            const response = await axios.get(`${this.baseURL}/books`, {
+            const response = await axios.get(`${this.baseURL}/books?page=${page}&language=${language}&query=${query}`, {
                 headers: {
                     'Content-Type': 'application/json',
                     "Authorization": "Bearer " + localStorage.getItem("token")

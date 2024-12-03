@@ -143,9 +143,9 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
           >
             <Typography.Title level={3}>
               {collapsed ? (
-                <Image src={smallLogo} preview={false} style={{ marginTop: '-20px', height: '67px', marginLeft: '20px'}} />
+                <Image src={smallLogo} preview={false} style={{ marginTop: '-5px', height: '45px'}} />
               ) : (
-                <Image src={largeLogo} style={{ marginTop: '-20px', height: '67px', marginLeft: '20px'}} preview={false} />
+                <Image src={largeLogo}  style={{ marginTop: '-5px', height: '45px'}} preview={false} />
               )}
             </Typography.Title>
           </Flex>

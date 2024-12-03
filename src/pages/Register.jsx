@@ -43,30 +43,33 @@ const Register = () => {
         onFinish={onFinish}
         initialValues={{ remember: true }}
       >
-        <Row gutter={16}>
-          <Col span={12}>
+        <Row gutter={24}>
+          <Col sm={24} lg={12} md={12} style={{width: '100%'}}>
             <Form.Item
+              style={{width: '100%'}}
               label="First Name"
               name="firstName"
               rules={[{ required: true, message: 'Please enter your first name!' }]}
             >
-              <Input placeholder="First name" />
+              <Input placeholder="First name" style={{width: '100%'}} />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col sm={24} lg={12} md={12} style={{width: '100%'}}>
             <Form.Item
+              style={{width: '100%'}}
               label="Last Name"
               name="lastName"
               rules={[{ required: true, message: 'Please enter your last name!' }]}
             >
-              <Input placeholder="Last name" />
+              <Input placeholder="Last name" style={{width: '100%'}} />
             </Form.Item>
           </Col>
         </Row>
         
-        <Row gutter={16}>
-          <Col span={12}>
+        <Row gutter={24}>
+          <Col sm={24} lg={12} md={12} style={{width: '100%'}}>
             <Form.Item
+              style={{width: '100%'}}
               label="Email"
               name="email"
               rules={[
@@ -74,11 +77,12 @@ const Register = () => {
                 { type: 'email', message: 'Please enter a valid email!' },
               ]}
             >
-              <Input placeholder="Your email" />
+              <Input placeholder="Your email" style={{width: '100%'}} />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col sm={24} lg={12} md={12} style={{width: '100%'}}>
             <Form.Item
+              style={{width: '100%'}}
               label="Mobile Number"
               name="mobileNo"
               rules={[
@@ -86,23 +90,25 @@ const Register = () => {
                 { pattern: /^[0-9]{10,}$/, message: 'Please enter a valid mobile number!' },
               ]}
             >
-              <Input placeholder="Your mobile number" />
+              <Input placeholder="Your mobile number"  style={{width: '100%'}}/>
             </Form.Item>
           </Col>
         </Row>
 
-        <Row gutter={16}>
-          <Col span={12}>
+        <Row gutter={24}>
+          <Col sm={24} lg={12} md={12} style={{width: '100%'}}>
             <Form.Item
+              style={{width: '100%'}}
               label="Password"
               name="password"
               rules={[{ required: true, message: 'Please enter your password!' }]}
             >
-              <Input.Password placeholder="Your password" />
+              <Input.Password placeholder="Your password" style={{width: '100%'}} />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col sm={24} lg={12} md={12} style={{width: '100%'}}>
             <Form.Item
+              style={{width: '100%'}}
               label="Confirm Password"
               name="confirmPassword"
               dependencies={['password']}
@@ -118,14 +124,14 @@ const Register = () => {
                 }),
               ]}
             >
-              <Input.Password placeholder="Confirm password" />
+              <Input.Password placeholder="Confirm password" style={{width: '100%'}} />
             </Form.Item>
           </Col>
         </Row>
 
-        <Form.Item name="affiliate" valuePropName="checked">
+        {/* <Form.Item name="affiliate" valuePropName="checked">
           <Checkbox>Affiliate</Checkbox>
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item
           name="termsAccepted"
@@ -155,7 +161,7 @@ const Register = () => {
           <Link to={'/login'}> Login</Link>
         </div>
 
-        <OtherRegisterOption />
+        {/* <OtherRegisterOption /> */}
       </Form>
     </AuthLayout>
   );

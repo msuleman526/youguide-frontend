@@ -64,7 +64,6 @@ const Login = () => {
           <Typography.Text type="secondary">Do not have an account?</Typography.Text>
           <Link to="/register">Sign up</Link>
         </div>
-        <OtherRegisterOption />
       </Form>
     </AuthLayout>
   );

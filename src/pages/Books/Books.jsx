@@ -19,11 +19,18 @@ const Books = () => {
   const [selectedCategory, setSelectedCategory] = useState('all'); // New state for selected category
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 8,
+    total: 3,
+  });
+  const [language, setLanguage] = useState("en");
+  const [query, setQuery] = useState('');
   const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     // Fetch all books
-    fetchAllBooks();
+    fetchAllBooks(pagination.current);
 
     // Fetch all categories
     ApiService.getAllCategories()
@@ -138,16 +145,14 @@ const Books = () => {
       render: (downloadBooks) => <div className='book-badge'>{downloadBooks ||"0"}</div>,
     },
     {
-      title: 'Langauges',
-      dataIndex: 'languages',
-      key: 'languages',
-      render: (languages) => <div>{languages.join(', ')}</div>,
-    },
-    {
       title: 'Documents',
-      dataIndex: 'filePath',
-      key: 'filePath',
-      render: (index, record) => <Button size='small'><Link to={"http://localhost:5000/" + record.filePath+"?id="+user.id} target="_blank">PDF</Link></Button>,
+      dataIndex: 'pdfFiles',
+      key: 'pdfFiles',
+      render: (index, record) => <div style={{width: '190px'}}>{
+        record.pdfFiles.map((file, index) => (
+          <Tag color='volcano' style={{margin: '2px'}} onClick={() => window.open("http://localhost:5000/" + file.filePath, "_blank")}>{file.language}</Tag>
+        ))  
+      }</div>,
     },
     {
       title: 'Action',
@@ -165,12 +170,19 @@ const Books = () => {
     },
   ];
 
-  const fetchAllBooks = () => {
+
+  const fetchAllBooks = (page, q) => {
     setTableLoading(true);
-    ApiService.getAllBooks()
+    ApiService.getAllBooks(page, language, q)
       .then((response) => {
-        setBooks(response);
+        let obj = {
+          ...pagination,
+          current: response.currentPage,
+          total: response.totalBooks, // Replace 'total' with the total count of items
+        }
+        setPagination(obj);
         setTableLoading(false);
+        setBooks(response.books);
       })
       .catch((error) => {
         setTableLoading(false);
@@ -187,6 +199,16 @@ const Books = () => {
     );
   });
 
+  const onTableChange = (vale) => {
+      setPagination(vale)
+      fetchAllBooks(vale.current, query)
+  }
+
+  const onPressEnter = (e) => {
+      setQuery(...e.target.value)
+      fetchAllBooks(1, e.target.value)
+  }
+
   return (
     <>
       <div>
@@ -200,7 +222,7 @@ const Books = () => {
             </Typography.Title>
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <Select
+            {/* <Select
               defaultValue="all"
               style={{ width: '250px' }}
               onChange={(value) => setSelectedBookStatus(value)}
@@ -209,7 +231,7 @@ const Books = () => {
               <Select.Option value="all">All Statuses</Select.Option>
               <Select.Option value={true}>Active</Select.Option>
               <Select.Option value={false}>Not Active</Select.Option>
-            </Select>
+            </Select> */}
             <Select
               defaultValue="all"
               style={{ width: '250px' }}
@@ -223,6 +245,7 @@ const Books = () => {
                 </Select.Option>
               ))}
             </Select>
+            <Input placeholder='Search by name or city or country' onPressEnter={onPressEnter}/>
             <Button
               className="custom-primary-btn"
               type="primary"
@@ -250,11 +273,12 @@ const Books = () => {
           columns={columns}
           dataSource={filteredBooks}
           loading={tableLoading}
+          pagination={pagination}
+          onChange={onTableChange}
           scroll={{ x: 'max-content' }}
-          pagination={{ pageSize: 10 }}
         />
       </CustomCard>
-      <UploadFormPopup visible={uploadVisible} setVisible={() => setUploadVisible(false)} fetchAllBooks={fetchAllBooks} />
+      <UploadFormPopup visible={uploadVisible} setVisible={() => setUploadVisible(false)} fetchAllBooks={() => fetchAllBooks(pagination.current, query)} />
       <BookPopup visible={isModalVisible} onClose={handleCancel} onAddBook={onAddBook} />
     </>
   );

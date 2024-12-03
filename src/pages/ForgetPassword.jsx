@@ -14,7 +14,7 @@ const ForgetPassword = () => {
     setShowModal(false)
   }
   return (
-    <AuthLayout title={'Forgot Password'} backToLogin={true}>
+    <AuthLayout title={'Forgot Password'} backToLogin={true} customCenterClassName="auth-card-height">
       <Flex vertical justify="center" gap={'40px'}>
         <Flex justify="center" style={{ marginTop: '30px' }}>
           <Typography.Text

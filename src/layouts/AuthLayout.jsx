@@ -61,7 +61,7 @@ const AuthLayout = ({
           <Row style={{ height: "100vh" }}>
             <Col xs={24} md={12}>
               <Card className="h-100 card-border-radius" style={{height: '100%'}} height={"100%"}>
-                <Flex justify="end">
+                {/* <Flex justify="end">
                   <Button
                     style={{
                       backgroundColor: theme === "dark" && "#05152b",
@@ -82,7 +82,7 @@ const AuthLayout = ({
                       </Tooltip>
                     )}
                   </Button>
-                </Flex>
+                </Flex> */}
                 {backToLogin && (
                   <Link to={"/login"}>
                     <Flex gap={"small"} align="center">
@@ -123,7 +123,7 @@ const AuthLayout = ({
               <Image
                 preview={false}
                 src={authImg}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                style={{ width: "100%", height: "100vh", objectFit: "cover" }}
               />
             </Col>
           </Row>
