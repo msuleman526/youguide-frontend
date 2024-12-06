@@ -16,8 +16,26 @@ import { FaChevronCircleLeft, FaChevronCircleRight } from 'react-icons/fa'
 import { CiLight, CiDark } from 'react-icons/ci'
 import { Link } from 'react-router-dom'
 import { MenuOutlined } from '@ant-design/icons';
+import { useEffect, useState } from 'react'
 
 const LayoutHeader = ({ isMobile, collapsed, setCollapsed, theme, toggleTheme, showDrawer}) => {
+
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    const accessToken = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    if (accessToken && user) {
+      setUser(JSON.parse(user));
+    }
+  }, [])
+
+  const callLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.reload();
+  }
+
   const items = [
     {
       label: 'Profile',
@@ -27,7 +45,7 @@ const LayoutHeader = ({ isMobile, collapsed, setCollapsed, theme, toggleTheme, s
 
     {
       label: (
-        <Link to="/login" style={{ color: 'inherit', textDecoration: 'none' }}>
+        <Link onClick={callLogout} style={{ color: 'inherit', textDecoration: 'none' }}>
           Logout
         </Link>
       ),
@@ -90,7 +108,7 @@ const LayoutHeader = ({ isMobile, collapsed, setCollapsed, theme, toggleTheme, s
                   src={<Image src={profile} alt="profile" preview={false} />}
                   shape="square"
                 />
-                <Typography.Text strong>Ismail Khan</Typography.Text>
+                <Typography.Text strong>{user?.firstName + " " + user?.lastName}</Typography.Text>
               </Flex>
               <GoChevronDown
                 color={theme === 'light' ? '#4A4A4C' : '#E3E8F3'}
@@ -98,7 +116,7 @@ const LayoutHeader = ({ isMobile, collapsed, setCollapsed, theme, toggleTheme, s
               />
             </Flex>
           </Dropdown>
-          <Button
+          {/* <Button
             style={{
               backgroundColor: theme === 'dark' && '#05152b',
               borderColor: theme === 'dark' && '#143D69',
@@ -113,7 +131,7 @@ const LayoutHeader = ({ isMobile, collapsed, setCollapsed, theme, toggleTheme, s
             ) : (
               <CiDark size={18} />
             )}
-          </Button>
+          </Button> */}
         </Flex>
       </Flex>
     </Layout.Header>

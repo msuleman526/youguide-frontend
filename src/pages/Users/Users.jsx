@@ -69,7 +69,7 @@ const Users = () => {
       ),
     },
     {
-      title: 'Open Books',
+      title: 'Open Guides',
       dataIndex: 'openBooks',
       key: 'openBooks',
       render: (openBooks) => (
@@ -79,7 +79,7 @@ const Users = () => {
       ),
     },
     {
-      title: 'Download Books',
+      title: 'Download Guides',
       key: 'downloadBooks',
       dataIndex: 'downloadBooks',
       render: (downloadBooks) => (

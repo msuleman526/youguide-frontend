@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Drawer, Typography, Button, Form, Input, Divider, Alert, Upload, InputNumber, Select } from 'antd';
+import { Drawer, Typography, Button, Form, Input, Divider, Alert, Upload, InputNumber, Select, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 import ApiService from '../../APIServices/ApiService';
+import TextArea from 'antd/es/input/TextArea';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -38,6 +39,11 @@ const BookPopup = ({ visible, onClose, loading, onAddBook }) => {
             country = components[components.length - 1]?.value || '';
         }
 
+        if(city == "" || country == "") {
+            message.error("Please select a valid city and country.");
+            return
+        }
+
         setLocationDetails({ city, country });
         form.setFieldsValue({ address, city, country });
     };
@@ -51,16 +57,13 @@ const BookPopup = ({ visible, onClose, loading, onAddBook }) => {
         formData.append('address', values.city + ", " +  values.country);
         formData.append('city', values.city);
         formData.append('country', values.country);
-        formData.append('languages', values.languages);
+        formData.append('description', values.description);
         formData.append('category_id', values.category_id);
         formData.append('price', values.price);
         
         // Append image and file
         if (values.image?.file) {
             formData.append('image', values.image.file);
-        }
-        if (values.file?.file) {
-            formData.append('file', values.file.file);
         }
 
         // Call API to create the book
@@ -85,7 +88,7 @@ const BookPopup = ({ visible, onClose, loading, onAddBook }) => {
             footer={
                 <div style={{ textAlign: 'right' }}>
                     <Button onClick={onClose} style={{ marginRight: 8 }}>Cancel</Button>
-                    <Button onClick={() => form.submit()} type="primary" loading={loading}>Submit</Button>
+                    <Button onClick={() => form.submit()} type="primary" loading={loading} disabled={locationDetails.city == ""}>Submit</Button>
                 </div>
             }
             bodyStyle={{ paddingBottom: 80 }}
@@ -113,15 +116,24 @@ const BookPopup = ({ visible, onClose, loading, onAddBook }) => {
                 </Form.Item>
 
                 <Form.Item
+                    name="description"
+                    label="Book Description"
+                    rules={[{ required: true, message: 'Book description is required' }]}
+                >
+                    <TextArea placeholder="Enter book description" />
+                </Form.Item>
+
+                <Form.Item
                     name="address"
                     label="Address"
                     rules={[{ message: 'Address is required' }]}
                 >
                     <GooglePlacesAutocomplete
                         apiKey="AIzaSyAo1viD-Ut0TzXTyihevwuf-9tv_J3dPa0"
+                        types={['(cities)']}
                         selectProps={{
                             onChange: handleAddressSelect,
-                            placeholder: 'Enter address'
+                            placeholder: 'Enter City and Country.'
                         }}
                     />
                 </Form.Item>
@@ -140,14 +152,6 @@ const BookPopup = ({ visible, onClose, loading, onAddBook }) => {
                     initialValue={locationDetails.country}
                 >
                     <Input placeholder="Country will auto-fill based on address" disabled />
-                </Form.Item>
-
-                <Form.Item
-                    name="languages"
-                    label="Languages"
-                    rules={[{ required: true, message: 'Languages are required' }]}
-                >
-                    <Input placeholder="Enter languages (e.g., English)" />
                 </Form.Item>
 
                 <Form.Item
@@ -180,17 +184,6 @@ const BookPopup = ({ visible, onClose, loading, onAddBook }) => {
                 >
                     <Upload maxCount={1} beforeUpload={() => false} listType="picture">
                         <Button icon={<UploadOutlined />}>Upload Image</Button>
-                    </Upload>
-                </Form.Item>
-
-                <Form.Item
-                    name="file"
-                    label="Book PDF"
-                    valuePropName="file"
-                    rules={[{ required: true, message: 'PDF is required' }]}
-                >
-                    <Upload maxCount={1} beforeUpload={() => false}>
-                        <Button icon={<UploadOutlined />}>Upload PDF</Button>
                     </Upload>
                 </Form.Item>
             </Form>

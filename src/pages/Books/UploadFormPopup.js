@@ -47,7 +47,7 @@ const UploadFormPopup = ({ visible, setVisible, fetchAllBooks }) => {
         <Modal
             open={visible}
             width={450}
-            title={<Typography.Title level={3} className="fw-500">Upload Books</Typography.Title>}
+            title={<Typography.Title level={3} className="fw-500">Upload Guides</Typography.Title>}
             onOk={handleUpload}
             okText={"Upload"}
             onCancel={handleCancel}

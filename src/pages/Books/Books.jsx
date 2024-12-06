@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Flex, Select, Table, Typography, Modal, Tag, Form, Input, message, Image } from 'antd';
-import { FaEdit, FaTrashAlt } from 'react-icons/fa';
+import { FaEdit, FaTrashAlt, FaUpload } from 'react-icons/fa';
 import { useRecoilValue } from 'recoil';
 import { themeState } from '../../atom';
 import CustomCard from '../../components/Card';
@@ -8,6 +8,7 @@ import BookPopup from './BookPopup';
 import UploadFormPopup from './UploadFormPopup';
 import ApiService from '../../APIServices/ApiService';
 import { Link } from 'react-router-dom';
+import UploadPDF from './UploadPDF';
 
 const Books = () => {
   const theme = useRecoilValue(themeState);
@@ -24,6 +25,8 @@ const Books = () => {
     pageSize: 8,
     total: 3,
   });
+  const [selectedBook, setSelectedBook] = useState(null)
+  const [uploadPopupVisible, setUploadPopUpVisible] = useState(false)
   const [language, setLanguage] = useState("en");
   const [query, setQuery] = useState('');
   const user = JSON.parse(localStorage.getItem("user"));
@@ -70,7 +73,7 @@ const Books = () => {
 
   const onAddBook = (book) => {
     message.success("Book added successfully.");
-    setBooks((prevBooks) => [...prevBooks, book]);
+    fetchAllBooks(pagination.current, query)
   };
 
   const handleOk = () => {
@@ -95,12 +98,17 @@ const Books = () => {
     setIsModalVisible(false);
   };
 
+  const handleUpload = (record) => {
+      setSelectedBook(record._id);
+      setUploadPopUpVisible(true);
+  }
+
   const columns = [
     {
       title: '#',
       dataIndex: 'imagePath',
       key: 'imagePath',
-      render: (imagePath) => <Image src={"http://localhost:5000/" + imagePath} style={{width: '80px', borderRadius: '10px'}}/>,
+      render: (imagePath) => <Image src={ApiService.documentURL + imagePath} style={{width: '80px', borderRadius: '10px'}}/>,
     },
     {
       title: 'Name',
@@ -127,7 +135,7 @@ const Books = () => {
       ),
     },
     {
-      title: 'Open Books',
+      title: 'Open Guides',
       dataIndex: 'openBooks',
       key: 'openBooks',
       render: (openBooks) => <div className='book-badge'>{openBooks ||"0"}</div>,
@@ -150,7 +158,7 @@ const Books = () => {
       key: 'pdfFiles',
       render: (index, record) => <div style={{width: '190px'}}>{
         record.pdfFiles.map((file, index) => (
-          <Tag color='volcano' style={{margin: '2px'}} onClick={() => window.open("http://localhost:5000/" + file.filePath, "_blank")}>{file.language}</Tag>
+          <Tag color='volcano' style={{margin: '2px', cursor: 'pointer'}} onClick={() => window.open(ApiService.documentURL + file.filePath, "_blank")}>{file.language}</Tag>
         ))  
       }</div>,
     },
@@ -159,8 +167,11 @@ const Books = () => {
       key: 'action',
       render: (_, record) => (
         <Flex>
-          <Button type="link" onClick={() => console.log('Edit functionality here')}>
+          {/* <Button type="link" onClick={() => console.log('Edit functionality here')}>
             <FaEdit />
+          </Button> */}
+          <Button type="link" onClick={() => handleUpload(record)}>
+            <FaUpload />
           </Button>
           <Button type="link" danger onClick={() => confirmDelete(record._id)}>
             <FaTrashAlt />
@@ -209,6 +220,11 @@ const Books = () => {
       fetchAllBooks(1, e.target.value)
   }
 
+  const onUploadPDF = (book) => {
+    message.success("Book uploaded successfully.");
+    fetchAllBooks(pagination.current, query)
+  };
+
   return (
     <>
       <div>
@@ -252,7 +268,7 @@ const Books = () => {
               size="large"
               onClick={() => setUploadVisible(true)}
             >
-              <span>Upload Books</span>
+              <span>Upload Guides</span>
             </Button>
             <Button
               className="custom-primary-btn"
@@ -260,7 +276,7 @@ const Books = () => {
               size="large"
               onClick={handleAddBook}
             >
-              <span>Add Book</span>
+              <span>Add Guide</span>
             </Button>
           </div>
         </Flex>
@@ -280,6 +296,7 @@ const Books = () => {
       </CustomCard>
       <UploadFormPopup visible={uploadVisible} setVisible={() => setUploadVisible(false)} fetchAllBooks={() => fetchAllBooks(pagination.current, query)} />
       <BookPopup visible={isModalVisible} onClose={handleCancel} onAddBook={onAddBook} />
+      <UploadPDF visible={uploadPopupVisible} onClose={() => setUploadPopUpVisible(false)} bookID={selectedBook} onUploadPDF={onUploadPDF} />
     </>
   );
 };
