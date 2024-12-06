@@ -15,13 +15,19 @@ const Login = () => {
       ApiService.loginUser(values)
         .then(response => {
            setLoading(false)
-           message.success("Welcome " + response.user.firstName + " " + response.user.lastName);
-           localStorage.setItem("token", response.token);
-           localStorage.setItem("user", JSON.stringify(response.user));
-           navigate('/roles');
+           let role = response.user.role.name
+           if(role.includes('Admin')) {
+            message.success("Welcome " + response.user.firstName + " " + response.user.lastName);
+            localStorage.setItem("user", JSON.stringify(response.user));
+            localStorage.setItem("token", response.token);
+            navigate('/roles');
+           }else{
+              message.error("You are not authorized to login.");
+           }
         })
         .catch(error => {
             setLoading(false)
+            console.log(error)
             message.error(error?.response?.data?.message || "Login Failed.")
         });
     } catch (error) {

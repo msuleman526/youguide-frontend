@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 class ApiService {
-    static baseURL = 'http://localhost:5000/api'; // Set your base URL here
-    static dcoumentURL = 'http://localhost:5000/';
+    static URLL = "http://localhost:5000"
+    static baseURL = ApiService.URLL + '/api'; // Set your base URL here
+    static documentURL = ApiService.URLL + '/';
 
     static async loginUser(data) {
         try {
@@ -209,6 +210,7 @@ class ApiService {
             const response = await axios.post(`${this.baseURL}/books`, data, {
                 headers: {
                     'Content-Type': 'multipart/form-data', // If there are files in the payload
+                    "Authorization": "Bearer " + localStorage.getItem("token")
                 },
             });
             return response.data;
@@ -266,6 +268,7 @@ class ApiService {
             const response = await axios.put(`${this.baseURL}/books/${id}`, data, {
                 headers: {
                     'Content-Type': 'multipart/form-data', // If there are files in the payload
+                    "Authorization": "Bearer " + localStorage.getItem("token")
                 },
             });
             return response.data;
@@ -280,6 +283,22 @@ class ApiService {
             const response = await axios.post(`${this.baseURL}/books/upload`, data, {
                 headers: {
                     'Content-Type': 'multipart/form-data', // If there are files in the payload
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error(`Error uploading book`, error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async uploadBookPDF(id, data) {
+        try {
+            const response = await axios.post(`${this.baseURL}/books/${id}/upload-pdf`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data', // If there are files in the payload
+                    "Authorization": "Bearer " + localStorage.getItem("token")
                 },
             });
             return response.data;
@@ -292,7 +311,12 @@ class ApiService {
     // Delete a book by ID
     static async deleteBook(id) {
         try {
-            const response = await axios.delete(`${this.baseURL}/books/${id}`);
+            const response = await axios.delete(`${this.baseURL}/books/${id}`, {
+                headers: {
+                    'Content-Type': 'multipart/form-data', // If there are files in the payload
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
             return response.data;
         } catch (error) {
             console.error(`Error deleting book with ID ${id}:`, error.response?.data || error.message);
