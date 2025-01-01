@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 class ApiService {
-    static URLL = "https://appapi.youguide.com"
+    static URLL = "http://localhost:5000"
     static baseURL = ApiService.URLL + '/api'; // Set your base URL here
-    static documentURL = ApiService.URLL + '/';
+    static documentURL = "https://appapi.youguide.com" + '/';
 
     static async loginUser(data) {
         try {
@@ -80,7 +80,64 @@ class ApiService {
         }
     }
 
+    static async getAllVendorSubscriptions() {
+        try {
+            const response = await axios.get(`${this.baseURL}/vendor-subscription`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get vendorSubscription:', error.response?.data || error.message);
+            throw error;
+        }
+    }
 
+    static async getAllSubsciptionBooks(id, page, query, language = "en") {
+        try {
+            const response = await axios.get(`${this.baseURL}/vendor-subscription/books?vendorSubscriptionID=${id}&page=${page}&language=${language}&query=${query}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get vendorSubscription:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async saveVendorSubsubscription(data) {
+        try {
+            const response = await axios.post(`${this.baseURL}/vendor-subscription`, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get vendorSubscription:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async deleteVendorSubsubscription(id) {
+        try {
+            const response = await axios.delete(`${this.baseURL}/vendor-subscription/${id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get vendorSubscription:', error.response?.data || error.message);
+            throw error;
+        }
+    }
 
     static async getAllCategories() {
         try {
