@@ -10,9 +10,11 @@ import Roles from './pages/Roles/Roles'
 import Users from './pages/Users/Users'
 import Books from './pages/Books/Books'
 import Categories from './pages/Categories/Categories'
+import VendorManagement from './pages/Vendors/VendorManagement'
 import PaymentSuccess from './pages/Payment/PaymentSuccess'
 import PaymentError from './pages/Payment/PaymentError'
 import Transactions from './pages/Transactions/Transactions'
+import SubscriptionGuides from './pages/Vendors/SubscriptionGuides'
 
 
 const App = () => {
@@ -21,6 +23,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
+        <Route path="/subscription-guides/:id" element={<SubscriptionGuides />} />
         <Route path="/payment/cancel" element={<PaymentError />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -30,6 +33,7 @@ const App = () => {
         <Route element={<DashboardLayout />}>
           <Route path="/roles" element={<Roles />} />
           <Route path="/categories" element={<Categories />} />
+          <Route path="/vendors" element={<VendorManagement />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/users" element={<Users />} />
           <Route path="/books" element={<Books />} />

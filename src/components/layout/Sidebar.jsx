@@ -91,6 +91,11 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
       icon: <FaCog {...iconProps} />,
       label: 'Transactions',
     },
+    {
+      key: 'vendors',
+      icon: <FaCog {...iconProps} />,
+      label: 'Vendors',
+    },
   ];
 
   const logoutItem = {
