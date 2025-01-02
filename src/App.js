@@ -15,6 +15,7 @@ import PaymentSuccess from './pages/Payment/PaymentSuccess'
 import PaymentError from './pages/Payment/PaymentError'
 import Transactions from './pages/Transactions/Transactions'
 import SubscriptionGuides from './pages/Vendors/SubscriptionGuides'
+import PdfViewer from './pages/Vendors/PdfViewer'
 
 
 const App = () => {
@@ -24,6 +25,7 @@ const App = () => {
         <Route path="/" element={<Login />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/subscription-guides/:id" element={<SubscriptionGuides />} />
+        <Route path="/view-content/:encryptedPdfUrl" element={<PdfViewer />} />
         <Route path="/payment/cancel" element={<PaymentError />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
