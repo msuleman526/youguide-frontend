@@ -16,6 +16,7 @@ const SubscriptionGuides = () => {
   const [query, setQuery] = useState("");
   const [hasMore, setHasMore] = useState(true);
   const [selectedFiles, setSelectedFiles] = useState({}); // Store selected file paths by guide ID
+  const [buttonLoading, setButtonLoading] = useState({}); // Track loading state for each button
 
   useEffect(() => {
     fetchGuides(pageNo);
@@ -40,6 +41,34 @@ const SubscriptionGuides = () => {
 
   const handleFileSelection = (guideId, filePath) => {
     setSelectedFiles((prev) => ({ ...prev, [guideId]: filePath }));
+  };
+
+  const handleOpenGuide = async (guideId) => {
+    const filePath = selectedFiles[guideId];
+    if (!filePath) return;
+
+    // Set loading for this specific guide
+    setButtonLoading((prev) => ({ ...prev, [guideId]: true }));
+
+    try {
+      // Call API to check subscription expiry
+      const response = await ApiService.checkVendorSubscriptionExpiry(id);
+
+      if (response.message === "Subscription Expired.") {
+        message.warning("Subscription Expired");
+        navigate("/subscription-expired");
+      } else {
+        // Encrypt the file path and open the guide
+        const encrypted = CryptoJS.AES.encrypt(filePath, '1ju38091`594801kl35j05u91u50915').toString();
+        const modifiedPath = encrypted.replace(/\//g, '__SLASH__');
+        window.open("/view-content/" + modifiedPath);
+      }
+    } catch (error) {
+      message.error("Failed to open guide. Please try again.");
+    } finally {
+      // Reset loading for this guide
+      setButtonLoading((prev) => ({ ...prev, [guideId]: false }));
+    }
   };
 
   return (
@@ -94,12 +123,8 @@ const SubscriptionGuides = () => {
                 type="primary"
                 style={{ marginTop: 'auto', backgroundColor: '#29b8e3', borderRadius: '20px' }}
                 disabled={!selectedFiles[guide._id]} // Disable only if no file is selected for this guide
-                onClick={() => {
-                  const encrypted = CryptoJS.AES.encrypt(selectedFiles[guide._id], '1ju38091`594801kl35j05u91u50915').toString();
-                  const modifiedPath  = encrypted.replace(/\//g, '__SLASH__');
-                  console.log(modifiedPath)
-                  navigate("/view-content/" + modifiedPath);
-                }}
+                loading={buttonLoading[guide._id]} // Show loading spinner for this specific guide
+                onClick={() => handleOpenGuide(guide._id)}
               >
                 Open Guide
               </Button>

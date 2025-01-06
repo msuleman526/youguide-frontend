@@ -23,16 +23,16 @@ const VendorPopup = ({ open, setOpen, onSaveVendor, vendor, type, categories }) 
 
   const handleOk = () => {
     form.validateFields().then((values) => {
-        setLoading(true)
-        values['subscriptionEndDate'] = date
-        console.log(values)
-        ApiService.saveVendorSubsubscription(values).then((res) => {
-            setLoading(false)
-            onSaveVendor(res);
-        }).catch((err) => {
-            setLoading(false)
-            console.log(err)
-        })
+      setLoading(true)
+      values['subscriptionEndDate'] = date
+      console.log(values)
+      ApiService.saveVendorSubsubscription(values).then((res) => {
+        setLoading(false)
+        onSaveVendor(res);
+      }).catch((err) => {
+        setLoading(false)
+        console.log(err)
+      })
     });
   };
 
@@ -54,28 +54,28 @@ const VendorPopup = ({ open, setOpen, onSaveVendor, vendor, type, categories }) 
           name="name"
           rules={[{ required: true, message: 'Vendor name is required' }]}
         >
-          <Input style={{width: '100%'}}/>
+          <Input style={{ width: '100%' }} />
         </Form.Item>
         <Form.Item
           label="Subscription End Date"
           name="subscriptionEndDate"
           rules={[{ required: true, message: 'Subscription end date is required' }]}
         >
-          <DatePicker style={{width: '100%'}} onChange={onDateChage} format={"YYYY-MM-DD"} />
+          <DatePicker style={{ width: '100%' }} onChange={onDateChage} format={"YYYY-MM-DD"} />
         </Form.Item>
         <Form.Item
           label="No Of Clicks"
           name="numberOfClicks"
           rules={[{ required: true, message: 'Number of clicks is required' }]}
         >
-          <InputNumber min={0} style={{width: '100%'}}/>
+          <InputNumber min={0} style={{ width: '100%' }} />
         </Form.Item>
         <Form.Item
           label="Categories"
           name="categories"
           rules={[{ required: true, message: 'Please select at least one category' }]}
         >
-          <Select mode="multiple" style={{width: '100%'}} options={categories.map((c) => ({ label: c.name, value: c._id }))} />
+          <Select mode="multiple" style={{ width: '100%' }} options={categories.map((c) => ({ label: c.name, value: c._id }))} />
         </Form.Item>
       </Form>
     </Modal>

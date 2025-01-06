@@ -16,6 +16,7 @@ import PaymentError from './pages/Payment/PaymentError'
 import Transactions from './pages/Transactions/Transactions'
 import SubscriptionGuides from './pages/Vendors/SubscriptionGuides'
 import PdfViewer from './pages/Vendors/PdfViewer'
+import ContractExpired from './pages/Vendors/SubscriptionExpire'
 
 
 const App = () => {
@@ -24,6 +25,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
+        <Route path="/subscription-expired" element={<ContractExpired />} />
         <Route path="/subscription-guides/:id" element={<SubscriptionGuides />} />
         <Route path="/view-content/:encryptedPdfUrl" element={<PdfViewer />} />
         <Route path="/payment/cancel" element={<PaymentError />} />
