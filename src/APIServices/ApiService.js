@@ -3,7 +3,7 @@ import axios from 'axios';
 class ApiService {
     static URLL = "http://localhost:5000"
     static baseURL = ApiService.URLL + '/api'; // Set your base URL here
-    static documentURL = "https://appapi.youguide.com" + '/';
+    static documentURL = "http://localhost:5000" + '/';
 
     static async loginUser(data) {
         try {
@@ -18,7 +18,6 @@ class ApiService {
             throw error;
         }
     }
-
 
     static async getAllRoles() {
         try {
@@ -41,6 +40,34 @@ class ApiService {
                 headers: {
                     'Content-Type': 'application/json',
                     "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get roles:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async convertPDFToHTML(path) {
+        try {
+            const response = await axios.get(`${this.baseURL}/vendor-subscription/convert?pdfUrl=${path}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get roles:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async checkVendorSubscriptionExpiry(id) {
+        try {
+            const response = await axios.get(`${this.baseURL}/vendor-subscription/checkExpiry?id=${id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
                 },
             });
             return response.data;
