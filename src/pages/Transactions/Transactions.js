@@ -56,7 +56,7 @@ const Transactions = () => {
         }
         return record.customer_name || 'N/A';
       },
-    }
+    },
     {
       title: 'Customer Email',
       dataIndex: 'customer_email',
