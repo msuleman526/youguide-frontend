@@ -50,8 +50,13 @@ const Transactions = () => {
       title: 'Customer Name',
       dataIndex: 'customer_name',
       key: 'customer_name',
-      render: (name) => name || 'N/A',
-    },
+      render: (_, record) => {
+        if (record.type === 'subscription') {
+          return `${record.firstName || 'N/A'} ${record.lastName || 'N/A'}`;
+        }
+        return record.customer_name || 'N/A';
+      },
+    }
     {
       title: 'Customer Email',
       dataIndex: 'customer_email',
