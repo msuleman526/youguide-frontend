@@ -51,7 +51,7 @@ const Transactions = () => {
       dataIndex: 'customer_name',
       key: 'customer_name',
       render: (_, record) => {
-        if (record.type === 'subscription') {
+        if (record.type === 'subscription' || record.type === 'book') {
           return `${record.firstName || 'N/A'} ${record.lastName || 'N/A'}`;
         }
         return record.customer_name || 'N/A';
