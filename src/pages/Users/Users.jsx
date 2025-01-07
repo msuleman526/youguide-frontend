@@ -162,7 +162,7 @@ const Users = () => {
           </Typography.Title>
         </div>
         <div style={{display: 'flex', gap: '10px'}}>
-          <Flex justify="end" align="center" gap="small" className="mb-2">
+          {/* <Flex justify="end" align="center" gap="small" className="mb-2">
             <Select
               defaultValue="all"
               style={{ width: '250px' }}
@@ -189,7 +189,7 @@ const Users = () => {
                 Affiliate
               </Select.Option>
             </Select>
-          </Flex>
+          </Flex> */}
           <Button
             className="custom-primary-btn"
             type="primary"
