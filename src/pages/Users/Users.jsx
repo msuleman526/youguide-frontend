@@ -111,9 +111,9 @@ const Users = () => {
           <Button type="link" onClick={() => handleEdit(record)}>
             <FaEdit />
           </Button>
-          <Button type="link" danger onClick={() => confirmDelete(record._id)}>
+          {/* <Button type="link" danger onClick={() => confirmDelete(record._id)}>
             <FaTrashAlt />
-          </Button>
+          </Button> */}
         </Flex>
       ),
     },
