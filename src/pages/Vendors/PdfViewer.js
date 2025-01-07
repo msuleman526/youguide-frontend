@@ -13,9 +13,11 @@ const PdfToHtmlConverter = () => {
     const decryptPdfPath = (encryptedPath) => {
         console.log(encryptedPath)
         let modifiedPath = encryptedPath.replace('__SLASH__', '/');
-        modifiedPath = encryptedPath.replace('__SLASH__', '/');
+        modifiedPath = modifiedPath.replace('__SLASH__', '/');
+        modifiedPath = modifiedPath.replace('__SLASH__', '/');
         const bytes = CryptoJS.AES.decrypt(modifiedPath, '1ju38091`594801kl35j05u91u50915'); // Use your secret key
         const decryptedPath = bytes.toString(CryptoJS.enc.Utf8); // Convert bytes to UTF-8 string
+        console.log(decryptedPath)
         return decryptedPath;
     };
 
