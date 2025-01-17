@@ -61,6 +61,8 @@ const SubscriptionGuides = () => {
         // Encrypt the file path and open the guide
         const encrypted = CryptoJS.AES.encrypt(filePath, '1ju38091`594801kl35j05u91u50915').toString();
         const modifiedPath = encrypted.replace(/\//g, '__SLASH__');
+        console.log(filePath)
+        console.log(modifiedPath)
         window.open("/view-content/" + modifiedPath);
       }
     } catch (error) {
