@@ -1,10 +1,29 @@
-import React from 'react';
-import { Form, Input, Button, Space, Card } from 'antd';
+import React, { useState } from 'react';
+import { Form, Input, Button, Space, Card, Typography, message } from 'antd';
+import axios from 'axios';
+import { API_URL } from '../Utils/Apis';
+import ApiService from '../APIServices/ApiService';
+
+const { Title } = Typography;
 
 const DeleteAccount = () => {
-    const onFinish = (values) => {
-        console.log('Form Values:', values);
+    const [loading, setLoading] = useState(false);
+
+    const onFinish = async (values) => {
+        setLoading(true);
+        try {
+            const response = await axios.post(ApiService.URLL + '/delete-account', values);
+            console.log(response);
+            message.success(response.data.message || 'Account deletion request submitted successfully.');
+            form.resetFields();
+        } catch (error) {
+            message.error(error.response?.data?.message || 'Something went wrong. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
+
+    const [form] = Form.useForm();
 
     const onFinishFailed = (errorInfo) => {
         console.log('Form Errors:', errorInfo);
@@ -21,14 +40,18 @@ const DeleteAccount = () => {
             }}
         >
             <Card style={{ width: 400, padding: 20 }}>
+                <Title level={4} style={{ textAlign: 'center', marginBottom: 20 }}>
+                    Account Deletion Request
+                </Title>
                 <Form
+                    form={form}
                     layout="vertical"
                     onFinish={onFinish}
                     onFinishFailed={onFinishFailed}
                 >
                     <Form.Item
                         label="Full Name"
-                        name="fullName"
+                        name="name"
                         rules={[
                             { required: true, message: 'Please input your full name!' },
                         ]}
@@ -59,7 +82,7 @@ const DeleteAccount = () => {
 
                     <Form.Item>
                         <Space style={{ width: '100%', justifyContent: 'center' }}>
-                            <Button type="primary" htmlType="submit">
+                            <Button type="primary" htmlType="submit" loading={loading}>
                                 Submit
                             </Button>
                         </Space>
