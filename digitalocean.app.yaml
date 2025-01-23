@@ -1,0 +1,11 @@
+static_sites:
+  - name: youguide
+    source_dir: /
+    build_command: npm run build
+    output_dir: /build
+    routes:
+      - path: /
+        preserve_path: true
+        serve: /index.html
+      - path: /static/*
+        serve: /static
