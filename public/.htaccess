@@ -1,11 +1,33 @@
+# Enable URL rewriting
 Options +FollowSymLinks
+
+# Set the default file to index.html
 DirectoryIndex index.html
 
+# Enable the RewriteEngine
 RewriteEngine On
 
+# Prevent direct access to index.html if not required
 RewriteRule ^index\.html$ - [L]
 
+# Redirect all requests to index.html if the requested file or directory does not exist
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-l
-RewriteRule . index.html [L]
+RewriteRule ^ index.html [L]
+
+# Optional: Add caching for static assets to improve performance
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/html "access 1h"
+    ExpiresByType text/css "access 1 month"
+    ExpiresByType application/javascript "access 1 month"
+    ExpiresByType image/* "access 1 year"
+</IfModule>
+
+# Optional: Security headers to improve security
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set X-XSS-Protection "1; mode=block"
+</IfModule>
