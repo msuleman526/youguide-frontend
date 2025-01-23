@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import Login from './pages/Login'
 import Register from './pages/Register'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, HashRouter, Route, Routes } from 'react-router-dom'
 import OTPScreen from './pages/OTPScreen'
 import DashboardLayout from './layouts/DashboardLayout'
 import SetNewPassword from './pages/SetNewPassword'
@@ -22,7 +22,7 @@ import DeleteAccount from './pages/DeleteAccount'
 
 const App = () => {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
@@ -45,7 +45,7 @@ const App = () => {
           <Route path="/books" element={<Books />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
 
