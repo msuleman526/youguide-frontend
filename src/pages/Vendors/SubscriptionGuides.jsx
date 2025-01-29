@@ -63,7 +63,7 @@ const SubscriptionGuides = () => {
         const modifiedPath = encrypted.replace(/\//g, '__SLASH__');
         console.log(filePath)
         console.log(modifiedPath)
-        window.open("/view-content/" + modifiedPath);
+        window.open("#/view-content/" + modifiedPath);
       }
     } catch (error) {
       message.error("Failed to open guide. Please try again.");

@@ -134,7 +134,7 @@ const VendorManagement = () => {
   };
 
   const handleView = (vendor) => {
-    window.open("subscription-guides/"+vendor._id, '_blank');
+    window.open("#/subscription-guides/"+vendor._id, '_blank');
   };
 
   const onAddVendor = () => {
