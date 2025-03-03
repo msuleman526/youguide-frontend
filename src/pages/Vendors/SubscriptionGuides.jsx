@@ -1,7 +1,7 @@
 import { Button, Col, Image, Row, Skeleton, Typography, message, Select, Input, Empty } from 'antd';
 import { useRecoilValue } from 'recoil';
 import { themeState } from '../../atom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useLayoutEffect } from 'react';
 import ApiService from '../../APIServices/ApiService';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as CryptoJS from 'crypto-js';
@@ -19,7 +19,7 @@ const SubscriptionGuides = () => {
   const [selectedFiles, setSelectedFiles] = useState({}); // Store selected file paths by guide ID
   const [buttonLoading, setButtonLoading] = useState({}); // Track loading state for each button
 
-  useEffect(() => {
+  useLayoutEffect(() => (
     fetchGuides(pageNo);
   }, [pageNo]);
 
