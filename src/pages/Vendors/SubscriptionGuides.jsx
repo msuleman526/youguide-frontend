@@ -26,8 +26,10 @@ const SubscriptionGuides = () => {
   const fetchGuides = async (page) => {
     setGuides([])
     setLoading(true);
+    const isMobile = window.innerWidth <= 768; // Detect mobile devices
+    const limit = isMobile ? 1 : 8; // Set limit based on device type
     try {
-      const response = await ApiService.getAllSubsciptionBooks(id, page, query, "en");
+      const response = await ApiService.getAllSubsciptionBooks(id, page, query, "en", limit);
       //setGuides((prev) => [...prev, ...response.books]);
       setGuides(response.books)
       setHasMore(response.totalPages > response.currentPage);
@@ -195,6 +197,7 @@ const SubscriptionGuides = () => {
                           label: file.language,
                           value: file.filePath,
                         }))}
+                        value={selectedFiles[guide._id] || guide.pdfFiles[0]?.filePath}
                         onChange={(value) => handleFileSelection(guide._id, value)}
                       />
                     ) : (
