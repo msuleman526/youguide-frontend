@@ -149,58 +149,75 @@ const SubscriptionGuides = () => {
 
       {/* Scrollable Guides List */}
       <div className="scrollable-guides">
-        <Row gutter={[16, 16]}>
-          {guides.map((guide) => (
-            <Col key={guide.id} xs={24} sm={12} md={6} lg={6} xl={4}>
-              <div
-                style={{
-                  background: "white",
-                  borderRadius: "15px",
-                  margin: 1,
-                  boxShadow: "5px 5px 5px lightgray",
-                  height: "390px",
-                  display: "flex",
-                  flexDirection: "column",
-                  padding: "5px",
-                }}
-              >
-                <Image
-                  src={ApiService.documentURL + guide.imagePath}
-                  style={{ width: "101.5%", height: "230px", borderTopLeftRadius: "15px", borderTopRightRadius: "15px" }}
-                />
+            <Row gutter={[16, 16]}>
+              {guides.map((guide) => (
+                <Col  key={guide.id}
+                xs={24}
+                sm={8}
+                md={6}
+                lg={6}
+                xl={6}
+                xxl={4}
+                style={{ display: "flex", justifyContent: "center" }}>
+                  <div
+                    style={{
+                      maxWidth: '300px',
+                      background: "white",
+                      borderRadius: "15px",
+                      margin: 1,
+                      boxShadow: "5px 5px 5px lightgray",
+                      height: "390px",
+                      display: "flex",
+                      flexDirection: "column",
+                      padding: "5px",
+                    }}
+                  >
+                    <Image
+                      src={ApiService.documentURL + guide.imagePath}
+                      style={{
+                        width: "101.5%",
+                        height: "230px",
+                        borderTopLeftRadius: "15px",
+                        borderTopRightRadius: "15px",
+                      }}
+                    />
 
-                <Typography.Title level={5} style={{ margin: "10px 0", height: "80px" }}>
-                  {guide.name}
-                </Typography.Title>
+                    <Typography.Title level={5} style={{ margin: "10px 0", height: "80px" }}>
+                      {guide.name && guide.name.length > 39 ? guide.name.slice(0, 39) + "..." : guide.name}
+                    </Typography.Title>
 
-                {guide.pdfFiles && guide.pdfFiles.length > 0 ? (
-                  <Select
-                    placeholder="Select a language"
-                    style={{ marginBottom: "10px" }}
-                    options={guide.pdfFiles.map((file) => ({
-                      label: file.language,
-                      value: file.filePath,
-                    }))}
-                    onChange={(value) => handleFileSelection(guide._id, value)}
-                  />
-                ) : (
-                  <Typography.Text type="secondary" style={{ marginBottom: "10px" }}>
-                    No Guides available
-                  </Typography.Text>
-                )}
-                <Button
-                  type="primary"
-                  style={{ marginTop: "auto", backgroundColor: "#29b8e3", borderRadius: "20px" }}
-                  disabled={!selectedFiles[guide._id]}
-                  loading={buttonLoading[guide._id]}
-                  onClick={() => handleOpenGuide(guide._id)}
-                >
-                  Open Guide
-                </Button>
-              </div>
-            </Col>
-          ))}
-        </Row>
+                    {guide.pdfFiles && guide.pdfFiles.length > 0 ? (
+                      <Select
+                        placeholder="Select a language"
+                        style={{ marginBottom: "10px" }}
+                        options={guide.pdfFiles.map((file) => ({
+                          label: file.language,
+                          value: file.filePath,
+                        }))}
+                        onChange={(value) => handleFileSelection(guide._id, value)}
+                      />
+                    ) : (
+                      <Typography.Text type="secondary" style={{ marginBottom: "10px" }}>
+                        No Guides available
+                      </Typography.Text>
+                    )}
+                    <Button
+                      type="primary"
+                      style={{
+                        marginTop: "auto",
+                        backgroundColor: "#29b8e3",
+                        borderRadius: "20px",
+                      }}
+                      disabled={!selectedFiles[guide._id]}
+                      loading={buttonLoading[guide._id]}
+                      onClick={() => handleOpenGuide(guide._id)}
+                    >
+                      Open Guide
+                    </Button>
+                  </div>
+                </Col>
+              ))}
+            </Row>
         {loading && <Skeleton active />}
         {guides.length === 0 && !loading && <Empty description="No Guides Found"/>}
         {/* {hasMore && (
