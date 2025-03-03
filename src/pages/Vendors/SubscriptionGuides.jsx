@@ -169,7 +169,7 @@ const SubscriptionGuides = () => {
                       borderRadius: "15px",
                       margin: 1,
                       boxShadow: "5px 5px 5px lightgray",
-                      height: "390px",
+                      height: "420px",
                       display: "flex",
                       flexDirection: "column",
                       padding: "5px",
@@ -179,7 +179,7 @@ const SubscriptionGuides = () => {
                       src={ApiService.documentURL + guide.imagePath}
                       style={{
                         width: "101.5%",
-                        height: "230px",
+                        height: "255px",
                         borderTopLeftRadius: "15px",
                         borderTopRightRadius: "15px",
                       }}
