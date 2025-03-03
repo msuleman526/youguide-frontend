@@ -9,6 +9,14 @@ const PdfToHtmlConverter = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     // Function to decrypt the encrypted PDF path
     const decryptPdfPath = (encryptedPath) => {
         console.log(encryptedPath);
@@ -48,7 +56,7 @@ const PdfToHtmlConverter = () => {
     return (
         <div style={{ display: 'flex', height: '100vh' }}>
             {/* Left static image */}
-            <div
+            {!isMobile && <div
                 style={{
                     width: '250px',
                     height: '100vh',
@@ -57,7 +65,7 @@ const PdfToHtmlConverter = () => {
                     backgroundPosition: 'center',
                     flexShrink: 0
                 }}
-            />
+            />}
 
             {/* Center scrollable content */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
@@ -65,7 +73,7 @@ const PdfToHtmlConverter = () => {
             </div>
 
             {/* Right static image */}
-            <div
+            {!isMobile && <div
                 style={{
                     width: '250px',
                     height: '100vh',
@@ -74,7 +82,7 @@ const PdfToHtmlConverter = () => {
                     backgroundPosition: 'center',
                     flexShrink: 0
                 }}
-            />
+            />}
         </div>
     );
 };
