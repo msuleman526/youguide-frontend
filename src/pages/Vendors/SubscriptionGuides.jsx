@@ -23,6 +23,18 @@ const SubscriptionGuides = () => {
     fetchGuides(pageNo);
   }, [pageNo]);
 
+  useEffect(() => {
+    if (guides.length > 0) {
+      const defaultSelections = {};
+      guides.forEach((guide) => {
+        if (guide.pdfFiles && guide.pdfFiles.length > 0) {
+          defaultSelections[guide._id] = guide.pdfFiles[0].filePath;
+        }
+      });
+      setSelectedFiles(defaultSelections);
+    }
+  }, [guides]);
+
   const fetchGuides = async (page) => {
     setGuides([])
     setLoading(true);
