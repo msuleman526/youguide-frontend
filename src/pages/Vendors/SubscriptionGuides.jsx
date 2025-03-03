@@ -249,7 +249,7 @@ const SubscriptionGuides = () => {
           </div>
         )} */}
         {/* Pagination Buttons */}
-        <div style={{ position: "fixed", bottom: "20px", width: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <div style={{marginTop: '15px', bottom: "20px", width: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
           {pageNo <= 1 && !hasMore ? "" : <Button 
             shape="circle" 
             icon={<LeftOutlined />} 
