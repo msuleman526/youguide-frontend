@@ -331,7 +331,7 @@
 }
 
 .scrollable-guides {
-  margin-top: 220px;
+  margin-top: 240px;
   height: calc(100vh - 220px);
   overflow-y: scroll;
   scrollbar-width: none;
