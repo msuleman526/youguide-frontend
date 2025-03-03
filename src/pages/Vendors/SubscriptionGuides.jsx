@@ -120,7 +120,7 @@ const SubscriptionGuides = () => {
           top: 0,
           left: "50%",
           transform: "translateX(-50%)",
-          width: "400px",
+          width: "410px",
           height: "100px",
           background: "white",
           zIndex: 1000,
@@ -132,7 +132,7 @@ const SubscriptionGuides = () => {
       >
         <Input
           placeholder="Search with city, country, or name"
-          style={{ width: "250px", marginRight: "10px" }}
+          style={{ width: "265px", marginRight: "10px" }}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
