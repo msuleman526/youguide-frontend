@@ -80,7 +80,7 @@ const SubscriptionGuides = () => {
         const modifiedPath = encrypted.replace(/\//g, '__SLASH__');
         console.log(filePath)
         console.log(modifiedPath)
-        window.open("#/view-content/" + modifiedPath);
+        window.location.href = "#/view-content/" + modifiedPath;
       }
     } catch (error) {
        console.log("Error Fetching ", "error");
