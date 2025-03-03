@@ -344,3 +344,10 @@
   display: none;
   /* Chrome, Safari, Opera */
 }
+
+@media (min-width: 480px) and (max-width: 575px) {
+  .custom-col {
+    /* Your extra styling here */
+    padding: 0 10px;
+  }
+}
