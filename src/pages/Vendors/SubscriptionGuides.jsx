@@ -19,7 +19,7 @@ const SubscriptionGuides = () => {
   const [selectedFiles, setSelectedFiles] = useState({}); // Store selected file paths by guide ID
   const [buttonLoading, setButtonLoading] = useState({}); // Track loading state for each button
 
-  useLayoutEffect(() => (
+  useLayoutEffect(() => {
     fetchGuides(pageNo);
   }, [pageNo]);
 
