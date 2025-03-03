@@ -318,6 +318,29 @@
   color: #29b8e3 !important;
 }
 
+.subscription-typography1 {
+  color: #000000 !important;
+}
+
+.subscription-typography {
+  color: #7AB730 !important
+}
+
 .ant-card {
   border-radius: 15px;
+}
+
+.scrollable-guides {
+  margin-top: 220px;
+  height: calc(100vh - 220px);
+  overflow-y: scroll;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE 10+ */
+}
+
+.scrollable-guides::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Opera */
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import * as CryptoJS from 'crypto-js'; // Import CryptoJS for decryption
+import * as CryptoJS from 'crypto-js';
 import ApiService from '../../APIServices/ApiService';
 
 const PdfToHtmlConverter = () => {
@@ -11,13 +11,13 @@ const PdfToHtmlConverter = () => {
 
     // Function to decrypt the encrypted PDF path
     const decryptPdfPath = (encryptedPath) => {
-        console.log(encryptedPath)
+        console.log(encryptedPath);
         let modifiedPath = encryptedPath.replace('__SLASH__', '/');
         modifiedPath = modifiedPath.replace('__SLASH__', '/');
         modifiedPath = modifiedPath.replace('__SLASH__', '/');
         const bytes = CryptoJS.AES.decrypt(modifiedPath, '1ju38091`594801kl35j05u91u50915'); // Use your secret key
         const decryptedPath = bytes.toString(CryptoJS.enc.Utf8); // Convert bytes to UTF-8 string
-        console.log(decryptedPath)
+        console.log(decryptedPath);
         return decryptedPath;
     };
 
@@ -27,8 +27,8 @@ const PdfToHtmlConverter = () => {
             try {
                 if (encryptedPdfUrl) {
                     const decryptedUrl = decryptPdfPath(encryptedPdfUrl); // Decrypt the URL parameter
-                    console.log(decryptedUrl)
-                    const response = await ApiService.convertPDFToHTML(decryptedUrl)
+                    console.log(decryptedUrl);
+                    const response = await ApiService.convertPDFToHTML(decryptedUrl);
                     const html = response.data;
                     setHtmlContent(`${html}`);
                 }
@@ -45,7 +45,38 @@ const PdfToHtmlConverter = () => {
     if (loading) return <div>Loading...</div>;
     if (error) return <div>{error}</div>;
 
-    return <div style={{ margin: '20px' }} dangerouslySetInnerHTML={{ __html: htmlContent }} />;
+    return (
+        <div style={{ display: 'flex', height: '100vh' }}>
+            {/* Left static image */}
+            <div
+                style={{
+                    width: '250px',
+                    height: '100vh',
+                    backgroundImage: "url('../collage-left.png')",
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    flexShrink: 0
+                }}
+            />
+
+            {/* Center scrollable content */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+                <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+            </div>
+
+            {/* Right static image */}
+            <div
+                style={{
+                    width: '250px',
+                    height: '100vh',
+                    backgroundImage: "url('../collage-right.png')",
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    flexShrink: 0
+                }}
+            />
+        </div>
+    );
 };
 
 export default PdfToHtmlConverter;

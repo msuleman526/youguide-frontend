@@ -1,10 +1,11 @@
-import { Button, Col, Image, Row, Skeleton, Typography, message, Select } from 'antd';
+import { Button, Col, Image, Row, Skeleton, Typography, message, Select, Input, Empty } from 'antd';
 import { useRecoilValue } from 'recoil';
 import { themeState } from '../../atom';
 import { useEffect, useState } from 'react';
 import ApiService from '../../APIServices/ApiService';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as CryptoJS from 'crypto-js';
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 
 const SubscriptionGuides = () => {
   const navigate = useNavigate();
@@ -23,13 +24,15 @@ const SubscriptionGuides = () => {
   }, [pageNo]);
 
   const fetchGuides = async (page) => {
+    setGuides([])
     setLoading(true);
     try {
       const response = await ApiService.getAllSubsciptionBooks(id, page, query, "en");
-      setGuides((prev) => [...prev, ...response.books]);
+      //setGuides((prev) => [...prev, ...response.books]);
+      setGuides(response.books)
       setHasMore(response.totalPages > response.currentPage);
     } catch (error) {
-      message.error('Failed to fetch guides.');
+      console.log(error)
     } finally {
       setLoading(false);
     }
@@ -66,87 +69,170 @@ const SubscriptionGuides = () => {
         window.open("#/view-content/" + modifiedPath);
       }
     } catch (error) {
-      message.error("Failed to open guide. Please try again.");
+       console.log("Error Fetching ", "error");
     } finally {
       // Reset loading for this guide
       setButtonLoading((prev) => ({ ...prev, [guideId]: false }));
     }
   };
 
+  let onSearchClick = () => {
+      setGuides([]);
+      if(pageNo == 1){
+         fetchGuides(1)
+      }else{
+        setPageNo(1);
+      }
+  }
+
+  const handleNext = () => {
+    if (hasMore) {
+      setPageNo(pageNo + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (pageNo > 1) {
+      setPageNo(pageNo - 1);
+    }
+  };
+
   return (
-    <div style={{ margin: '20px' }}>
-      <div>
-        <Typography.Title level={2} className="my-0 fw-500">
-          Subscription Guides
+    <div style={{ position: "relative", overflow: "hidden", height: "100vh", margin: 0, padding: 0 }}>
+      {/* Fixed, Centered Search Bar */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "400px",
+          height: "100px",
+          background: "white",
+          zIndex: 1000,
+          padding: "15px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Input
+          placeholder="Search with city, country, or name"
+          style={{ width: "250px", marginRight: "10px" }}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <Button type="primary" style={{ background: "#27ae60", border: "none" }} size="large" onClick={onSearchClick}>
+          Search
+        </Button>
+      </div>
+
+      {/* Fixed Title Section */}
+      <div
+        style={{
+          textAlign: "center",
+          position: "fixed",
+          top: "120px",
+          left: 0,
+          width: "100%",
+          zIndex: 999,
+          padding: "20px 0",
+        }}
+      >
+        <Typography.Title level={4} className="my-0 fw-500 subscription-typography">
+          Guides
         </Typography.Title>
-        <Typography.Title level={4} className="my-0 fw-500">
-          Browse and manage all subscription guides.
+        <Typography.Title level={2} className="my-0 fw-500 subscription-typography1">
+          Our Travel Guides
         </Typography.Title>
       </div>
-      <Row gutter={[16, 16]} style={{ marginTop: '40px' }}>
-        {guides.map((guide) => (
-          <Col key={guide.id} xs={24} sm={12} md={6} lg={6} xl={4}>
-            <div
-              style={{
-                background: 'white',
-                borderRadius: '15px',
-                boxShadow: '5px 5px 5px 5px lightgray',
-                height: '500px',
-                display: 'flex',
-                flexDirection: 'column',
-                padding: '5px',
-              }}
-            >
-              <Image
-                src={ApiService.documentURL + guide.imagePath}
-                style={{ width: '100%', height: '320px', borderRadius: '15px' }}
-              />
-              <Typography.Title level={4} style={{ margin: '10px 0', height: '80px' }}>
-                {guide.name}
-              </Typography.Title>
-              {/* Dropdown for book files */}
-              {guide.pdfFiles && guide.pdfFiles.length > 0 ? (
-                <Select
-                  placeholder="Select a file"
-                  style={{ marginBottom: '10px' }}
-                  options={guide.pdfFiles.map((file) => ({
-                    label: file.language,
-                    value: file.filePath,
-                  }))}
-                  onChange={(value) => handleFileSelection(guide._id, value)}
-                />
-              ) : (
-                <Typography.Text type="secondary" style={{ marginBottom: '10px' }}>
-                  No Guides available
-                </Typography.Text>
-              )}
-              {/* Open Guide button */}
-              <Button
-                type="primary"
-                style={{ marginTop: 'auto', backgroundColor: '#29b8e3', borderRadius: '20px' }}
-                disabled={!selectedFiles[guide._id]} // Disable only if no file is selected for this guide
-                loading={buttonLoading[guide._id]} // Show loading spinner for this specific guide
-                onClick={() => handleOpenGuide(guide._id)}
+
+      {/* Scrollable Guides List */}
+      <div className="scrollable-guides">
+        <Row gutter={[16, 16]}>
+          {guides.map((guide) => (
+            <Col key={guide.id} xs={24} sm={12} md={6} lg={6} xl={4}>
+              <div
+                style={{
+                  background: "white",
+                  borderRadius: "15px",
+                  margin: 1,
+                  boxShadow: "5px 5px 5px lightgray",
+                  height: "390px",
+                  display: "flex",
+                  flexDirection: "column",
+                  padding: "5px",
+                }}
               >
-                Open Guide
-              </Button>
-            </div>
-          </Col>
-        ))}
-      </Row>
-      {loading && <Skeleton active />}
-      {hasMore && (
-        <div style={{ textAlign: 'center', marginTop: '20px' }}>
-          <Button
-            type="primary"
-            onClick={handleLoadMore}
-            loading={loading}
-            style={{ backgroundColor: '#29b8e3' }}
-          >
-            Load More
-          </Button>
+                <Image
+                  src={ApiService.documentURL + guide.imagePath}
+                  style={{ width: "101.5%", height: "230px", borderTopLeftRadius: "15px", borderTopRightRadius: "15px" }}
+                />
+
+                <Typography.Title level={5} style={{ margin: "10px 0", height: "80px" }}>
+                  {guide.name}
+                </Typography.Title>
+
+                {guide.pdfFiles && guide.pdfFiles.length > 0 ? (
+                  <Select
+                    placeholder="Select a language"
+                    style={{ marginBottom: "10px" }}
+                    options={guide.pdfFiles.map((file) => ({
+                      label: file.language,
+                      value: file.filePath,
+                    }))}
+                    onChange={(value) => handleFileSelection(guide._id, value)}
+                  />
+                ) : (
+                  <Typography.Text type="secondary" style={{ marginBottom: "10px" }}>
+                    No Guides available
+                  </Typography.Text>
+                )}
+                <Button
+                  type="primary"
+                  style={{ marginTop: "auto", backgroundColor: "#29b8e3", borderRadius: "20px" }}
+                  disabled={!selectedFiles[guide._id]}
+                  loading={buttonLoading[guide._id]}
+                  onClick={() => handleOpenGuide(guide._id)}
+                >
+                  Open Guide
+                </Button>
+              </div>
+            </Col>
+          ))}
+        </Row>
+        {loading && <Skeleton active />}
+        {guides.length === 0 && !loading && <Empty description="No Guides Found"/>}
+        {/* {hasMore && (
+          <div style={{ textAlign: "center", marginTop: "20px" }}>
+            <Button
+              type="primary"
+              onClick={handleLoadMore}
+              loading={loading}
+              style={{ backgroundColor: "#29b8e3" }}
+            >
+              Load More
+            </Button>
+          </div>
+        )} */}
+        {/* Pagination Buttons */}
+        <div style={{ position: "fixed", bottom: "20px", width: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
+          {pageNo <= 1 && !hasMore ? "" : <Button 
+            shape="circle" 
+            icon={<LeftOutlined />} 
+            onClick={handlePrevious} 
+            disabled={pageNo <= 1 || loading}
+            style={{ marginRight: "20px", backgroundColor: "#29b8e3", color: "white" }}
+          />}
+          {!hasMore ? "" :<Button 
+            shape="circle" 
+            icon={<RightOutlined />} 
+            onClick={handleNext} 
+            disabled={!hasMore || loading}
+            style={{ marginLeft: "20px", backgroundColor: "#29b8e3", color: "white" }}
+          />}
         </div>
-      )}
+      </div>
     </div>
   );
 };
