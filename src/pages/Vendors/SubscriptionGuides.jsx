@@ -157,6 +157,7 @@ const SubscriptionGuides = () => {
                 md={6}
                 lg={6}
                 xl={6}
+                className="custom-col"
                 xxl={4}
                 style={{ display: "flex", justifyContent: "center" }}>
                   <div
