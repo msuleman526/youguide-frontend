@@ -122,9 +122,9 @@ class ApiService {
         }
     }
 
-    static async getAllSubsciptionBooks(id, page, query, language = "en") {
+    static async getAllSubsciptionBooks(id, page, query, language = "en", limit = 8) {
         try {
-            const response = await axios.get(`${this.baseURL}/vendor-subscription/books?vendorSubscriptionID=${id}&page=${page}&language=${language}&query=${query}`, {
+            const response = await axios.get(`${this.baseURL}/vendor-subscription/books?vendorSubscriptionID=${id}&page=${page}&language=${language}&query=${query}&limit=${limit}`, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
