@@ -156,11 +156,7 @@ const Books = () => {
       title: 'Documents',
       dataIndex: 'pdfFiles',
       key: 'pdfFiles',
-      render: (index, record) => <div style={{width: '190px'}}>{
-        record.pdfFiles.map((file, index) => (
-          <Tag color='volcano' style={{margin: '2px', cursor: 'pointer'}} onClick={() => window.open(ApiService.documentURL + file.filePath, "_blank")}>{file.language}</Tag>
-        ))  
-      }</div>,
+      render: (index, record) => <Tag color='volcano' style={{margin: '2px', cursor: 'pointer'}} onClick={() => window.open(ApiService.documentURL + record.pdfPath, "_blank")}>{record.lang}</Tag>,
     },
     {
       title: 'Action',
