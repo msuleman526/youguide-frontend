@@ -16,7 +16,8 @@ const SubscriptionGuides = () => {
   const [pageNo, setPageNo] = useState(1);
   const [query, setQuery] = useState("");
   const [hasMore, setHasMore] = useState(true);
-  const [selectedFiles, setSelectedFiles] = useState({}); // Store selected file paths by guide ID
+  const [selectedFiles, setSelectedFiles] = useState({}); // Store selected file paths by group ID
+  const [selectedGuides, setSelectedGuides] = useState({}); // Store selected guide details (name, image) by group ID
   const [buttonLoading, setButtonLoading] = useState({}); // Track loading state for each button
 
   useLayoutEffect(() => {
@@ -26,78 +27,89 @@ const SubscriptionGuides = () => {
   useEffect(() => {
     if (guides.length > 0) {
       const defaultSelections = {};
-      guides.forEach((guide) => {
-        if (guide.pdfFiles && guide.pdfFiles.length > 0) {
-          defaultSelections[guide._id] = guide.pdfFiles[0].filePath;
+      const defaultGuides = {};
+      guides.forEach((book) => {
+        if (book.group && book.group.length > 0) {
+          const firstGuide = book.group[0];
+          defaultSelections[book.eng_name] = firstGuide.filePath;
+          defaultGuides[book.eng_name] = {
+            name: firstGuide.name,
+            imagePath: firstGuide.imagePath,
+          };
         }
       });
       setSelectedFiles(defaultSelections);
+      setSelectedGuides(defaultGuides);
     }
   }, [guides]);
 
   const fetchGuides = async (page) => {
-    setGuides([])
+    setGuides([]);
     setLoading(true);
     const isMobile = window.innerWidth <= 768; // Detect mobile devices
     const limit = isMobile ? 1 : 8; // Set limit based on device type
     try {
       const response = await ApiService.getAllSubsciptionBooks(id, page, query, "en", limit);
-      //setGuides((prev) => [...prev, ...response.books]);
-      setGuides(response.books)
+      // Map the response to ensure filePath is included
+      const mappedBooks = response.books.map((book) => ({
+        ...book,
+        group: book.group.map((guide) => ({
+          ...guide,
+          filePath: guide.filePath || `Uploads/pdfs/${guide._id}_${guide.lang}.pdf`, // Fallback filePath
+        })),
+      }));
+      setGuides(mappedBooks);
       setHasMore(response.totalPages > response.currentPage);
     } catch (error) {
-      console.log(error)
+      console.log(error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLoadMore = () => {
-    setPageNo((prev) => prev + 1);
+  const handleFileSelection = (groupId, filePath, guide) => {
+    setSelectedFiles((prev) => ({ ...prev, [groupId]: filePath }));
+    setSelectedGuides((prev) => ({
+      ...prev,
+      [groupId]: {
+        name: guide.name,
+        imagePath: guide.imagePath,
+      },
+    }));
   };
 
-  const handleFileSelection = (guideId, filePath) => {
-    setSelectedFiles((prev) => ({ ...prev, [guideId]: filePath }));
-  };
-
-  const handleOpenGuide = async (guideId) => {
-    const filePath = selectedFiles[guideId];
+  const handleOpenGuide = async (groupId) => {
+    const filePath = selectedFiles[groupId];
     if (!filePath) return;
 
-    // Set loading for this specific guide
-    setButtonLoading((prev) => ({ ...prev, [guideId]: true }));
+    setButtonLoading((prev) => ({ ...prev, [groupId]: true }));
 
     try {
-      // Call API to check subscription expiry
       const response = await ApiService.checkVendorSubscriptionExpiry(id);
 
       if (response.message === "Subscription Expired.") {
         message.warning("Subscription Expired");
         navigate("/subscription-expired");
       } else {
-        // Encrypt the file path and open the guide
         const encrypted = CryptoJS.AES.encrypt(filePath, '1ju38091`594801kl35j05u91u50915').toString();
         const modifiedPath = encrypted.replace(/\//g, '__SLASH__');
-        console.log(filePath)
-        console.log(modifiedPath)
         window.top.location.href = "#/view-content/" + modifiedPath;
       }
     } catch (error) {
-       console.log("Error Fetching ", "error");
+      console.log("Error Fetching ", error);
     } finally {
-      // Reset loading for this guide
-      setButtonLoading((prev) => ({ ...prev, [guideId]: false }));
+      setButtonLoading((prev) => ({ ...prev, [groupId]: false }));
     }
   };
 
-  let onSearchClick = () => {
-      setGuides([]);
-      if(pageNo == 1){
-         fetchGuides(1)
-      }else{
-        setPageNo(1);
-      }
-  }
+  const onSearchClick = () => {
+    setGuides([]);
+    if (pageNo === 1) {
+      fetchGuides(1);
+    } else {
+      setPageNo(1);
+    }
+  };
 
   const handleNext = () => {
     if (hasMore) {
@@ -163,107 +175,106 @@ const SubscriptionGuides = () => {
 
       {/* Scrollable Guides List */}
       <div className="scrollable-guides">
-            <Row gutter={[16, 16]}>
-              {guides.map((guide) => (
-                <Col  key={guide.id}
-                xs={24}
-                sm={8}
-                md={6}
-                lg={6}
-                xl={6}
-                className="custom-col"
-                xxl={4}
-                style={{ display: "flex", justifyContent: "center" }}>
-                  <div
-                    style={{
-                      maxWidth: '300px',
-                      background: "white",
-                      borderRadius: "15px",
-                      margin: 1,
-                      boxShadow: "5px 5px 5px lightgray",
-                      height: "420px",
-                      display: "flex",
-                      flexDirection: "column",
-                      padding: "5px",
-                    }}
-                  >
-                    <Image
-                      src={ApiService.documentURL + guide.imagePath}
-                      style={{
-                        width: "101.5%",
-                        height: "255px",
-                        borderTopLeftRadius: "15px",
-                        borderTopRightRadius: "15px",
-                      }}
-                    />
-
-                    <Typography.Title level={5} style={{ margin: "10px 0", height: "80px" }}>
-                      {guide.name && guide.name.length > 39 ? guide.name.slice(0, 39) + "..." : guide.name}
-                    </Typography.Title>
-
-                    {guide.pdfFiles && guide.pdfFiles.length > 0 ? (
-                      <Select
-                        placeholder="Select a language"
-                        style={{ marginBottom: "10px" }}
-                        options={guide.pdfFiles.map((file) => ({
-                          label: file.language,
-                          value: file.filePath,
-                        }))}
-                        value={selectedFiles[guide._id] || guide.pdfFiles[0]?.filePath}
-                        onChange={(value) => handleFileSelection(guide._id, value)}
-                      />
-                    ) : (
-                      <Typography.Text type="secondary" style={{ marginBottom: "10px" }}>
-                        No Guides available
-                      </Typography.Text>
-                    )}
-                    <Button
-                      type="primary"
-                      style={{
-                        marginTop: "auto",
-                        backgroundColor: "#29b8e3",
-                        borderRadius: "20px",
-                      }}
-                      disabled={!selectedFiles[guide._id]}
-                      loading={buttonLoading[guide._id]}
-                      onClick={() => handleOpenGuide(guide._id)}
-                    >
-                      Open Guide
-                    </Button>
-                  </div>
-                </Col>
-              ))}
-            </Row>
-        {loading && <Skeleton active />}
-        {guides.length === 0 && !loading && <Empty description="No Guides Found"/>}
-        {/* {hasMore && (
-          <div style={{ textAlign: "center", marginTop: "20px" }}>
-            <Button
-              type="primary"
-              onClick={handleLoadMore}
-              loading={loading}
-              style={{ backgroundColor: "#29b8e3" }}
+        <Row gutter={[16, 16]}>
+          {guides.map((book) => (
+            <Col
+              key={book.eng_name}
+              xs={24}
+              sm={8}
+              md={6}
+              lg={6}
+              xl={6}
+              className="custom-col"
+              xxl={4}
+              style={{ display: "flex", justifyContent: "center" }}
             >
-              Load More
-            </Button>
-          </div>
-        )} */}
+              <div
+                style={{
+                  maxWidth: '300px',
+                  background: "white",
+                  borderRadius: "15px",
+                  margin: 1,
+                  boxShadow: "5px 5px 5px lightgray",
+                  height: "420px",
+                  display: "flex",
+                  flexDirection: "column",
+                  padding: "5px",
+                }}
+              >
+                <Image
+                  src={ApiService.documentURL + (selectedGuides[book.eng_name]?.imagePath || book.group[0].imagePath)}
+                  style={{
+                    width: "101.5%",
+                    height: "255px",
+                    borderTopLeftRadius: "15px",
+                    borderTopRightRadius: "15px",
+                  }}
+                />
+
+                <Typography.Title level={5} style={{ margin: "10px 0", height: "80px" }}>
+                  {(selectedGuides[book.eng_name]?.name || book.group[0].name).length > 39
+                    ? (selectedGuides[book.eng_name]?.name || book.group[0].name).slice(0, 39) + "..."
+                    : selectedGuides[book.eng_name]?.name || book.group[0].name}
+                </Typography.Title>
+
+                {book.group && book.group.length > 0 ? (
+                  <Select
+                    placeholder="Select a language"
+                    style={{ marginBottom: "10px", width: "100%" }}
+                    options={book.group.map((guide) => ({
+                      label: guide.lang,
+                      value: guide.filePath,
+                      guide,
+                    }))}
+                    value={selectedFiles[book.eng_name]}
+                    onChange={(value, option) => handleFileSelection(book.eng_name, value, option.guide)}
+                    allowClear={false}
+                    showSearch={false}
+                  />
+                ) : (
+                  <Typography.Text type="secondary" style={{ marginBottom: "10px" }}>
+                    No Guides available
+                  </Typography.Text>
+                )}
+                <Button
+                  type="primary"
+                  style={{
+                    marginTop: "auto",
+                    backgroundColor: "#29b8e3",
+                    borderRadius: "20px",
+                  }}
+                  disabled={!selectedFiles[book.eng_name]}
+                  loading={buttonLoading[book.eng_name]}
+                  onClick={() => handleOpenGuide(book.eng_name)}
+                >
+                  Open Guide
+                </Button>
+              </div>
+            </Col>
+          ))}
+        </Row>
+        {loading && <Skeleton active />}
+        {guides.length === 0 && !loading && <Empty description="No Guides Found" />}
         {/* Pagination Buttons */}
-        <div style={{marginTop: '15px', bottom: "20px", width: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
-          {pageNo <= 1 && !hasMore ? "" : <Button 
-            shape="circle" 
-            icon={<LeftOutlined />} 
-            onClick={handlePrevious} 
-            disabled={pageNo <= 1 || loading}
-            style={{ marginRight: "20px", backgroundColor: "#29b8e3", color: "white" }}
-          />}
-          {!hasMore ? "" :<Button 
-            shape="circle" 
-            icon={<RightOutlined />} 
-            onClick={handleNext} 
-            disabled={!hasMore || loading}
-            style={{ marginLeft: "20px", backgroundColor: "#29b8e3", color: "white" }}
-          />}
+        <div style={{ marginTop: '15px', bottom: "20px", width: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
+          {pageNo <= 1 && !hasMore ? null : (
+            <Button
+              shape="circle"
+              icon={<LeftOutlined />}
+              onClick={handlePrevious}
+              disabled={pageNo <= 1 || loading}
+              style={{ marginRight: "20px", backgroundColor: "#29b8e3", color: "white" }}
+            />
+          )}
+          {!hasMore ? null : (
+            <Button
+              shape="circle"
+              icon={<RightOutlined />}
+              onClick={handleNext}
+              disabled={!hasMore || loading}
+              style={{ marginLeft: "20px", backgroundColor: "#29b8e3", color: "white" }}
+            />
+          )}
         </div>
       </div>
     </div>
