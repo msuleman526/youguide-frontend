@@ -51,7 +51,7 @@ class ApiService {
 
     static async convertPDFToHTML(path) {
         try {
-            const response = await axios.get(`${this.baseURL}/vendor-subscription/convert?pdfUrl=${path}`, {
+            const response = await axios.get(`${this.baseURL}/vendor-subscription/convert?book_id=${path}`, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -124,7 +124,7 @@ class ApiService {
 
     static async getAllSubsciptionBooks(id, page, query, language = "en", limit = 8) {
         try {
-            const response = await axios.get(`${this.baseURL}/vendor-subscription/books?vendorSubscriptionID=${id}&page=${page}&language=${language}&query=${query}&limit=${limit}`, {
+            const response = await axios.get(`${this.baseURL}/vendor-subscription/books?vendorSubscriptionID=${id}&page=${page}&lang=${language}&query=${query}&limit=${limit}`, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -135,6 +135,23 @@ class ApiService {
             throw error;
         }
     }
+
+
+    static async getVendorBookByID(id) {
+        try {
+            const response = await axios.get(`${this.baseURL}/vendor-subscription/findVendorBook?id=${id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get vendorSubscription:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+
 
     static async saveVendorSubsubscription(data) {
         try {

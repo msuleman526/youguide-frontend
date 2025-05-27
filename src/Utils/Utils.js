@@ -29,6 +29,14 @@ export const toBase64 = (file) => {
     });
 };
 
+export const showAddress = (book) => {
+    if (book.city == book.country || book.country == "") {
+        return book.city;
+    }
+    return `${book.city}, ${book.country}`
+};
+
+
 export const convertDateToNormal = (datee) => {
     const date = new Date(datee);
     const formattedDate = date.toISOString().split('T')[0];

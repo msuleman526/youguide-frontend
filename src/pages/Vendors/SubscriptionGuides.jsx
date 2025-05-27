@@ -4,8 +4,23 @@ import { themeState } from '../../atom';
 import { useEffect, useState, useLayoutEffect } from 'react';
 import ApiService from '../../APIServices/ApiService';
 import { useNavigate, useParams } from 'react-router-dom';
-import * as CryptoJS from 'crypto-js';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { showAddress } from '../../Utils/Utils';
+
+const languageOptions = [
+  { name: "Arabic", code: "ar" },
+  { name: "Chinese", code: "zh_cn" },
+  { name: "Portuguese", code: "pt" },
+  { name: "Russian", code: "ru" },
+  { name: "Italian", code: "it" },
+  { name: "English", code: "en" },
+  { name: "Japanese", code: "ja" },
+  { name: "Spanish", code: "es" },
+  { name: "French", code: "fr" },
+  { name: "German", code: "de" },
+  { name: "Polish", code: "pl" },
+  { name: "Dutch", code: "nl" }
+];
 
 const SubscriptionGuides = () => {
   const navigate = useNavigate();
@@ -15,33 +30,12 @@ const SubscriptionGuides = () => {
   const [loading, setLoading] = useState(false);
   const [pageNo, setPageNo] = useState(1);
   const [query, setQuery] = useState("");
+  const [language, setLanguage] = useState("en");
   const [hasMore, setHasMore] = useState(true);
-  const [selectedFiles, setSelectedFiles] = useState({}); // Store selected file paths by group ID
-  const [selectedGuides, setSelectedGuides] = useState({}); // Store selected guide details (name, image) by group ID
-  const [buttonLoading, setButtonLoading] = useState({}); // Track loading state for each button
 
   useLayoutEffect(() => {
     fetchGuides(pageNo);
-  }, [pageNo]);
-
-  useEffect(() => {
-    if (guides.length > 0) {
-      const defaultSelections = {};
-      const defaultGuides = {};
-      guides.forEach((book) => {
-        if (book.group && book.group.length > 0) {
-          const firstGuide = book.group[0];
-          defaultSelections[book.eng_name] = firstGuide.filePath;
-          defaultGuides[book.eng_name] = {
-            name: firstGuide.name,
-            imagePath: firstGuide.imagePath,
-          };
-        }
-      });
-      setSelectedFiles(defaultSelections);
-      setSelectedGuides(defaultGuides);
-    }
-  }, [guides]);
+  }, [pageNo, language]);
 
   const fetchGuides = async (page) => {
     setGuides([]);
@@ -49,16 +43,8 @@ const SubscriptionGuides = () => {
     const isMobile = window.innerWidth <= 768; // Detect mobile devices
     const limit = isMobile ? 1 : 8; // Set limit based on device type
     try {
-      const response = await ApiService.getAllSubsciptionBooks(id, page, query, "en", limit);
-      // Map the response to ensure filePath is included
-      const mappedBooks = response.books.map((book) => ({
-        ...book,
-        group: book.group.map((guide) => ({
-          ...guide,
-          filePath: guide.filePath || `Uploads/pdfs/${guide._id}_${guide.lang}.pdf`, // Fallback filePath
-        })),
-      }));
-      setGuides(mappedBooks);
+      const response = await ApiService.getAllSubsciptionBooks(id, page, query, language, limit);
+      setGuides(response.books);
       setHasMore(response.totalPages > response.currentPage);
     } catch (error) {
       console.log(error);
@@ -67,23 +53,7 @@ const SubscriptionGuides = () => {
     }
   };
 
-  const handleFileSelection = (groupId, filePath, guide) => {
-    setSelectedFiles((prev) => ({ ...prev, [groupId]: filePath }));
-    setSelectedGuides((prev) => ({
-      ...prev,
-      [groupId]: {
-        name: guide.name,
-        imagePath: guide.imagePath,
-      },
-    }));
-  };
-
-  const handleOpenGuide = async (groupId) => {
-    const filePath = selectedFiles[groupId];
-    if (!filePath) return;
-
-    setButtonLoading((prev) => ({ ...prev, [groupId]: true }));
-
+  const handleOpenGuide = async (book) => {
     try {
       const response = await ApiService.checkVendorSubscriptionExpiry(id);
 
@@ -91,14 +61,10 @@ const SubscriptionGuides = () => {
         message.warning("Subscription Expired");
         navigate("/subscription-expired");
       } else {
-        const encrypted = CryptoJS.AES.encrypt(filePath, '1ju38091`594801kl35j05u91u50915').toString();
-        const modifiedPath = encrypted.replace(/\//g, '__SLASH__');
-        window.top.location.href = "#/view-content/" + modifiedPath;
+        window.top.location.href = "#/view-content/" + book._id;
       }
     } catch (error) {
       console.log("Error Fetching ", error);
-    } finally {
-      setButtonLoading((prev) => ({ ...prev, [groupId]: false }));
     }
   };
 
@@ -132,7 +98,7 @@ const SubscriptionGuides = () => {
           top: 0,
           left: "50%",
           transform: "translateX(-50%)",
-          width: "410px",
+          width: "550px",
           height: "100px",
           background: "white",
           zIndex: 1000,
@@ -144,13 +110,26 @@ const SubscriptionGuides = () => {
       >
         <Input
           placeholder="Search with city, country, or name"
-          style={{ width: "265px", marginRight: "10px" }}
+          style={{ width: "270px", marginRight: "10px" }}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
         <Button type="primary" style={{ background: "#27ae60", border: "none" }} size="large" onClick={onSearchClick}>
           Search
         </Button>
+        <Select
+          defaultValue={language}
+          style={{ marginLeft: '10px', width: '120px' }}
+          onChange={(value) => {setLanguage(value) 
+            setPageNo(1)}}
+          className={theme === 'light' ? 'header-search-input-light' : 'header-search-input-dark'}
+        >
+          {languageOptions.map((languag) => (
+            <Select.Option key={languag.code} value={languag.code}>
+              {languag.name}
+            </Select.Option>
+          ))}
+        </Select>
       </div>
 
       {/* Fixed Title Section */}
@@ -178,7 +157,7 @@ const SubscriptionGuides = () => {
         <Row gutter={[16, 16]}>
           {guides.map((book) => (
             <Col
-              key={book.eng_name}
+              key={book.name}
               xs={24}
               sm={8}
               md={6}
@@ -191,51 +170,34 @@ const SubscriptionGuides = () => {
               <div
                 style={{
                   maxWidth: '300px',
+                  width: '90%',
                   background: "white",
                   borderRadius: "15px",
                   margin: 1,
                   boxShadow: "5px 5px 5px lightgray",
-                  height: "420px",
+                  height: "400px",
                   display: "flex",
                   flexDirection: "column",
                   padding: "5px",
                 }}
               >
                 <Image
-                  src={ApiService.documentURL + (selectedGuides[book.eng_name]?.imagePath || book.group[0].imagePath)}
+                  src={book.imagePath}
                   style={{
-                    width: "101.5%",
-                    height: "255px",
+                    width: "100%",
+                    height: "240px",
                     borderTopLeftRadius: "15px",
                     borderTopRightRadius: "15px",
                   }}
                 />
-
                 <Typography.Title level={5} style={{ margin: "10px 0", height: "80px" }}>
-                  {(selectedGuides[book.eng_name]?.name || book.group[0].name).length > 39
-                    ? (selectedGuides[book.eng_name]?.name || book.group[0].name).slice(0, 39) + "..."
-                    : selectedGuides[book.eng_name]?.name || book.group[0].name}
+                  {(book?.name || book?.name).length > 39
+                    ? (book?.name || book?.name ).slice(0, 39) + "..."
+                    : book?.name  || book?.name }
                 </Typography.Title>
-
-                {book.group && book.group.length > 0 ? (
-                  <Select
-                    placeholder="Select a language"
-                    style={{ marginBottom: "10px", width: "100%" }}
-                    options={book.group.map((guide) => ({
-                      label: guide.lang,
-                      value: guide.filePath,
-                      guide,
-                    }))}
-                    value={selectedFiles[book.eng_name]}
-                    onChange={(value, option) => handleFileSelection(book.eng_name, value, option.guide)}
-                    allowClear={false}
-                    showSearch={false}
-                  />
-                ) : (
-                  <Typography.Text type="secondary" style={{ marginBottom: "10px" }}>
-                    No Guides available
-                  </Typography.Text>
-                )}
+                <Typography.Paragraph level={5} style={{color: 'black', margin: "10px 0", height: "40px", marginTop: '-30px'}}>
+                    {showAddress(book)}
+                </Typography.Paragraph>
                 <Button
                   type="primary"
                   style={{
@@ -243,9 +205,7 @@ const SubscriptionGuides = () => {
                     backgroundColor: "#29b8e3",
                     borderRadius: "20px",
                   }}
-                  disabled={!selectedFiles[book.eng_name]}
-                  loading={buttonLoading[book.eng_name]}
-                  onClick={() => handleOpenGuide(book.eng_name)}
+                  onClick={() => handleOpenGuide(book)}
                 >
                   Open Guide
                 </Button>
