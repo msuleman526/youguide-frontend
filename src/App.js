@@ -29,7 +29,7 @@ const App = () => {
         <Route path="/account/remove" element={<DeleteAccount />} />
         <Route path="/subscription-expired" element={<ContractExpired />} />
         <Route path="/subscription-guides/:id" element={<SubscriptionGuides />} />
-        <Route path="/view-content/:encryptedPdfUrl" element={<PdfViewer />} />
+        <Route path="/view-content/:id" element={<PdfViewer />} />
         <Route path="/payment/cancel" element={<PaymentError />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

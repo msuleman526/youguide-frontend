@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import * as CryptoJS from 'crypto-js';
 import ApiService from '../../APIServices/ApiService';
+import axios from 'axios';
 
 const PdfToHtmlConverter = () => {
-    const { encryptedPdfUrl } = useParams(); // Retrieve the encrypted PDF URL from the URL
-    const [htmlContent, setHtmlContent] = useState(null);
+    const { id } = useParams(); // Get ID from the URL
+    const [book, setBook] = useState(null);
+    const [jsonPath, setJsonPath] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [htmlContent, setHtmlContent] = useState('');
 
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -17,28 +19,14 @@ const PdfToHtmlConverter = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Function to decrypt the encrypted PDF path
-    const decryptPdfPath = (encryptedPath) => {
-        console.log(encryptedPath);
-        let modifiedPath = encryptedPath.replace('__SLASH__', '/');
-        modifiedPath = modifiedPath.replace('__SLASH__', '/');
-        modifiedPath = modifiedPath.replace('__SLASH__', '/');
-        const bytes = CryptoJS.AES.decrypt(modifiedPath, '1ju38091`594801kl35j05u91u50915'); // Use your secret key
-        const decryptedPath = bytes.toString(CryptoJS.enc.Utf8); // Convert bytes to UTF-8 string
-        console.log(decryptedPath);
-        return decryptedPath;
-    };
-
     useEffect(() => {
         const fetchHtmlContent = async () => {
             setLoading(true);
             try {
-                if (encryptedPdfUrl) {
-                    const decryptedUrl = decryptPdfPath(encryptedPdfUrl); // Decrypt the URL parameter
-                    console.log(decryptedUrl);
-                    const response = await ApiService.convertPDFToHTML(decryptedUrl);
-                    const html = response.data;
-                    setHtmlContent(`${html}`);
+                if (id) {
+                    const response = await ApiService.getVendorBookByID(id);
+                    setBook(response)
+                    setJsonPath(response.jsonPath);
                 }
             } catch (err) {
                 setError(err.message || 'Failed to fetch or render HTML content.');
@@ -48,7 +36,36 @@ const PdfToHtmlConverter = () => {
         };
 
         fetchHtmlContent();
-    }, [encryptedPdfUrl]);
+    }, [id]);
+
+    useEffect(() => {
+        const fetchAndRenderJsonContent = async () => {
+            if (!jsonPath) return;
+
+            try {
+                const res = await axios.get(jsonPath);
+                if (!res.ok) throw new Error('Failed to fetch JSON content');
+                const json = await res.json();
+
+                // Convert JSON to HTML string
+                const html = json.content.map((item, index) => {
+                    if (item.type === 'paragraph') {
+                        return `<p style="font-size: ${item.font_size}px; color: #${item.font_color};">${item.text}</p>`;
+                    }
+                    return '';
+                }).join('');
+
+                setHtmlContent(html);
+            } catch (err) {
+                setError('Failed to render JSON content.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAndRenderJsonContent();
+    }, [jsonPath]);
+
 
     if (loading) return <div>Loading...</div>;
     if (error) return <div>{error}</div>;

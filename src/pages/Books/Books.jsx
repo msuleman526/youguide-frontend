@@ -10,6 +10,21 @@ import ApiService from '../../APIServices/ApiService';
 import { Link } from 'react-router-dom';
 import UploadPDF from './UploadPDF';
 
+const languageOptions = [
+  { name: "Arabic", code: "ar" },
+  { name: "Chinese", code: "zh_cn" },
+  { name: "Portuguese", code: "pt" },
+  { name: "Russian", code: "ru" },
+  { name: "Italian", code: "it" },
+  { name: "English", code: "en" },
+  { name: "Japanese", code: "ja" },
+  { name: "Spanish", code: "es" },
+  { name: "French", code: "fr" },
+  { name: "German", code: "de" },
+  { name: "Polish", code: "pl" },
+  { name: "Dutch", code: "nl" }
+];
+
 const Books = () => {
   const theme = useRecoilValue(themeState);
   const [uploadVisible, setUploadVisible] = useState(false);
@@ -32,9 +47,6 @@ const Books = () => {
   const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
-    // Fetch all books
-    fetchAllBooks(pagination.current);
-
     // Fetch all categories
     ApiService.getAllCategories()
       .then((response) => {
@@ -44,6 +56,15 @@ const Books = () => {
         message.error("Failed to load categories.");
       });
   }, []);
+
+  useEffect(() => {
+      setPagination({
+        current: 1,
+        pageSize: 8,
+        total: 1,
+      })
+      fetchAllBooks(pagination.current);
+  }, [language])
 
   const deleteBook = async (bookId) => {
     setTableLoading(true);
@@ -108,7 +129,7 @@ const Books = () => {
       title: '#',
       dataIndex: 'imagePath',
       key: 'imagePath',
-      render: (imagePath) => <Image src={ApiService.documentURL + imagePath} style={{width: '80px', borderRadius: '10px'}}/>,
+      render: (imagePath) => <Image src={imagePath} style={{width: '80px', borderRadius: '10px'}}/>,
     },
     {
       title: 'Name',
@@ -134,29 +155,29 @@ const Books = () => {
         <Tag color={status ? 'green' : 'volcano'}>{status ? "Active" : "Not Active"}</Tag>
       ),
     },
+    // {
+    //   title: 'Open Guides',
+    //   dataIndex: 'openBooks',
+    //   key: 'openBooks',
+    //   render: (openBooks) => <div className='book-badge'>{openBooks ||"0"}</div>,
+    // },
+    // {
+    //   title: 'Offline Books',
+    //   key: 'offlineBooks',
+    //   dataIndex: 'offlineBooks',
+    //   render: (offlineBooks) => <div className='book-badge'>{offlineBooks ||"0"}</div>,
+    // },
+    // {
+    //   title: 'Download Books',
+    //   key: 'downloadBooks',
+    //   dataIndex: 'downloadBooks',
+    //   render: (downloadBooks) => <div className='book-badge'>{downloadBooks ||"0"}</div>,
+    // },
     {
-      title: 'Open Guides',
-      dataIndex: 'openBooks',
-      key: 'openBooks',
-      render: (openBooks) => <div className='book-badge'>{openBooks ||"0"}</div>,
-    },
-    {
-      title: 'Offline Books',
-      key: 'offlineBooks',
-      dataIndex: 'offlineBooks',
-      render: (offlineBooks) => <div className='book-badge'>{offlineBooks ||"0"}</div>,
-    },
-    {
-      title: 'Download Books',
-      key: 'downloadBooks',
-      dataIndex: 'downloadBooks',
-      render: (downloadBooks) => <div className='book-badge'>{downloadBooks ||"0"}</div>,
-    },
-    {
-      title: 'Documents',
-      dataIndex: 'pdfFiles',
-      key: 'pdfFiles',
-      render: (index, record) => <Tag color='volcano' style={{margin: '2px', cursor: 'pointer'}} onClick={() => window.open(ApiService.documentURL + record.pdfPath, "_blank")}>{record.lang}</Tag>,
+      title: 'Document',
+      dataIndex: 'pdfFile',
+      key: 'pdfFile',
+      render: (index, record) => <Tag color='volcano' style={{margin: '2px', cursor: 'pointer'}} onClick={() => window.open(record.pdfPath, "_blank")}>{record.lang}</Tag>,
     },
     {
       title: 'Action',
@@ -190,6 +211,7 @@ const Books = () => {
         setPagination(obj);
         setTableLoading(false);
         setBooks(response.books);
+        console.log("Book Fetched")
       })
       .catch((error) => {
         setTableLoading(false);
@@ -234,26 +256,16 @@ const Books = () => {
             </Typography.Title>
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
-            {/* <Select
-              defaultValue="all"
-              style={{ width: '250px' }}
-              onChange={(value) => setSelectedBookStatus(value)}
-              className={theme === 'light' ? 'header-search-input-light' : 'header-search-input-dark'}
-            >
-              <Select.Option value="all">All Statuses</Select.Option>
-              <Select.Option value={true}>Active</Select.Option>
-              <Select.Option value={false}>Not Active</Select.Option>
-            </Select> */}
             <Select
               defaultValue="all"
-              style={{ width: '250px' }}
-              onChange={(value) => setSelectedCategory(value)}
+              style={{ width: '330px' }}
+              onChange={(value) => setLanguage(value)}
               className={theme === 'light' ? 'header-search-input-light' : 'header-search-input-dark'}
             >
-              <Select.Option value="all">All Categories</Select.Option>
-              {categories.map((category) => (
-                <Select.Option key={category._id} value={category._id}>
-                  {category.name}
+              <Select.Option value="all">All Languages</Select.Option>
+              {languageOptions.map((languag) => (
+                <Select.Option key={languag.code} value={languag.code}>
+                  {languag.name}
                 </Select.Option>
               ))}
             </Select>
