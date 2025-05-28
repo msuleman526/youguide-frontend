@@ -10,6 +10,8 @@ const PdfToHtmlConverter = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [htmlContent, setHtmlContent] = useState('');
+    const [headings, setHeadings] = useState([]);
+    const [showToc, setShowToc] = useState(false);
 
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
@@ -44,19 +46,33 @@ const PdfToHtmlConverter = () => {
 
             try {
                 const res = await axios.get(jsonPath);
-                if (!res.ok) throw new Error('Failed to fetch JSON content');
-                const json = await res.json();
+                const json = await res.data;
+                const headingList = [];
 
                 // Convert JSON to HTML string
                 const html = json.content.map((item, index) => {
                     if (item.type === 'paragraph') {
-                        return `<p style="font-size: ${item.font_size}px; color: #${item.font_color};">${item.text}</p>`;
+                        let fontWeight = item.font_size == 18 || item.font_size == 14 ? 'bold' : 'normal';
+                        let margin = item.level == 1 ? '20px' : item.level == 2 ? "10px" : "2px"
+
+                        // Collect heading data
+                        if (item.level === 1 || item.level === 2 || item.level === 3) {
+                            headingList.push({
+                                id: `heading-${index}`,
+                                text: item.text,
+                                level: item.level
+                            });
+                        }
+
+                        return `<p id="heading-${index}" style="font-size: ${item.font_size + 3}px; color: #000000; font-weight: ${fontWeight}; margin-top: ${margin};">${item.text}</p>`;
                     }
                     return '';
                 }).join('');
 
                 setHtmlContent(html);
+                setHeadings(headingList);
             } catch (err) {
+                console.log(err)
                 setError('Failed to render JSON content.');
             } finally {
                 setLoading(false);
@@ -85,8 +101,66 @@ const PdfToHtmlConverter = () => {
             />}
 
             {/* Center scrollable content */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px', marginTop: '20px' }}>
                 <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+            </div>
+
+            <div style={{ position: 'fixed', top: 20, right: isMobile ? 10 : 270, zIndex: 1000 }}>
+                <button
+                    onClick={() => setShowToc(!showToc)}
+                    style={{
+                        padding: '8px 12px',
+                        backgroundColor: '#333',
+                        color: '#fff',
+                        border: 'none',
+                        position: 'absolute',
+                        right: "10px",
+                        width: '150px',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                    }}
+                >
+                    Table of Contents
+                </button>
+
+                {showToc && (
+                    <div
+                        style={{
+                            marginTop: '40px',
+                            backgroundColor: '#fff',
+                            border: '1px solid #ccc',
+                            borderRadius: '4px',
+                            width: '300px',
+                            maxHeight: '500px',
+                            overflowY: 'auto',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                            padding: '10px'
+                        }}
+                    >
+                        {headings.map((heading, idx) => (
+                            <div
+                                key={idx}
+                                onClick={() => {
+                                    const element = document.getElementById(heading.id);
+                                    if (element) {
+                                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                        setShowToc(false); // optional: hide after click
+                                    }
+                                }}
+                                style={{
+                                    cursor: 'pointer',
+                                    padding: '4px 0',
+                                    marginLeft: `${(heading.level - 1) * 10}px`,
+                                    fontWeight: heading.level === 1 ? 'bold' : 'normal',
+                                    fontSize: heading.level === 1 ? '16px' : '14px',
+                                    color: '#333'
+                                }}
+                            >
+                                {heading.text}
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Right static image */}
