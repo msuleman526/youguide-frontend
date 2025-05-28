@@ -169,7 +169,7 @@ const SubscriptionGuides = () => {
             >
               <div
                 style={{
-                  maxWidth: '300px',
+                  maxWidth: '240px',
                   width: '90%',
                   background: "white",
                   borderRadius: "15px",
