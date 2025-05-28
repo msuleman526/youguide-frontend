@@ -61,7 +61,7 @@ const SubscriptionGuides = () => {
         message.warning("Subscription Expired");
         navigate("/subscription-expired");
       } else {
-        window.top.location.href = "#/view-content/" + book._id;
+        window.open(`#/view-content/${book._id}`, '_blank');
       }
     } catch (error) {
       console.log("Error Fetching ", error);
@@ -182,7 +182,7 @@ const SubscriptionGuides = () => {
                 }}
               >
                 <Image
-                  src={book.imagePath}
+                  src={book.fullCover}
                   style={{
                     width: "100%",
                     height: "240px",
