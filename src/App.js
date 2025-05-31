@@ -18,6 +18,7 @@ import SubscriptionGuides from './pages/Vendors/SubscriptionGuides'
 import PdfViewer from './pages/Vendors/PdfViewer'
 import ContractExpired from './pages/Vendors/SubscriptionExpire'
 import DeleteAccount from './pages/DeleteAccount'
+import GuidePreview from './pages/Payment/GuidePreview'
 
 
 const App = () => {
@@ -25,6 +26,8 @@ const App = () => {
     <HashRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/travel-guides/:id" element={<GuidePreview />} />
+        <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/account/remove" element={<DeleteAccount />} />
         <Route path="/subscription-expired" element={<ContractExpired />} />
