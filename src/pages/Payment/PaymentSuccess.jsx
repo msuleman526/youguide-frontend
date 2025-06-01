@@ -18,7 +18,7 @@ const PaymentSuccess = ({ onBack }) => {
             <Result
                 status="success"
                 title="Payment Successful!"
-                subTitle={`Your booking has been confirmed. Please check your email to view the Guide. Guide: ${bookName}`}
+                subTitle={`Your purchase has been confirmed`}
             />
         </div>
     );
