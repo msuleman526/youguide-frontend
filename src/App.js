@@ -28,7 +28,6 @@ const App = () => {
         <Route path="/" element={<Login />} />
         <Route path="/travel-guides/:id" element={<GuidePreview />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
-        <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/account/remove" element={<DeleteAccount />} />
         <Route path="/subscription-expired" element={<ContractExpired />} />
         <Route path="/subscription-guides/:id" element={<SubscriptionGuides />} />
