@@ -31,8 +31,6 @@ const Books = () => {
   const [books, setBooks] = useState([]);
   const [categories, setCategories] = useState([]); // New state for categories
   const [tableLoading, setTableLoading] = useState(false);
-  const [selectedBookStatus, setSelectedBookStatus] = useState('all');
-  const [selectedCategory, setSelectedCategory] = useState('all'); // New state for selected category
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [pagination, setPagination] = useState({
@@ -220,13 +218,6 @@ const Books = () => {
       });
   }
 
-  // Filter books based on selected status and category
-  const filteredBooks = books.filter((book) => {
-    return (
-      (selectedBookStatus === 'all' || book.status === selectedBookStatus) &&
-      (selectedCategory === 'all' || book.category._id === selectedCategory)
-    );
-  });
 
   const onTableChange = (vale) => {
       setPagination(vale)
@@ -257,7 +248,7 @@ const Books = () => {
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
             <Select
-              defaultValue="all"
+              defaultValue={language}
               style={{ width: '330px' }}
               onChange={(value) => setLanguage(value)}
               className={theme === 'light' ? 'header-search-input-light' : 'header-search-input-dark'}
@@ -294,7 +285,7 @@ const Books = () => {
           className="custom_table"
           bordered
           columns={columns}
-          dataSource={filteredBooks}
+          dataSource={books}
           loading={tableLoading}
           pagination={pagination}
           onChange={onTableChange}
