@@ -63,7 +63,7 @@ const Books = () => {
         pageSize: 8,
         total: 1,
       })
-      fetchAllBooks(pagination.current);
+      fetchAllBooks(1, query);
   }, [language])
 
   const deleteBook = async (bookId) => {
@@ -262,7 +262,6 @@ const Books = () => {
               onChange={(value) => setLanguage(value)}
               className={theme === 'light' ? 'header-search-input-light' : 'header-search-input-dark'}
             >
-              <Select.Option value="all">All Languages</Select.Option>
               {languageOptions.map((languag) => (
                 <Select.Option key={languag.code} value={languag.code}>
                   {languag.name}
