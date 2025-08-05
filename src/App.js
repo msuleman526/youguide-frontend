@@ -19,6 +19,8 @@ import PdfViewer from './pages/Vendors/PdfViewer'
 import ContractExpired from './pages/Vendors/SubscriptionExpire'
 import DeleteAccount from './pages/DeleteAccount'
 import GuidePreview from './pages/Payment/GuidePreview'
+import AffiliateManagement from './pages/Affiliate/AffiliateManagement'
+import AffiliateSubscriptionGuides from './pages/Affiliate/AffiliateSubscriptionGuides'
 
 
 const App = () => {
@@ -31,6 +33,7 @@ const App = () => {
         <Route path="/account/remove" element={<DeleteAccount />} />
         <Route path="/subscription-expired" element={<ContractExpired />} />
         <Route path="/subscription-guides/:id" element={<SubscriptionGuides />} />
+        <Route path="/affiliate-guides/:id" element={<AffiliateSubscriptionGuides />} />
         <Route path="/view-content/:id" element={<PdfViewer />} />
         <Route path="/payment/cancel" element={<PaymentError />} />
         <Route path="/login" element={<Login />} />
@@ -42,6 +45,7 @@ const App = () => {
           <Route path="/roles" element={<Roles />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/vendors" element={<VendorManagement />} />
+          <Route path="/affiliates" element={<AffiliateManagement />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/users" element={<Users />} />
           <Route path="/books" element={<Books />} />
