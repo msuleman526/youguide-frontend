@@ -126,6 +126,36 @@ class ApiService {
         }
     }
 
+    static async getAllAffiliateSubscriptions() {
+        try {
+            const response = await axios.get(`${this.baseURL}/affiliates`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get vendorSubscription:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async saveAffiliateSubscription(data) {
+        try {
+            const response = await axios.post(`${this.baseURL}/affiliates`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get vendorSubscription:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
     static async getAllSubsciptionBooks(id, page, query, language = "en", limit = 8) {
         try {
             const response = await axios.get(`${this.baseURL}/vendor-subscription/books?vendorSubscriptionID=${id}&page=${page}&lang=${language}&query=${query}&limit=${limit}`, {
