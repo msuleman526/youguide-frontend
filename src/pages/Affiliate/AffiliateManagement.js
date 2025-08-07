@@ -43,7 +43,7 @@ const AffiliateManagement = () => {
     const deleteAffiliate = async (affiliateId) => {
         setTableLoading(true);
         try {
-            await ApiService.deleteAffiliate(affiliateId);
+            await ApiService.deleteAffiliateSubsubscription(affiliateId);
             message.success('Affiliate deleted successfully.');
             setAffiliates((prev) => prev.filter((a) => a._id !== affiliateId));
         } catch (err) {

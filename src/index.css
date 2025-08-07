@@ -315,7 +315,7 @@
 }
 
 .ant-typography {
-  color: #29b8e3 !important;
+  color: #29b8e3;
 }
 
 .subscription-typography1 {
@@ -340,7 +340,22 @@
   /* IE 10+ */
 }
 
+.scrollable-guides1 {
+  margin-top: 60px;
+  height: calc(100vh - 220px);
+  overflow-y: scroll;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE 10+ */
+}
+
 .scrollable-guides::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Opera */
+}
+
+.scrollable-guides1::-webkit-scrollbar {
   display: none;
   /* Chrome, Safari, Opera */
 }
