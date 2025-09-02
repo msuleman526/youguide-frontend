@@ -29,7 +29,8 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
 
   useEffect(() => {
     const path = location.pathname.split('/');
-    setSelectedMenu(path[1] || 'dashboard');
+    const menuKey = (path[1] === 'admin-dashboard' || path[1] === 'dashboard') ? 'admin-dashboard' : (path[1] || 'admin-dashboard');
+    setSelectedMenu(menuKey);
     if (path[1].includes('reports')) {
       setOpenKeys(['reports']);
     } else {
@@ -66,6 +67,11 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
   };
 
   const menuItems = [
+    {
+      key: 'admin-dashboard',
+      icon: <FaChartBar {...iconProps} />,
+      label: 'Admin Dashboard',
+    },
     {
       key: 'roles',
       icon: <VscLayout {...iconProps} />,
@@ -131,7 +137,7 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
               mode="inline"
               className="custom_menu_sidebar"
               selectedKeys={[selectedMenu]}
-              defaultSelectedKeys={[selectedMenu]}
+              defaultSelectedKeys={['admin-dashboard']}
               openKeys={openKeys}
               onOpenChange={setOpenKeys}
               items={[...menuItems, logoutItem]}
@@ -169,14 +175,14 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
               mode="inline"
               className="custom_menu_sidebar"
               selectedKeys={[selectedMenu]}
-              defaultSelectedKeys={[selectedMenu]}
+              defaultSelectedKeys={['admin-dashboard']}
               openKeys={openKeys}
               onOpenChange={setOpenKeys}
               items={menuItems}
             />
             <Menu
               mode="inline"
-              defaultSelectedKeys={['dashboard']}
+              defaultSelectedKeys={['admin-dashboard']}
               items={[logoutItem]}
             />
           </Flex>

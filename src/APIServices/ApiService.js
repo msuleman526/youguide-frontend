@@ -472,6 +472,375 @@ class ApiService {
         }
     }
 
+    // Analytics API methods
+    static async getDashboardStats(startDate = null, endDate = null) {
+        try {
+            let url = `${this.baseURL}/analytics/dashboard-stats`;
+            if (startDate || endDate) {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                url += `?${params.toString()}`;
+            }
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get dashboard stats:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getUsersByRole(startDate = null, endDate = null) {
+        try {
+            let url = `${this.baseURL}/analytics/users-by-role`;
+            if (startDate || endDate) {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                url += `?${params.toString()}`;
+            }
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get users by role:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getUsersOverTime(startDate = null, endDate = null) {
+        try {
+            let url = `${this.baseURL}/analytics/users-over-time`;
+            if (startDate || endDate) {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                url += `?${params.toString()}`;
+            }
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get users over time:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getBooksByCategory(startDate = null, endDate = null) {
+        try {
+            let url = `${this.baseURL}/analytics/books-by-category`;
+            if (startDate || endDate) {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                url += `?${params.toString()}`;
+            }
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get books by category:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getPurchaseTypeStats(startDate = null, endDate = null) {
+        try {
+            let url = `${this.baseURL}/analytics/purchase-type-stats`;
+            if (startDate || endDate) {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                url += `?${params.toString()}`;
+            }
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get purchase type stats:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getAffiliateClickStats(startDate = null, endDate = null) {
+        try {
+            let url = `${this.baseURL}/analytics/affiliate-click-stats`;
+            if (startDate || endDate) {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                url += `?${params.toString()}`;
+            }
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get affiliate click stats:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getVendorClickStats(startDate = null, endDate = null) {
+        try {
+            let url = `${this.baseURL}/analytics/vendor-click-stats`;
+            if (startDate || endDate) {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                url += `?${params.toString()}`;
+            }
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get vendor click stats:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getExpiredAffiliates(startDate = null, endDate = null) {
+        try {
+            let url = `${this.baseURL}/analytics/expired-affiliates`;
+            if (startDate || endDate) {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                url += `?${params.toString()}`;
+            }
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get expired affiliates:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getExpiredVendors(startDate = null, endDate = null) {
+        try {
+            let url = `${this.baseURL}/analytics/expired-vendors`;
+            if (startDate || endDate) {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                url += `?${params.toString()}`;
+            }
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get expired vendors:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getSalesByCategory(startDate = null, endDate = null) {
+        try {
+            let url = `${this.baseURL}/analytics/sales-by-category`;
+            if (startDate || endDate) {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                url += `?${params.toString()}`;
+            }
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get sales by category:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getBooksByLanguage(startDate = null, endDate = null) {
+        try {
+            let url = `${this.baseURL}/analytics/books-by-language`;
+            if (startDate || endDate) {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                url += `?${params.toString()}`;
+            }
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get books by language:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getPopularDestinations(startDate = null, endDate = null) {
+        try {
+            let url = `${this.baseURL}/analytics/popular-destinations`;
+            if (startDate || endDate) {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                url += `?${params.toString()}`;
+            }
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get popular destinations:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getRevenueOverTime(startDate = null, endDate = null) {
+        try {
+            let url = `${this.baseURL}/analytics/revenue-over-time`;
+            if (startDate || endDate) {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                url += `?${params.toString()}`;
+            }
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get revenue over time:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getTopPerformingBooks(startDate = null, endDate = null) {
+        try {
+            let url = `${this.baseURL}/analytics/top-performing-books`;
+            if (startDate || endDate) {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                url += `?${params.toString()}`;
+            }
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get top performing books:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getPurchaseTrends(startDate = null, endDate = null) {
+        try {
+            let url = `${this.baseURL}/analytics/purchase-trends`;
+            if (startDate || endDate) {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                url += `?${params.toString()}`;
+            }
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get purchase trends:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getAffiliateVsVendorPerformance(startDate = null, endDate = null) {
+        try {
+            let url = `${this.baseURL}/analytics/affiliate-vs-vendor-performance`;
+            if (startDate || endDate) {
+                const params = new URLSearchParams();
+                if (startDate) params.append('startDate', startDate);
+                if (endDate) params.append('endDate', endDate);
+                url += `?${params.toString()}`;
+            }
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get affiliate vs vendor performance:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
     // Fetch a single book by ID with category
     static async getBookById(id) {
         try {

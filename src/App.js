@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import Login from './pages/Login'
 import Register from './pages/Register'
-import { BrowserRouter, HashRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, HashRouter, Route, Routes, Navigate } from 'react-router-dom'
 import OTPScreen from './pages/OTPScreen'
 import DashboardLayout from './layouts/DashboardLayout'
 import SetNewPassword from './pages/SetNewPassword'
@@ -22,6 +22,7 @@ import GuidePreview from './pages/Payment/GuidePreview'
 import AffiliateManagement from './pages/Affiliate/AffiliateManagement'
 import AffiliateSubscriptionGuides from './pages/Affiliate/AffiliateSubscriptionGuides'
 import PdfAffiliateViewer from './pages/Affiliate/PdfAffiliateViewer'
+import AdminDashboard from './pages/AdminDashboard'
 
 
 const App = () => {
@@ -44,6 +45,8 @@ const App = () => {
         <Route path="/forget-password" element={<ForgotPassword />} />
         <Route path="/set-new-password" element={<SetNewPassword />} />
         <Route element={<DashboardLayout />}>
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/dashboard" element={<AdminDashboard />} />
           <Route path="/roles" element={<Roles />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/vendors" element={<VendorManagement />} />
