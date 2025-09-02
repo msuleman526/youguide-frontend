@@ -61,7 +61,7 @@ const SubscriptionGuides = () => {
         message.warning("Subscription Expired");
         navigate("/subscription-expired");
       } else {
-        window.open(`#/view-content/${book._id}`, '_blank');
+        window.open(`#/view-content/${id}/${book._id}`, '_blank');
       }
     } catch (error) {
       console.log("Error Fetching ", error);
