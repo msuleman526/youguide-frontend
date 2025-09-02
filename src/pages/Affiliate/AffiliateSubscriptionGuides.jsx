@@ -86,13 +86,12 @@ const AffiliateSubscriptionGuides = () => {
 
   const handleOpenGuide = async (book) => {
     try {
-      const response = await ApiService.checkVendorSubscriptionExpiry(id);
-
-      if (response.message === "Subscription Expired.") {
+      const response = await ApiService.checkAffiliateSubscriptionExpiry(id);
+      if (response.message.includes("Subscription Expired")) {
         message.warning("Subscription Expired");
         navigate("/subscription-expired");
       } else {
-        window.open(`#/view-content/${book._id}`, '_blank');
+        window.open(`#/view-affiliate-content/${id}/${book._id}`, '_blank');
       }
     } catch (error) {
       console.log("Error Fetching ", error);

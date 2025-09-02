@@ -81,6 +81,49 @@ class ApiService {
         }
     }
 
+    static async checkAffiliateSubscriptionExpiry(id) {
+        try {
+            const response = await axios.get(`${this.baseURL}/affiliates/checkExpiry?id=${id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get roles:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async openVendorBookOneTime(id) {
+        try {
+            const response = await axios.get(`${this.baseURL}/vendor-subscription/one-view?id=${id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get roles:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+
+    static async openAffiliateBookOneTime(id) {
+        try {
+            const response = await axios.get(`${this.baseURL}/affiliates/one-view?id=${id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get roles:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
     static async createRole(data) {
         try {
             const response = await axios.post(`${this.baseURL}/roles`, data, {

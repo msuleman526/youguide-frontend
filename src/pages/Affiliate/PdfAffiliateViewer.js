@@ -3,8 +3,9 @@ import { useParams } from 'react-router-dom';
 import ApiService from '../../APIServices/ApiService';
 import axios from 'axios';
 
-const PdfToHtmlConverter = () => {
-    const { id, vendor } = useParams(); // Get ID from the URL
+const PdfAffiliateViewer = () => {
+    console.log(useParams())
+    const { id, affilate } = useParams(); // Get ID from the URL
     const [book, setBook] = useState(null);
     const [jsonPath, setJsonPath] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -26,7 +27,7 @@ const PdfToHtmlConverter = () => {
             setLoading(true);
             try {
                 if (id) {
-                    ApiService.openVendorBookOneTime(vendor)
+                    ApiService.openAffiliateBookOneTime(affilate)
                     const response = await ApiService.getVendorBookByID(id);
                     setBook(response)
                     setJsonPath(response.jsonPath);
@@ -179,4 +180,4 @@ const PdfToHtmlConverter = () => {
     );
 };
 
-export default PdfToHtmlConverter;
+export default PdfAffiliateViewer;

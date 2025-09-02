@@ -21,6 +21,7 @@ import DeleteAccount from './pages/DeleteAccount'
 import GuidePreview from './pages/Payment/GuidePreview'
 import AffiliateManagement from './pages/Affiliate/AffiliateManagement'
 import AffiliateSubscriptionGuides from './pages/Affiliate/AffiliateSubscriptionGuides'
+import PdfAffiliateViewer from './pages/Affiliate/PdfAffiliateViewer'
 
 
 const App = () => {
@@ -34,7 +35,8 @@ const App = () => {
         <Route path="/subscription-expired" element={<ContractExpired />} />
         <Route path="/subscription-guides/:id" element={<SubscriptionGuides />} />
         <Route path="/affiliate-guides/:id" element={<AffiliateSubscriptionGuides />} />
-        <Route path="/view-content/:id" element={<PdfViewer />} />
+        <Route path="/view-content/:affilate/:id" element={<PdfViewer />} />
+        <Route path="/view-affiliate-content/:affilate/:id" element={<PdfAffiliateViewer />} />
         <Route path="/payment/cancel" element={<PaymentError />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
