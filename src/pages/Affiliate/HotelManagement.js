@@ -1,4 +1,4 @@
-import { Button, Col, Flex, Row, Select, Skeleton, Spin, Table, Typography, Modal, Tag, message, Avatar } from 'antd';
+import { Button, Flex, Table, Typography, Modal, Tag, message, Avatar, Card } from 'antd';
 import { HiOutlineUpload } from 'react-icons/hi';
 import { FaEdit, FaEye, FaTrashAlt, FaClock } from 'react-icons/fa';
 import { useRecoilValue } from 'recoil';
@@ -7,93 +7,96 @@ import CustomCard from '../../components/Card';
 import { useEffect, useState } from 'react';
 import ApiService from '../../APIServices/ApiService';
 import moment from 'moment';
-import AffiliatePopup from './AffiliatePopup';
+import HotelPopup from './HotelPopup';
+import { useParams } from 'react-router-dom';
 import QRCode from 'qrcode.react';
-import { useNavigate } from 'react-router-dom';
-import ExtendSubscriptionModal from './ExtendSubscriptionModal';
+import ExtendHotelModal from './ExtendHotelModal';
 
-const AffiliateManagement = () => {
-    const navigate = useNavigate();
+const HotelManagement = () => {
+    const { affiliateId } = useParams();
     const theme = useRecoilValue(themeState);
-    const [affiliates, setAffiliates] = useState([]);
+    const [hotels, setHotels] = useState([]);
+    const [affiliate, setAffiliate] = useState(null);
     const [tableLoading, setTableLoading] = useState(false);
     const [visible, setVisible] = useState(false);
-    const [selectedAffiliate, setSelectedAffiliate] = useState(null);
+    const [selectedHotel, setSelectedHotel] = useState(null);
     const [popupType, setPopupType] = useState('Add');
-    const [categories, setCategories] = useState([]);
+    const [affiliateCategories, setAffiliateCategories] = useState([]);
     const [qrModalVisible, setQrModalVisible] = useState(false);
     const [selectedQrUrl, setSelectedQrUrl] = useState('');
     const [extendModalVisible, setExtendModalVisible] = useState(false);
-    const [selectedAffiliateForExtend, setSelectedAffiliateForExtend] = useState(null);
+    const [selectedHotelForExtend, setSelectedHotelForExtend] = useState(null);
 
     useEffect(() => {
-        ApiService.getAllCategories()
-            .then((response) => setCategories(response))
-            .catch(() => message.error('Failed to fetch categories.'));
-        fetchAffiliates();
-    }, []);
+        fetchAffiliate();
+        fetchHotels();
+    }, [affiliateId]);
 
-    const fetchAffiliates = async () => {
-        setTableLoading(true);
+    const fetchAffiliate = async () => {
         try {
-            const response = await ApiService.getAllAffiliateSubscriptions();
-            console.log("RESPONSe")
-            console.log(response);
-            setAffiliates(response);
+            const response = await ApiService.getAffiliateByID(affiliateId);
+            setAffiliate(response);
+            setAffiliateCategories(response.categories || []);
         } catch (error) {
-            message.error(error?.response?.data?.message || 'Failed to fetch affiliates.');
-            setAffiliates([]);
-        } finally {
-            setTableLoading(false);
+            message.error('Failed to fetch affiliate details.');
         }
     };
 
-    const deleteAffiliate = async (affiliateId) => {
+    const fetchHotels = async () => {
         setTableLoading(true);
         try {
-            await ApiService.deleteAffiliateSubsubscription(affiliateId);
-            message.success('Affiliate deleted successfully.');
-            setAffiliates((prev) => prev.filter((a) => a._id !== affiliateId));
-        } catch (err) {
-            message.error('Failed to delete affiliate.');
+            const response = await ApiService.getHotelsByAffiliate(affiliateId);
+            setHotels(response);
+        } catch (error) {
+            message.error(error?.response?.data?.message || 'Failed to fetch hotels.');
+            setHotels([]);
         } finally {
             setTableLoading(false);
         }
     };
 
-    const confirmDelete = (affiliateId) => {
+    const deleteHotel = async (hotelId) => {
+        setTableLoading(true);
+        try {
+            await ApiService.deleteHotel(hotelId);
+            message.success('Hotel deleted successfully.');
+            setHotels((prev) => prev.filter((h) => h._id !== hotelId));
+        } catch (err) {
+            message.error('Failed to delete hotel.');
+        } finally {
+            setTableLoading(false);
+        }
+    };
+
+    const confirmDelete = (hotelId) => {
         Modal.confirm({
-            title: 'Are you sure you want to delete this affiliate?',
-            onOk: () => deleteAffiliate(affiliateId),
+            title: 'Are you sure you want to delete this hotel?',
+            onOk: () => deleteHotel(hotelId),
             okText: 'Yes',
             cancelText: 'No',
         });
     };
 
-    const handleView = (affiliate) => {
-        window.open("#/affiliate-guides/" + affiliate._id, '_blank');
+    const handleView = (hotel) => {
+        window.open(`#/hotel-guides/${affiliateId}/${hotel._id}`, '_blank');
     };
 
-    const handleHotelManagement = (affiliateId) => {
-        navigate(`/hotel-management/${affiliateId}`);
-    };
-
-    const handleQrCodeClick = (affiliateId) => {
-        const affiliateUrl = `${window.location.origin}/#/affiliate-guides/${affiliateId}`;
-        setSelectedQrUrl(affiliateUrl);
+    const handleQrCodeClick = (hotelId) => {
+        const hotelUrl = `${window.location.origin}/#/hotel-guides/${affiliateId}/${hotelId}`;
+        setSelectedQrUrl(hotelUrl);
         setQrModalVisible(true);
     };
 
-    const handleExtendSubscription = (affiliate) => {
-        setSelectedAffiliateForExtend(affiliate);
+    const handleExtendHotelSubscription = (hotel) => {
+        setSelectedHotelForExtend(hotel);
         setExtendModalVisible(true);
     };
 
-    const onExtendSuccess = (updatedAffiliate) => {
-        // Update the affiliate in the list
-        setAffiliates(prev => prev.map(aff => 
-            aff._id === updatedAffiliate._id ? { ...aff, ...updatedAffiliate } : aff
-        ));
+    const onExtendSuccess = (updatedAffiliate, updatedHotel) => {
+        // Update affiliate data
+        setAffiliate(prev => ({ ...prev, ...updatedAffiliate }));
+        // Refresh hotels list
+        fetchHotels();
         setExtendModalVisible(false);
     };
 
@@ -105,24 +108,24 @@ const AffiliateManagement = () => {
             render: (logo) => logo ? <Avatar style={{ width: '150px', height: 'fit-content' }} src={logo} shape="square" /> : 'N/A',
         },
         {
-            title: 'Affiliate Name',
-            dataIndex: 'affiliateName',
-            key: 'affiliateName',
+            title: 'Hotel Name',
+            dataIndex: 'hotelName',
+            key: 'hotelName',
         },
         {
             title: 'QR Code',
             key: 'qrCode',
             width: 120,
             render: (_, record) => {
-                const affiliateUrl = `${window.location.origin}/#/affiliate-guides/${record._id}`;
+                const hotelUrl = `${window.location.origin}/#/hotel-guides/${affiliateId}/${record._id}`;
                 return (
-                    <div 
+                    <div
                         style={{ cursor: 'pointer' }}
                         onClick={() => handleQrCodeClick(record._id)}
                         title="Click to enlarge QR code"
                     >
-                        <QRCode 
-                            value={affiliateUrl} 
+                        <QRCode
+                            value={hotelUrl}
                             size={80}
                             level="M"
                             includeMargin={true}
@@ -136,28 +139,6 @@ const AffiliateManagement = () => {
             dataIndex: 'primaryColor',
             key: 'primaryColor',
             render: (color) => <Tag color={color}>{color}</Tag>
-        },
-        {
-            title: 'Subscription End Date',
-            dataIndex: 'subscriptionEndDate',
-            key: 'subscriptionEndDate',
-            render: (val) => moment(val).format('YYYY-MM-DD')
-        },
-        {
-            title: 'Number of Clicks',
-            dataIndex: 'numberOfClicks',
-            key: 'numberOfClicks'
-        },
-        {
-            title: 'Pending Clicks',
-            dataIndex: 'pendingClicks',
-            key: 'pendingClicks'
-        },
-        {
-            title: 'Is Login',
-            dataIndex: 'isLogin',
-            key: 'isLogin',
-            render: (val) => val ? 'Yes' : 'No'
         },
         {
             title: 'Categories',
@@ -179,11 +160,11 @@ const AffiliateManagement = () => {
                     <Button type="link" onClick={() => handleView(record)}>
                         <FaEye />
                     </Button>
-                    <Button type="link" onClick={() => handleExtendSubscription(record)} title="Extend Subscription">
+                    <Button type="link" onClick={() => handleExtendHotelSubscription(record)} title="Extend Subscription">
                         <FaClock />
                     </Button>
-                    <Button type="link" onClick={() => handleHotelManagement(record._id)} title="Manage Hotels">
-                        🏨
+                    <Button type="link" onClick={() => handleEdit(record)}>
+                        <FaEdit />
                     </Button>
                     <Button type="link" danger onClick={() => confirmDelete(record._id)}>
                         <FaTrashAlt />
@@ -193,43 +174,64 @@ const AffiliateManagement = () => {
         },
     ];
 
-    const handleEdit = (affiliate) => {
-        setSelectedAffiliate(affiliate);
+    const handleEdit = (hotel) => {
+        setSelectedHotel(hotel);
         setPopupType('Edit');
         setVisible(true);
     };
 
-    const onAddAffiliate = () => {
+    const onAddHotel = () => {
         setPopupType('Add');
-        setSelectedAffiliate(null);
+        setSelectedHotel(null);
         setVisible(true);
     };
 
-    const onSaveAffiliate = () => {
-        fetchAffiliates();
+    const onSaveHotel = () => {
+        fetchHotels();
         setVisible(false);
     };
 
     return (
         <>
             <div>
+                <Card style={{ marginBottom: '20px', backgroundColor: affiliate?.primaryColor || '#3498db' }}>
+                    <Flex justify="space-between" align="center">
+                        <div>
+                            <Typography.Title level={3} style={{ color: 'white', margin: 0 }}>
+                                Default Affiliate Link
+                            </Typography.Title>
+                            <Typography.Text style={{ color: 'white', fontSize: '16px' }}>
+                                {`${window.location.origin}/#/affiliate-guides/${affiliateId}`}
+                            </Typography.Text>
+                        </div>
+                        {affiliate?.logo && (
+                            <Avatar
+                                src={affiliate.logo}
+                                size={120}
+                                shape="square"
+                                style={{ backgroundColor: 'white', padding: '4px', height: '78px' }}
+                            />
+                        )}
+                    </Flex>
+                </Card>
+
                 <Flex justify="space-between" align="center" className="mb-2">
                     <div>
                         <Typography.Title level={2} className="my-0 fw-500">
-                            Affiliate Management
+                            Hotel Management
                         </Typography.Title>
                         <Typography.Title level={4} className="my-0 fw-500">
-                            Manage all affiliates.
+                            Manage hotels for {affiliate?.affiliateName}
                         </Typography.Title>
                     </div>
                     <Button
                         className="custom-primary-btn"
                         type="primary"
                         size="large"
-                        onClick={onAddAffiliate}
+                        onClick={onAddHotel}
                     >
                         <Flex gap="small" align="center">
-                            <span>Create Affiliate</span>
+                            <span>Add Hotel</span>
                             <HiOutlineUpload size={20} color="#fff" />
                         </Flex>
                     </Button>
@@ -241,25 +243,27 @@ const AffiliateManagement = () => {
                     className="custom_table"
                     bordered
                     columns={columns}
-                    dataSource={affiliates}
+                    dataSource={hotels}
                     loading={tableLoading}
                     scroll={{ x: 'max-content' }}
                     pagination={{ pageSize: 10 }}
                     rowKey="_id"
                 />
             </CustomCard>
-            <AffiliatePopup
+
+            <HotelPopup
                 open={visible}
                 setOpen={() => setVisible(false)}
-                onSaveAffiliate={onSaveAffiliate}
-                categories={categories}
-                affiliate={selectedAffiliate}
+                onSaveHotel={onSaveHotel}
+                categories={affiliateCategories}
+                hotel={selectedHotel}
                 type={popupType}
+                affiliateId={affiliateId}
             />
-            
+
             {/* QR Code Modal */}
             <Modal
-                title="QR Code - Affiliate Guide Link"
+                title="QR Code - Hotel Guide Link"
                 open={qrModalVisible}
                 onCancel={() => setQrModalVisible(false)}
                 footer={[
@@ -271,7 +275,7 @@ const AffiliateManagement = () => {
                 centered
             >
                 <div style={{ textAlign: 'center', padding: '20px' }}>
-                    <QRCode 
+                    <QRCode
                         value={selectedQrUrl}
                         size={300}
                         level="M"
@@ -284,16 +288,17 @@ const AffiliateManagement = () => {
                     </div>
                 </div>
             </Modal>
-            
-            {/* Extend Subscription Modal */}
-            <ExtendSubscriptionModal
+
+            {/* Extend Hotel Subscription Modal */}
+            <ExtendHotelModal
                 open={extendModalVisible}
                 onClose={() => setExtendModalVisible(false)}
-                affiliate={selectedAffiliateForExtend}
+                hotel={selectedHotelForExtend}
+                affiliate={affiliate}
                 onExtendSuccess={onExtendSuccess}
             />
         </>
     );
 };
 
-export default AffiliateManagement;
+export default HotelManagement;

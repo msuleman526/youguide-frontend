@@ -22,38 +22,58 @@ import GuidePreview from './pages/Payment/GuidePreview'
 import AffiliateManagement from './pages/Affiliate/AffiliateManagement'
 import AffiliateSubscriptionGuides from './pages/Affiliate/AffiliateSubscriptionGuides'
 import PdfAffiliateViewer from './pages/Affiliate/PdfAffiliateViewer'
+import HotelManagement from './pages/Affiliate/HotelManagement'
+import HotelSubscriptionGuides from './pages/Affiliate/HotelSubscriptionGuides'
+import PdfHotelViewer from './pages/Affiliate/PdfHotelViewer'
+import AffiliateDashboard from './pages/Affiliate/AffiliateDashboard'
+import AffiliateHotelManagement from './pages/Affiliate/AffiliateHotelManagement'
+import FeatureTestPage from './pages/FeatureTestPage'
+import AffiliateLayout from './layouts/AffiliateLayout'
 import AdminDashboard from './pages/AdminDashboard'
+import ProtectedRoute from './components/ProtectedRoute'
+import AuthRedirect from './components/AuthRedirect'
 
 
 const App = () => {
   return (
     <HashRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<AuthRedirect />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/affiliate-login" element={<Login />} /> {/* Unified login for affiliates too */}
         <Route path="/travel-guides/:id" element={<GuidePreview />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
+        <Route path="/payment/cancel" element={<PaymentError />} />
         <Route path="/account/remove" element={<DeleteAccount />} />
         <Route path="/subscription-expired" element={<ContractExpired />} />
         <Route path="/subscription-guides/:id" element={<SubscriptionGuides />} />
         <Route path="/affiliate-guides/:id" element={<AffiliateSubscriptionGuides />} />
+        <Route path="/hotel-guides/:affiliateId/:hotelId" element={<HotelSubscriptionGuides />} />
         <Route path="/view-content/:affilate/:id" element={<PdfViewer />} />
         <Route path="/view-affiliate-content/:affilate/:id" element={<PdfAffiliateViewer />} />
-        <Route path="/payment/cancel" element={<PaymentError />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/view-hotel-content/:affiliateId/:hotelId/:id" element={<PdfHotelViewer />} />
         <Route path="/register" element={<Register />} />
         <Route path="/otp" element={<OTPScreen />} />
         <Route path="/forget-password" element={<ForgotPassword />} />
         <Route path="/set-new-password" element={<SetNewPassword />} />
-        <Route element={<DashboardLayout />}>
+        <Route element={<ProtectedRoute type="admin"><DashboardLayout /></ProtectedRoute>}>
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/dashboard" element={<AdminDashboard />} />
           <Route path="/roles" element={<Roles />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/vendors" element={<VendorManagement />} />
           <Route path="/affiliates" element={<AffiliateManagement />} />
+          <Route path="/hotel-management/:affiliateId" element={<HotelManagement />} />
+          <Route path="/feature-test" element={<FeatureTestPage />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/users" element={<Users />} />
           <Route path="/books" element={<Books />} />
+        </Route>
+        
+        {/* Affiliate Layout Routes */}
+        <Route element={<ProtectedRoute type="affiliate"><AffiliateLayout /></ProtectedRoute>}>
+          <Route path="/affiliate-dashboard/:affiliateId" element={<AffiliateDashboard />} />
+          <Route path="/affiliate-hotels/:affiliateId" element={<AffiliateHotelManagement />} />
         </Route>
       </Routes>
     </HashRouter>

@@ -26,14 +26,7 @@ const DashboardLayout = ({ children }) => {
     localStorage.setItem('theme', JSON.stringify(theme))
   }, [theme])
 
-  useEffect(() => {
-    const accessToken = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-
-    if (!accessToken || !user) {
-      navigate('/login');
-    }
-  }, [navigate]);
+  // Authentication is now handled by ProtectedRoute component
 
   useEffect(() => {
     updateWidthElements()

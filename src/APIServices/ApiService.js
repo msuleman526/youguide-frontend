@@ -228,6 +228,21 @@ class ApiService {
         }
     }
 
+    static async extendAffiliateSubscription(id, data) {
+        try {
+            const response = await axios.put(`${this.baseURL}/affiliates/extend/${id}`, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error extend affiliate subscription:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
     static async getAllAffiliateSubsciptionBooks(id, page, query, language = "en", limit = 8) {
         try {
             const response = await axios.get(`${this.baseURL}/affiliates/books?affiliateId=${id}&page=${page}&lang=${language}&query=${query}&limit=${limit}`, {
@@ -238,6 +253,183 @@ class ApiService {
             return response.data;
         } catch (error) {
             console.error('Error get vendorSubscription:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    // Hotel API methods
+    static async getHotelsByAffiliate(affiliateId) {
+        try {
+            const response = await axios.get(`${this.baseURL}/hotels/affiliate/${affiliateId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get hotels:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getHotelById(id) {
+        try {
+            const response = await axios.get(`${this.baseURL}/hotels/${id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get hotel:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async createHotel(affiliateId, data) {
+        try {
+            const response = await axios.post(`${this.baseURL}/hotels/affiliate/${affiliateId}`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error create hotel:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async updateHotel(id, data) {
+        try {
+            const response = await axios.put(`${this.baseURL}/hotels/${id}`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error update hotel:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async deleteHotel(id) {
+        try {
+            const response = await axios.delete(`${this.baseURL}/hotels/${id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error delete hotel:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getHotelSubscriptionBooks(hotelId, page, query, language = "en", limit = 8) {
+        try {
+            const response = await axios.get(`${this.baseURL}/hotels/books/subscription?hotelId=${hotelId}&page=${page}&lang=${language}&query=${query}&limit=${limit}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get hotel books:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async checkHotelSubscriptionExpiry(hotelId) {
+        try {
+            const response = await axios.get(`${this.baseURL}/hotels/checkExpiry?hotelId=${hotelId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error check hotel expiry:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async openHotelBookOneTime(hotelId) {
+        try {
+            const response = await axios.get(`${this.baseURL}/hotels/one-view?hotelId=${hotelId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error hotel one view:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    // Affiliate Authentication API methods
+    static async loginAffiliate(data) {
+        try {
+            const response = await axios.post(`${this.baseURL}/affiliates/login`, data, {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error affiliate login:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getAffiliateProfile() {
+        try {
+            const response = await axios.get(`${this.baseURL}/affiliates/profile`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("affiliateToken")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get affiliate profile:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getMyHotels() {
+        try {
+            const response = await axios.get(`${this.baseURL}/hotels/my-hotels`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("affiliateToken")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get my hotels:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async createMyHotel(data) {
+        try {
+            const response = await axios.post(`${this.baseURL}/hotels/my-hotels`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    "Authorization": "Bearer " + localStorage.getItem("affiliateToken")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error create my hotel:', error.response?.data || error.message);
             throw error;
         }
     }
@@ -611,6 +803,22 @@ class ApiService {
         }
     }
 
+    // Get affiliate-specific analytics for their dashboard
+    static async getMyAffiliateAnalytics(timeRange = '30days') {
+        try {
+            const response = await axios.get(`${this.baseURL}/affiliates/analytics?timeRange=${timeRange}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("affiliateToken")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get my affiliate analytics:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
     static async getVendorClickStats(startDate = null, endDate = null) {
         try {
             let url = `${this.baseURL}/analytics/vendor-click-stats`;
@@ -910,6 +1118,21 @@ class ApiService {
             return response.data;
         } catch (error) {
             console.error(`Error deleting book with ID ${id}:`, error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async extendHotelAffiliateSubscription(hotelId, data) {
+        try {
+            const response = await axios.put(`${this.baseURL}/hotels/extend/${hotelId}`, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error extend hotel subscription:', error.response?.data || error.message);
             throw error;
         }
     }
