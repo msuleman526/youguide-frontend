@@ -32,7 +32,7 @@ import AffiliateLayout from './layouts/AffiliateLayout'
 import AdminDashboard from './pages/AdminDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 import AuthRedirect from './components/AuthRedirect'
-
+import VideoGenerator from './pages/VideoGenerator'
 
 const App = () => {
   return (
@@ -56,6 +56,8 @@ const App = () => {
         <Route path="/otp" element={<OTPScreen />} />
         <Route path="/forget-password" element={<ForgotPassword />} />
         <Route path="/set-new-password" element={<SetNewPassword />} />
+        <Route path="/generate-video/:tripId" element={<VideoGenerator />} />
+
         <Route element={<ProtectedRoute type="admin"><DashboardLayout /></ProtectedRoute>}>
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/dashboard" element={<AdminDashboard />} />
@@ -69,7 +71,7 @@ const App = () => {
           <Route path="/users" element={<Users />} />
           <Route path="/books" element={<Books />} />
         </Route>
-        
+
         {/* Affiliate Layout Routes */}
         <Route element={<ProtectedRoute type="affiliate"><AffiliateLayout /></ProtectedRoute>}>
           <Route path="/affiliate-dashboard/:affiliateId" element={<AffiliateDashboard />} />
