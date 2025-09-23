@@ -5,9 +5,9 @@ class ApiService {
     // static baseURL = ApiService.URLL + '/api'; // Set your base URL here
     // static documentURL = "https://appapi.youguide.com" + '/';
 
-    static URLL = "http://localhost:5000"
+    static URLL = "http://localhost:5001"
     static baseURL = ApiService.URLL + '/api'; // Set your base URL here
-    static documentURL = "http://localhost:5000" + '/';
+    static documentURL = "http://localhost:5001" + '/';
 
     static async loginUser(data) {
         try {
@@ -674,7 +674,7 @@ class ApiService {
                 if (endDate) params.append('endDate', endDate);
                 url += `?${params.toString()}`;
             }
-            
+
             const response = await axios.get(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -697,7 +697,7 @@ class ApiService {
                 if (endDate) params.append('endDate', endDate);
                 url += `?${params.toString()}`;
             }
-            
+
             const response = await axios.get(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -720,7 +720,7 @@ class ApiService {
                 if (endDate) params.append('endDate', endDate);
                 url += `?${params.toString()}`;
             }
-            
+
             const response = await axios.get(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -743,7 +743,7 @@ class ApiService {
                 if (endDate) params.append('endDate', endDate);
                 url += `?${params.toString()}`;
             }
-            
+
             const response = await axios.get(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -766,7 +766,7 @@ class ApiService {
                 if (endDate) params.append('endDate', endDate);
                 url += `?${params.toString()}`;
             }
-            
+
             const response = await axios.get(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -789,7 +789,7 @@ class ApiService {
                 if (endDate) params.append('endDate', endDate);
                 url += `?${params.toString()}`;
             }
-            
+
             const response = await axios.get(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -828,7 +828,7 @@ class ApiService {
                 if (endDate) params.append('endDate', endDate);
                 url += `?${params.toString()}`;
             }
-            
+
             const response = await axios.get(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -851,7 +851,7 @@ class ApiService {
                 if (endDate) params.append('endDate', endDate);
                 url += `?${params.toString()}`;
             }
-            
+
             const response = await axios.get(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -874,7 +874,7 @@ class ApiService {
                 if (endDate) params.append('endDate', endDate);
                 url += `?${params.toString()}`;
             }
-            
+
             const response = await axios.get(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -897,7 +897,7 @@ class ApiService {
                 if (endDate) params.append('endDate', endDate);
                 url += `?${params.toString()}`;
             }
-            
+
             const response = await axios.get(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -920,7 +920,7 @@ class ApiService {
                 if (endDate) params.append('endDate', endDate);
                 url += `?${params.toString()}`;
             }
-            
+
             const response = await axios.get(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -943,7 +943,7 @@ class ApiService {
                 if (endDate) params.append('endDate', endDate);
                 url += `?${params.toString()}`;
             }
-            
+
             const response = await axios.get(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -966,7 +966,7 @@ class ApiService {
                 if (endDate) params.append('endDate', endDate);
                 url += `?${params.toString()}`;
             }
-            
+
             const response = await axios.get(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -989,7 +989,7 @@ class ApiService {
                 if (endDate) params.append('endDate', endDate);
                 url += `?${params.toString()}`;
             }
-            
+
             const response = await axios.get(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -1012,7 +1012,7 @@ class ApiService {
                 if (endDate) params.append('endDate', endDate);
                 url += `?${params.toString()}`;
             }
-            
+
             const response = await axios.get(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -1035,7 +1035,7 @@ class ApiService {
                 if (endDate) params.append('endDate', endDate);
                 url += `?${params.toString()}`;
             }
-            
+
             const response = await axios.get(url, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -1133,6 +1133,50 @@ class ApiService {
             return response.data;
         } catch (error) {
             console.error('Error extend hotel subscription:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    // Trip API methods
+    static async listTrips(userId = null) {
+        try {
+            const url = `${this.baseURL}/trips/list${userId ? `?user_id=${userId}` : ''}`;
+            const response = await axios.get(url, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get trips:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getTripById(tripId) {
+        try {
+            const response = await axios.get(`${this.baseURL}/trips/${tripId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get trip:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getTripPointsByTrip(tripId) {
+        try {
+            const response = await axios.get(`${this.baseURL}/trip-points/trip/${tripId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get trip points:', error.response?.data || error.message);
             throw error;
         }
     }
