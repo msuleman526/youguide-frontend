@@ -33,6 +33,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 import AuthRedirect from './components/AuthRedirect'
 import VideoGenerator from './pages/VideoGenerator'
+import PDFGenerator from './pages/PDFGenerator'
 
 const App = () => {
   return (
@@ -57,6 +58,7 @@ const App = () => {
         <Route path="/forget-password" element={<ForgotPassword />} />
         <Route path="/set-new-password" element={<SetNewPassword />} />
         <Route path="/generate-video/:tripId" element={<VideoGenerator />} />
+        <Route path="/generate-pdf/:tripId" element={<PDFGenerator />} />
 
         <Route element={<ProtectedRoute type="admin"><DashboardLayout /></ProtectedRoute>}>
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
