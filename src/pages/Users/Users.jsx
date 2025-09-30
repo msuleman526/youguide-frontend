@@ -61,6 +61,11 @@ const Users = () => {
       ),
     },
     {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email'
+    },
+    {
       title: 'Role',
       dataIndex: 'role',
       key: 'role',
