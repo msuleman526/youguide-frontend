@@ -83,6 +83,11 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
       label: 'Manage Users',
     },
     {
+      key: 'teams',
+      icon: <BiUser {...iconProps} />,
+      label: 'Manage Teams',
+    },
+    {
       key: 'categories',
       icon: <FaList {...iconProps} />,
       label: 'Manage Categories',

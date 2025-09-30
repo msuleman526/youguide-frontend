@@ -81,6 +81,7 @@ class ApiService {
         }
     }
 
+
     static async checkAffiliateSubscriptionExpiry(id) {
         try {
             const response = await axios.get(`${this.baseURL}/affiliates/checkExpiry?id=${id}`, {
@@ -157,6 +158,67 @@ class ApiService {
     static async getAllVendorSubscriptions() {
         try {
             const response = await axios.get(`${this.baseURL}/vendor-subscription`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get vendorSubscription:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getTeams() {
+        try {
+            const response = await axios.get(`${this.baseURL}/teams`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get vendorSubscription:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async saveTeamAdmin(data) {
+        try {
+            const response = await axios.post(`${this.baseURL}/team-admin`, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get vendorSubscription:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async saveTeamUser(data) {
+        try {
+            const response = await axios.post(`${this.baseURL}/team-user`, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get vendorSubscription:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+
+    static async updateTeamStatus(userId, data) {
+        try {
+            const response = await axios.patch(`${this.baseURL}/user/${userId}/status`, data, {
                 headers: {
                     'Content-Type': 'application/json',
                     "Authorization": "Bearer " + localStorage.getItem("token")

@@ -34,6 +34,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import AuthRedirect from './components/AuthRedirect'
 import VideoGenerator from './pages/VideoGenerator'
 import PDFGenerator from './pages/PDFGenerator'
+import Teams from './pages/Teams'
 
 const App = () => {
   return (
@@ -64,6 +65,7 @@ const App = () => {
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/dashboard" element={<AdminDashboard />} />
           <Route path="/roles" element={<Roles />} />
+          <Route path="/teams" element={<Teams />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/vendors" element={<VendorManagement />} />
           <Route path="/affiliates" element={<AffiliateManagement />} />

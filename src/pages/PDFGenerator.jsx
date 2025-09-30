@@ -23,6 +23,26 @@ export default function PDFGenerator() {
   const [previewPages, setPreviewPages] = useState([]);
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState("");
+  const [screenSize, setScreenSize] = useState("small");
+
+  function getSizeCategory() {
+      const width = window.innerWidth;
+      if (width >= 1200) return "large";
+      if (width >= 768 && width < 1200) {
+        if (width >= 900) return "medium";
+        return "tablet";
+      }
+      return "small";
+  }
+
+  useEffect(() => {
+      function handleResize() {
+        setScreenSize(getSizeCategory());
+      }
+      console.log(screenSize)
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
   // Fetch trip data
   useEffect(() => {
@@ -1271,15 +1291,16 @@ export default function PDFGenerator() {
               </div>
               
               <div style={styles.flipBookContainer}>
+                
                 <HTMLFlipBook
                   ref={flipBookRef}
-                  width={590}
-                  height={450}
+                  width={screenSize === 'large' ? 590 : screenSize == 'medium' || screenSize == 'tablet' ? 400 : 230}
+                  height={screenSize === 'large' ? 450 : screenSize == 'medium' || screenSize == 'tablet' ? 290 : 140}
                   size="fixed"
-                  minWidth={590}
-                  maxWidth={590}
-                  minHeight={450}
-                  maxHeight={450}
+                  minWidth={screenSize === 'large' ? 590 : screenSize == 'medium' || screenSize == 'tablet' ? 400 : 230}
+                  maxWidth={screenSize === 'large' ? 590 : screenSize == 'medium' || screenSize == 'tablet' ? 400 : 230}
+                  minHeight={screenSize === 'large' ? 450 : screenSize == 'medium' || screenSize == 'tablet' ? 290 : 140}
+                  maxHeight={screenSize === 'large' ? 450 : screenSize == 'medium' || screenSize == 'tablet' ? 290 : 140}
                   showCover={false}
                   flippingTime={800}
                   usePortrait={false}
@@ -1349,7 +1370,7 @@ export default function PDFGenerator() {
                       }}
                     ></div>
                   </div>
-                  <p style={styles.progressText}>{progress}%</p>
+                  <p style={styles.progressText}>{progress.toFixed(2)}%</p>
                 </div>
               ) : pdfUrl ? (
                 <div style={styles.results}>
