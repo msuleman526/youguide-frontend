@@ -1218,6 +1218,7 @@ const loadImage = (src) =>
                   maxWidth={screenSize === 'large' ? 590 : screenSize == 'medium' || screenSize == 'tablet' ? 400 : 230}
                   minHeight={screenSize === 'large' ? 450 : screenSize == 'medium' || screenSize == 'tablet' ? 290 : 160}
                   maxHeight={screenSize === 'large' ? 450 : screenSize == 'medium' || screenSize == 'tablet' ? 290 : 160}
+                  usePortrait={false}
                 >
                   {previewPages.map((page, index) => (
                     <div key={index} style={styles.flipPage}>
