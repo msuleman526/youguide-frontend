@@ -675,7 +675,7 @@ export default function PDFGenerator() {
       setPdfUrl(pdfUrl);
       
       // Generate preview pages for flip book
-      await generatePreviewPages(pdf);
+      await generatePreviewPages();
       
       updateProgress(100, "Complete!");
       
@@ -702,134 +702,147 @@ export default function PDFGenerator() {
   };
 
   // Generate preview pages by recreating the actual PDF content
-  const generatePreviewPages = async (pdf) => {
+  // helper: draw image "contain" centered (no upscale beyond 1:1)
+const drawContainCentered = (ctx, img, boxX, boxY, boxW, boxH) => {
+  const scale = Math.min(boxW / img.width, boxH / img.height, 1);
+  const w = img.width * scale;
+  const h = img.height * scale;
+  const x = boxX + (boxW - w) / 2;
+  const y = boxY + (boxH - h) / 2;
+  ctx.drawImage(img, x, y, w, h);
+};
+
+// helper: load image with CORS safe
+const loadImage = (src) =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+
+  const generatePreviewPages = async () => {
     const pages = [];
-    const pageCount = pdf.getNumberOfPages();
-    
     try {
-      updateProgress(98, "Creating detailed preview pages...");
-      
-      const stats = getTripStats();
-      const countries = tripData.trip.countries ? tripData.trip.countries.split(',').map(c => c.trim()) : [];
-      
-      for (let i = 1; i <= pageCount; i++) {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        // Use landscape dimensions matching PDF
-        canvas.width = 1190; // A4 landscape width in pixels at 150 DPI
-        canvas.height = 842;  // A4 landscape height in pixels at 150 DPI
-        
-        // Page 1: Cover Page with actual trip image
-        if (i === 1) {
-          if (tripData?.trip?.presignedImageUrl) {
-            try {
-              const img = new Image();
-              img.crossOrigin = 'anonymous';
-              await new Promise((resolve, reject) => {
-                img.onload = resolve;
-                img.onerror = reject;
-                img.src = tripData.trip.presignedImageUrl;
-              });
-              
-              // Fill entire canvas with trip image
-              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-              
-              // Add semi-transparent overlay for text readability
-              ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-              ctx.fillRect(0, 0, canvas.width, canvas.height);
-            } catch (error) {
-              ctx.fillStyle = '#65d2f2';
-              ctx.fillRect(0, 0, canvas.width, canvas.height);
-            }
-          } else {
-            ctx.fillStyle = '#65d2f2';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-          }
-          
-          // Add title
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 72px Arial';
-          ctx.textAlign = 'center';
-          ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-          ctx.shadowBlur = 15;
-          const text = tripData?.trip?.name || 'Trip Name';
-          ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-          ctx.shadowBlur = 0;
-        }
-        
-        // Page 2: Intro page with world cover
-        else if (i === 2) {
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          
+      updateProgress(94, "Building preview pages...");
+
+      // canvas size roughly matches landscape A4 preview
+      const CANVAS_W = 1190;
+      const CANVAS_H = 842;
+
+      const makeCanvas = () => {
+        const c = document.createElement('canvas');
+        c.width = CANVAS_W;
+        c.height = CANVAS_H;
+        return { c, ctx: c.getContext('2d') };
+      };
+
+      const leftWidth = CANVAS_W * 0.35;
+
+      // 1) COVER
+      {
+        const { c, ctx } = makeCanvas();
+        // background image or solid color
+        if (tripData?.trip?.presignedImageUrl) {
           try {
-            const worldImg = new Image();
-            worldImg.crossOrigin = 'anonymous';
-            await new Promise((resolve, reject) => {
-              worldImg.onload = resolve;
-              worldImg.onerror = reject;
-              worldImg.src = '/world_cover.png';
-            });
-            
-            // Fill entire canvas with world cover
-            ctx.drawImage(worldImg, 0, 0, canvas.width, canvas.height);
-          } catch (error) {
-            // Fallback gradient
-            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-            gradient.addColorStop(0, '#87CEEB');
-            gradient.addColorStop(1, '#4682B4');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const img = await loadImage(tripData.trip.presignedImageUrl);
+            ctx.drawImage(img, 0, 0, CANVAS_W, CANVAS_H);
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+          } catch {
+            ctx.fillStyle = '#65d2f2';
+            ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
           }
-          
-          const user = tripData?.user || {};
-          const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
-          
-          ctx.fillStyle = '#000000';
-          ctx.font = 'bold 40px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText(fullName, canvas.width / 2, canvas.height / 2 - 25);
-          ctx.font = '36px Arial';
-          ctx.fillText(tripData?.trip?.name || '', canvas.width / 2, canvas.height / 2 + 25);
+        } else {
+          ctx.fillStyle = '#65d2f2';
+          ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
         }
-        
-        // Page 3: Countries & Summary with actual icons
-        else if (i === 3) {
-          const leftWidth = canvas.width * 0.35;
-          
-          // Left column background
-          ctx.fillStyle = '#1D848E';
-          ctx.fillRect(0, 0, leftWidth, canvas.height);
-          
-          // Right column background
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(leftWidth, 0, canvas.width - leftWidth, canvas.height);
-          
-          // Countries title
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 40px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText('COUNTRIES', leftWidth / 2, 60);
-          
-          // Draw country boundaries if available
-          if (countries.length <= 4) {
-            let yPos = 100;
-            for (const country of countries) {
+
+        // title
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 72px Arial';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.8)';
+        ctx.shadowBlur = 15;
+        ctx.fillText(tripData?.trip?.name || 'Trip Name', CANVAS_W / 2, CANVAS_H / 2);
+        ctx.shadowBlur = 0;
+
+        pages.push(c.toDataURL('image/png', 1.0));
+      }
+
+      // 2) INTRO
+      {
+        const { c, ctx } = makeCanvas();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+        try {
+          const world = await loadImage('/world_cover.png');
+          // fill behavior for full bleed
+          const imgRatio = world.width / world.height;
+          const canvasRatio = CANVAS_W / CANVAS_H;
+          if (imgRatio > canvasRatio) {
+            const h = CANVAS_H;
+            const w = h * imgRatio;
+            const x = (CANVAS_W - w) / 2;
+            ctx.drawImage(world, x, 0, w, h);
+          } else {
+            const w = CANVAS_W;
+            const h = w / imgRatio;
+            const y = (CANVAS_H - h) / 2;
+            ctx.drawImage(world, 0, y, w, h);
+          }
+        } catch {
+          const g = ctx.createLinearGradient(0, 0, CANVAS_W, CANVAS_H);
+          g.addColorStop(0, '#87CEEB');
+          g.addColorStop(1, '#4682B4');
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+        }
+
+        const user = tripData?.user || {};
+        const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+
+        ctx.fillStyle = '#000';
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 40px Arial';
+        ctx.fillText(fullName || 'Traveler', CANVAS_W / 2, CANVAS_H / 2 - 25);
+        ctx.font = '36px Arial';
+        ctx.fillText(tripData?.trip?.name || '', CANVAS_W / 2, CANVAS_H / 2 + 25);
+
+        pages.push(c.toDataURL('image/png', 1.0));
+      }
+
+      // 3) COUNTRIES + SUMMARY
+      {
+        const stats = getTripStats();
+        const countries = tripData.trip.countries ? tripData.trip.countries.split(',').map(c => c.trim()) : [];
+
+        const { c, ctx } = makeCanvas();
+        // left bg
+        ctx.fillStyle = '#1D848E';
+        ctx.fillRect(0, 0, leftWidth, CANVAS_H);
+        // right bg
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(leftWidth, 0, CANVAS_W - leftWidth, CANVAS_H);
+
+        // countries title
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 40px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('COUNTRIES', leftWidth / 2, 60);
+
+        if (countries.length <= 4) {
+          let yPos = 100;
+          for (const country of countries) {
+            const path = getCountryBoundary(country + "_blue");
+            if (path) {
               try {
-                const boundaryPath = getCountryBoundary(country + "_blue");
-                if (boundaryPath) {
-                  const boundaryImg = new Image();
-                  boundaryImg.crossOrigin = 'anonymous';
-                  await new Promise((resolve, reject) => {
-                    boundaryImg.onload = resolve;
-                    boundaryImg.onerror = reject;
-                    boundaryImg.src = boundaryPath;
-                  });
-                  ctx.drawImage(boundaryImg, 20, yPos, leftWidth - 40, 80);
-                  yPos += 100;
-                }
-              } catch (error) {
-                // Fallback to text
+                const img = await loadImage(path);
+                drawContainCentered(ctx, img, 20, yPos, leftWidth - 40, 120);
+                yPos += 140;
+              } catch {
                 ctx.fillStyle = '#ffffff';
                 ctx.font = '24px Arial';
                 ctx.textAlign = 'left';
@@ -838,377 +851,280 @@ export default function PDFGenerator() {
               }
             }
           }
-          
-          // Trip Summary title
-          ctx.fillStyle = '#000000';
-          ctx.font = 'bold 40px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText('Trip Summary', leftWidth + (canvas.width - leftWidth) / 2, 60);
-          
-          // Load and draw icons with stats - FIXED SIZING AND POSITIONING
-          const iconData = [
-            { path: '/globe.png', count: stats.kilometers, name: 'KILOMETERS' },
-            { path: '/location.png', count: stats.steps, name: 'STEPS' },
-            { path: '/calendar.png', count: stats.days, name: 'DAYS' },
-            { path: '/camera.png', count: stats.photos, name: 'PHOTOS' }
-          ];
-          
-          for (let statIndex = 0; statIndex < iconData.length; statIndex++) {
-            const stat = iconData[statIndex];
-            // Better positioning matching PDF layout
-            const x = leftWidth + 60 + (statIndex % 2) * 300;
-            const y = 200 + Math.floor(statIndex / 2) * 150;
-            
-            try {
-              const iconImg = new Image();
-              iconImg.crossOrigin = 'anonymous';
-              await new Promise((resolve, reject) => {
-                iconImg.onload = resolve;
-                iconImg.onerror = reject;
-                iconImg.src = stat.path;
-              });
-              // MUCH LARGER ICONS - 64x64 instead of 32x32
-              ctx.drawImage(iconImg, x, y - 32, 64, 64);
-            } catch (error) {
-              // Icon fallback - larger colored circle
-              ctx.fillStyle = '#65d2f2';
-              ctx.beginPath();
-              ctx.arc(x + 32, y, 32, 0, Math.PI * 2);
-              ctx.fill();
-            }
-            
-            ctx.fillStyle = '#65d2f2';
-            ctx.font = 'bold 56px Arial';
-            ctx.textAlign = 'left';
-            // Better text positioning next to larger icon
-            ctx.fillText(stat.count.toString(), x + 80, y + 8);
-            
-            ctx.fillStyle = '#000000';
-            ctx.font = '28px Arial';
-            ctx.fillText(stat.name, x + 80, y + 40);
-          }
-          
-          // Home and destination with LARGER icons and better positioning
-          const firstPoint = tripData.tripPoints[0];
-          const lastPoint = tripData.tripPoints[tripData.tripPoints.length - 1];
-          
-          try {
-            const homeImg = new Image();
-            homeImg.crossOrigin = 'anonymous';
-            await new Promise((resolve, reject) => {
-              homeImg.onload = resolve;
-              homeImg.onerror = reject;
-              homeImg.src = '/home.png';
-            });
-            // LARGER HOME ICON - 48x48
-            ctx.drawImage(homeImg, leftWidth + 60, canvas.height - 90, 48, 48);
-          } catch (error) {
-            // Fallback circle for home
-            ctx.fillStyle = '#65d2f2';
-            ctx.beginPath();
-            ctx.arc(leftWidth + 84, canvas.height - 66, 24, 0, Math.PI * 2);
-            ctx.fill();
-          }
-          
-          try {
-            const destImg = new Image();
-            destImg.crossOrigin = 'anonymous';
-            await new Promise((resolve, reject) => {
-              destImg.onload = resolve;
-              destImg.onerror = reject;
-              destImg.src = '/destination.png';
-            });
-            // LARGER DESTINATION ICON - 48x48
-            ctx.drawImage(destImg, canvas.width - 120, canvas.height - 90, 48, 48);
-          } catch (error) {
-            // Fallback circle for destination
-            ctx.fillStyle = '#ff4444';
-            ctx.beginPath();
-            ctx.arc(canvas.width - 96, canvas.height - 66, 24, 0, Math.PI * 2);
-            ctx.fill();
-          }
-          
-          ctx.fillStyle = '#000000';
-          ctx.font = '32px Arial';
+        } else {
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '24px Arial';
           ctx.textAlign = 'left';
-          // Better text positioning under larger icons
-          ctx.fillText(firstPoint.area_name, leftWidth + 60, canvas.height - 30);
-          ctx.textAlign = 'right';
-          ctx.fillText(lastPoint.area_name, canvas.width - 60, canvas.height - 30);
-          
-          // Draw line between them - positioned better
-          ctx.strokeStyle = '#65d2f2';
-          ctx.lineWidth = 8;
-          ctx.beginPath();
-          ctx.moveTo(leftWidth + 120, canvas.height - 66);
-          ctx.lineTo(canvas.width - 120, canvas.height - 66);
-          ctx.stroke();
+          let y = 100;
+          countries.forEach(country => {
+            ctx.fillText(country, 30, y);
+            y += 36;
+          });
         }
-        
-        // Page 4: Google Map
-        else if (i === 4) {
-          ctx.fillStyle = '#e8f4f8';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          
-          const mapUrl = getStaticMapUrl();
-          if (mapUrl) {
-            try {
-              const mapImg = new Image();
-              mapImg.crossOrigin = 'anonymous';
-              await new Promise((resolve, reject) => {
-                mapImg.onload = resolve;
-                mapImg.onerror = reject;
-                mapImg.src = mapUrl;
-              });
-              ctx.drawImage(mapImg, 0, 0, canvas.width, canvas.height);
-            } catch (error) {
-              // Map fallback
-              ctx.fillStyle = '#c8c8c8';
-              ctx.fillRect(0, 0, canvas.width, canvas.height);
-              ctx.fillStyle = '#000000';
-              ctx.font = '36px Arial';
-              ctx.textAlign = 'center';
-              ctx.fillText('Map Not Available', canvas.width / 2, canvas.height / 2);
-            }
-          }
-        }
-        
-        // Trip point pages
-        else {
-          const actualTripPointIndex = i - 5;
-          
-          // Check if this is the logo page (last page)
-          if (actualTripPointIndex >= tripData.tripPoints.length * 2) {
-            // Logo page - WHITE background with large logo
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            try {
-              const logoImg = new Image();
-              logoImg.crossOrigin = 'anonymous';
-              await new Promise((resolve, reject) => {
-                logoImg.onload = resolve;
-                logoImg.onerror = reject;
-                logoImg.src = largeLogo;
-              });
-              
-              // Large logo centered - much bigger than PDF
-              const logoWidth = 400;
-              const logoHeight = 120;
-              const logoX = (canvas.width - logoWidth) / 2;
-              const logoY = (canvas.height - logoHeight) / 2;
-              
-              ctx.drawImage(logoImg, logoX, logoY, logoWidth, logoHeight);
-              
-            } catch (error) {
-              // Fallback text logo
-              ctx.fillStyle = '#65d2f2';
-              ctx.font = 'bold 72px Arial';
-              ctx.textAlign = 'center';
-              ctx.fillText('YouGuide', canvas.width / 2, canvas.height / 2);
-              
-              ctx.fillStyle = '#333333';
-              ctx.font = '36px Arial';
-              ctx.fillText('Travel Books', canvas.width / 2, canvas.height / 2 + 60);
-            }
-          } else {
-            // Regular trip point pages
-            const tripPointIndex = Math.floor(actualTripPointIndex / 2);
-            const tripPoint = tripData?.tripPoints?.[tripPointIndex];
-            const leftWidth = canvas.width * 0.35;
-            
-            if (tripPoint) {
-              // Left column - white background
-              ctx.fillStyle = '#ffffff';
-              ctx.fillRect(0, 0, leftWidth, canvas.height);
-              
-              // Right column - light gray background
-              ctx.fillStyle = '#f0f0f0';
-              ctx.fillRect(leftWidth, 0, canvas.width - leftWidth, canvas.height);
-              
-              // Draw country boundary
-              try {
-                const countryBoundaryPath = getCountryBoundary(tripPoint.country + "_white");
-                if (countryBoundaryPath) {
-                  const countryImg = new Image();
-                  countryImg.crossOrigin = 'anonymous';
-                  await new Promise((resolve, reject) => {
-                    countryImg.onload = resolve;
-                    countryImg.onerror = reject;
-                    countryImg.src = countryBoundaryPath;
-                  });
-                  ctx.drawImage(countryImg, 20, 20, leftWidth - 40, 120);
-                }
-              } catch (error) {}
-              
-              // Draw country flag - LARGER SIZE
-              let textY = 160;
-              try {
-                const flagPath = getCountryFlag(tripPoint.country);
-                if (flagPath) {
-                  const flagImg = new Image();
-                  flagImg.crossOrigin = 'anonymous';
-                  await new Promise((resolve, reject) => {
-                    flagImg.onload = resolve;
-                    flagImg.onerror = reject;
-                    flagImg.src = flagPath;
-                  });
-                  // MUCH LARGER FLAG - 80x60 instead of 40x30
-                  ctx.drawImage(flagImg, 20, textY, 80, 60);
-                }
-              } catch (error) {}
-              
-              // Country and area text - adjusted positioning for larger flag
-              ctx.fillStyle = '#000000';
-              ctx.font = '28px Arial';
-              ctx.textAlign = 'left';
-              ctx.fillText(tripPoint.country, 110, textY + 30); // Moved right for larger flag
-              
-              ctx.font = 'bold 36px Arial';
-              ctx.fillText(tripPoint.area_name, 20, textY + 100); // Moved down for larger flag
-              
-              textY += 140; // Increased spacing
-              
-              // Description
-              if (tripPoint.description) {
-                ctx.font = '24px Arial';
-                ctx.fillStyle = '#333333';
-                const words = tripPoint.description.split(' ');
-                let line = '';
-                let y = textY;
-                const maxWidth = leftWidth - 80;
-                
-                for (let n = 0; n < words.length && y < canvas.height - 200; n++) {
-                  const testLine = line + words[n] + ' ';
-                  const metrics = ctx.measureText(testLine);
-                  const testWidth = metrics.width;
-                  
-                  if (testWidth > maxWidth && n > 0) {
-                    ctx.fillText(line, 20, y);
-                    line = words[n] + ' ';
-                    y += 30;
-                  } else {
-                    line = testLine;
-                  }
-                }
-                if (line.trim() && y < canvas.height - 200) {
-                  ctx.fillText(line, 20, y);
-                }
-                textY = y + 100;
-              } else {
-                textY += 100;
-              }
-              
-              // Stats
-              ctx.font = 'bold 24px Arial';
-              ctx.fillStyle = '#000000';
-              const formattedDate = new Date(tripPoint.created_at).toLocaleDateString('en-US', { 
-                month: 'long', 
-                day: 'numeric' 
-              });
-              
-              ctx.fillText('Date', 20, textY);
-              ctx.fillText('Weather', 160, textY);
-              ctx.fillText('Altitude', 280, textY);
-              
-              ctx.font = '20px Arial';
-              ctx.fillText(formattedDate, 20, textY + 30);
-              ctx.fillText('N/A', 160, textY + 30); // Weather placeholder
-              ctx.fillText('N/A', 280, textY + 30); // Altitude placeholder
-              
-              // Day number box
-              const dayNum = getDayNumber(tripPoint.created_at, tripData.tripPoints);
-              ctx.fillStyle = '#65d2f2';
-              ctx.fillRect(20, canvas.height - 40, 60, 32);
-              ctx.fillStyle = '#ffffff';
-              ctx.font = 'bold 20px Arial';
-              ctx.textAlign = 'center';
-              ctx.fillText(`DAY ${dayNum}`, 50, canvas.height - 20);
-              
-              // Draw trip point image if available
-              if (tripPoint.media && tripPoint.media.length > 0) {
-                const firstMedia = tripPoint.media[0];
-                if (firstMedia.media_url) {
-                  try {
-                    const mediaImg = new Image();
-                    mediaImg.crossOrigin = 'anonymous';
-                    await new Promise((resolve, reject) => {
-                      mediaImg.onload = resolve;
-                      mediaImg.onerror = reject;
-                      mediaImg.src = firstMedia.media_url;
-                    });
-                    
-                    // Calculate dimensions to fit in right column
-                    const availableWidth = canvas.width - leftWidth - 40;
-                    const availableHeight = canvas.height - 40;
-                    const imgAspect = mediaImg.width / mediaImg.height;
-                    const availableAspect = availableWidth / availableHeight;
-                    
-                    let drawWidth, drawHeight, drawX, drawY;
-                    
-                    if (imgAspect > availableAspect) {
-                      // Image is wider
-                      drawWidth = availableWidth;
-                      drawHeight = drawWidth / imgAspect;
-                      drawX = leftWidth + 20;
-                      drawY = 20 + (availableHeight - drawHeight) / 2;
-                    } else {
-                      // Image is taller
-                      drawHeight = availableHeight;
-                      drawWidth = drawHeight * imgAspect;
-                      drawX = leftWidth + 20 + (availableWidth - drawWidth) / 2;
-                      drawY = 20;
-                    }
-                    
-                    ctx.drawImage(mediaImg, drawX, drawY, drawWidth, drawHeight);
-                    
-                  } catch (error) {
-                    // Image placeholder
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(leftWidth + 20, 20, canvas.width - leftWidth - 40, canvas.height - 40);
-                    ctx.strokeStyle = '#dddddd';
-                    ctx.lineWidth = 4;
-                    ctx.strokeRect(leftWidth + 20, 20, canvas.width - leftWidth - 40, canvas.height - 40);
-                    
-                    ctx.fillStyle = '#cccccc';
-                    ctx.font = '32px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('📷 Photo', leftWidth + (canvas.width - leftWidth) / 2, canvas.height / 2);
-                  }
-                }
-              }
-            }
-          }
-        }
-        
-        const dataUrl = canvas.toDataURL('image/png', 1.0);
-        pages.push(dataUrl);
-        
-        updateProgress(98 + (i / pageCount) * 2, `Created preview page ${i}/${pageCount}...`);
-      }
-      
-    } catch (error) {
-      console.error('Error generating preview pages:', error);
-      
-      // Fallback to simple pages
-      for (let i = 1; i <= pageCount; i++) {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = 1190;
-        canvas.height = 842;
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#333333';
-        ctx.font = '48px Arial';
+
+        // summary
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold 40px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(`Page ${i}`, canvas.width / 2, canvas.height / 2);
-        ctx.fillText('(Preview Error)', canvas.width / 2, canvas.height / 2 + 60);
-        pages.push(canvas.toDataURL('image/png'));
+        ctx.fillText('Trip Summary', leftWidth + (CANVAS_W - leftWidth) / 2, 60);
+
+        const statDefs = [
+          { path: '/globe.png', count: stats.kilometers, name: 'KILOMETERS' },
+          { path: '/location.png', count: stats.steps, name: 'STEPS' },
+          { path: '/calendar.png', count: stats.days, name: 'DAYS' },
+          { path: '/camera.png', count: stats.photos, name: 'PHOTOS' },
+        ];
+
+        for (let k = 0; k < statDefs.length; k++) {
+          const def = statDefs[k];
+          const x = leftWidth + 60 + (k % 2) * 300;
+          const y = 200 + Math.floor(k / 2) * 150;
+
+          try {
+            const icon = await loadImage(def.path);
+            ctx.drawImage(icon, x, y - 32, 64, 64);
+          } catch {
+            ctx.fillStyle = '#65d2f2';
+            ctx.beginPath();
+            ctx.arc(x + 32, y, 32, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          ctx.fillStyle = '#65d2f2';
+          ctx.textAlign = 'left';
+          ctx.font = 'bold 56px Arial';
+          ctx.fillText(String(def.count ?? 0), x + 80, y + 8);
+
+          ctx.fillStyle = '#000';
+          ctx.font = '28px Arial';
+          ctx.fillText(def.name, x + 80, y + 40);
+        }
+
+        // home/destination
+        const firstPoint = tripData.tripPoints[0];
+        const lastPoint  = tripData.tripPoints[tripData.tripPoints.length - 1];
+
+        try {
+          const home = await loadImage('/home.png');
+          ctx.drawImage(home, leftWidth + 60, CANVAS_H - 90, 48, 48);
+        } catch {}
+        try {
+          const dest = await loadImage('/destination.png');
+          ctx.drawImage(dest, CANVAS_W - 120, CANVAS_H - 90, 48, 48);
+        } catch {}
+
+        ctx.fillStyle = '#000';
+        ctx.font = '32px Arial';
+        ctx.textAlign = 'left';
+        ctx.fillText(firstPoint.area_name, leftWidth + 60, CANVAS_H - 30);
+        ctx.textAlign = 'right';
+        ctx.fillText(lastPoint.area_name, CANVAS_W - 60, CANVAS_H - 30);
+
+        ctx.strokeStyle = '#65d2f2';
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(leftWidth + 120, CANVAS_H - 66);
+        ctx.lineTo(CANVAS_W - 120, CANVAS_H - 66);
+        ctx.stroke();
+
+        pages.push(c.toDataURL('image/png', 1.0));
       }
+
+      // 4) MAP
+      {
+        const { c, ctx } = makeCanvas();
+        ctx.fillStyle = '#e8f4f8';
+        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+        const mapUrl = getStaticMapUrl();
+        if (mapUrl) {
+          try {
+            const map = await loadImage(mapUrl);
+            ctx.drawImage(map, 0, 0, CANVAS_W, CANVAS_H);
+          } catch {
+            ctx.fillStyle = '#c8c8c8';
+            ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+            ctx.fillStyle = '#000';
+            ctx.font = '36px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Map Not Available', CANVAS_W / 2, CANVAS_H / 2);
+          }
+        }
+        pages.push(c.toDataURL('image/png', 1.0));
+      }
+
+      // 5) TRIP POINTS (REVERSED to match PDF) — info page + remaining media pages
+      {
+        const points = [...tripData.tripPoints].reverse();
+
+        for (const tripPoint of points) {
+          // INFO PAGE (left text + first media on right)
+          const { c, ctx } = makeCanvas();
+          // left column
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, leftWidth, CANVAS_H);
+          // right column
+          ctx.fillStyle = '#f0f0f0';
+          ctx.fillRect(leftWidth, 0, CANVAS_W - leftWidth, CANVAS_H);
+
+          // country boundary
+          try {
+            const boundaryPath = getCountryBoundary(tripPoint.country + "_white");
+            if (boundaryPath) {
+              const bImg = await loadImage(boundaryPath);
+              drawContainCentered(ctx, bImg, 20, 20, leftWidth - 40, 120);
+            }
+          } catch {}
+
+          // flag
+          let textY = 160;
+          try {
+            const flagPath = getCountryFlag(tripPoint.country);
+            if (flagPath) {
+              const flagImg = await loadImage(flagPath);
+              ctx.drawImage(flagImg, 20, textY, 80, 60);
+            }
+          } catch {}
+
+          // text
+          ctx.fillStyle = '#000';
+          ctx.textAlign = 'left';
+          ctx.font = '28px Arial';
+          ctx.fillText(tripPoint.country, 110, textY + 30);
+
+          ctx.font = 'bold 36px Arial';
+          ctx.fillText(tripPoint.area_name, 20, textY + 100);
+
+          textY += 140;
+
+          if (tripPoint.description) {
+            ctx.font = '24px Arial';
+            ctx.fillStyle = '#333';
+            const words = tripPoint.description.split(' ');
+            let line = '';
+            let y = textY;
+            const maxWidth = leftWidth - 80;
+            for (let n = 0; n < words.length && y < CANVAS_H - 200; n++) {
+              const test = line + words[n] + ' ';
+              if (ctx.measureText(test).width > maxWidth && n > 0) {
+                ctx.fillText(line, 20, y);
+                line = words[n] + ' ';
+                y += 30;
+              } else {
+                line = test;
+              }
+            }
+            if (line.trim() && y < CANVAS_H - 200) ctx.fillText(line, 20, y);
+            textY = y + 100;
+          } else {
+            textY += 100;
+          }
+
+          // stats row
+          ctx.font = 'bold 24px Arial';
+          ctx.fillStyle = '#000';
+          const formattedDate = new Date(tripPoint.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+          ctx.fillText('Date', 20, textY);
+          ctx.fillText('Weather', 160, textY);
+          ctx.fillText('Altitude', 300, textY);
+
+          ctx.font = '20px Arial';
+          ctx.fillText(formattedDate, 20, textY + 30);
+          ctx.fillText('N/A', 160, textY + 30);   // keep simple; live calls are slow here
+          ctx.fillText('N/A', 300, textY + 30);
+
+          // day badge
+          const dayNum = getDayNumber(tripPoint.created_at, tripData.tripPoints);
+          ctx.fillStyle = '#65d2f2';
+          ctx.fillRect(20, CANVAS_H - 40, 90, 32);
+          ctx.fillStyle = '#fff';
+          ctx.textAlign = 'center';
+          ctx.font = 'bold 20px Arial';
+          ctx.fillText(`DAY ${dayNum}`, 65, CANVAS_H - 20);
+
+          // right column first media
+          const firstMedia = (tripPoint.media || []).find(m => m.media_url);
+          if (firstMedia?.media_url) {
+            try {
+              const img = await loadImage(firstMedia.media_url);
+              drawContainCentered(ctx, img, leftWidth + 20, 20, CANVAS_W - leftWidth - 40, CANVAS_H - 40);
+            } catch {
+              // placeholder
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(leftWidth + 20, 20, CANVAS_W - leftWidth - 40, CANVAS_H - 40);
+              ctx.strokeStyle = '#ddd';
+              ctx.lineWidth = 4;
+              ctx.strokeRect(leftWidth + 20, 20, CANVAS_W - leftWidth - 40, CANVAS_H - 40);
+              ctx.fillStyle = '#999';
+              ctx.textAlign = 'center';
+              ctx.font = '32px Arial';
+              ctx.fillText('📷 Photo', leftWidth + (CANVAS_W - leftWidth) / 2, CANVAS_H / 2);
+            }
+          }
+
+          pages.push(c.toDataURL('image/png', 1.0));
+
+          // REMAINING MEDIA (each gets its own full page) — this was missing before
+          const remaining = (tripPoint.media || []).filter(m => m.media_url).slice(firstMedia ? 1 : 0);
+          for (const m of remaining) {
+            const { c: c2, ctx: ctx2 } = makeCanvas();
+            ctx2.fillStyle = '#ffffff';
+            ctx2.fillRect(0, 0, CANVAS_W, CANVAS_H);
+            if (m.media_url) {
+              try {
+                const img = await loadImage(m.media_url);
+                drawContainCentered(ctx2, img, 0, 0, CANVAS_W, CANVAS_H);
+              } catch {
+                ctx2.fillStyle = '#f5f5f5';
+                ctx2.fillRect(0, 0, CANVAS_W, CANVAS_H);
+              }
+            }
+            pages.push(c2.toDataURL('image/png', 1.0));
+          }
+        }
+      }
+
+      // 6) LOGO PAGE
+      {
+        const { c, ctx } = makeCanvas();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+        try {
+          const logo = await loadImage(largeLogo || "/large_logo_white.png");
+          const w = 400, h = 120;
+          ctx.drawImage(logo, (CANVAS_W - w)/2, (CANVAS_H - h)/2, w, h);
+        } catch {
+          ctx.fillStyle = '#65d2f2';
+          ctx.font = 'bold 72px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('YouGuide', CANVAS_W / 2, CANVAS_H / 2);
+          ctx.fillStyle = '#333';
+          ctx.font = '36px Arial';
+          ctx.fillText('Travel Books', CANVAS_W / 2, CANVAS_H / 2 + 60);
+        }
+        pages.push(c.toDataURL('image/png', 1.0));
+      }
+
+      setPreviewPages(pages);
+      updateProgress(100, "Preview ready!");
+    } catch (err) {
+      console.error('Preview error:', err);
+      // graceful fallback
+      const { c, ctx } = (() => {
+        const c = document.createElement('canvas');
+        c.width = 1190; c.height = 842;
+        return { c, ctx: c.getContext('2d') };
+      })();
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, 1190, 842);
+      ctx.fillStyle = '#333';
+      ctx.textAlign = 'center';
+      ctx.font = '48px Arial';
+      ctx.fillText('Preview Error', 595, 421);
+      setPreviewPages([c.toDataURL('image/png')]);
     }
-    
-    setPreviewPages(pages);
   };
+
 
   const handleDownload = () => {
     if (!pdfBlob) return;
@@ -1297,22 +1213,11 @@ export default function PDFGenerator() {
                   ref={flipBookRef}
                   width={screenSize === 'large' ? 590 : screenSize == 'medium' || screenSize == 'tablet' ? 400 : 230}
                   height={screenSize === 'large' ? 450 : screenSize == 'medium' || screenSize == 'tablet' ? 290 : 160}
-                  size="stretch"
+                  size="fixed"
                   minWidth={screenSize === 'large' ? 590 : screenSize == 'medium' || screenSize == 'tablet' ? 400 : 230}
                   maxWidth={screenSize === 'large' ? 590 : screenSize == 'medium' || screenSize == 'tablet' ? 400 : 230}
                   minHeight={screenSize === 'large' ? 450 : screenSize == 'medium' || screenSize == 'tablet' ? 290 : 160}
                   maxHeight={screenSize === 'large' ? 450 : screenSize == 'medium' || screenSize == 'tablet' ? 290 : 160}
-                  showCover={true}
-                  flippingTime={800}
-                  usePortrait={true}
-                  startPage={0}
-                  drawShadow={true}
-                  showPageCorners={true}
-                  disableFlipByClick={false}
-                  className="travel-book"
-                  style={styles.flipBook}
-                  autoSize={true}
-                  mobileScrollSupport={true}
                 >
                   {previewPages.map((page, index) => (
                     <div key={index} style={styles.flipPage}>
