@@ -6,8 +6,9 @@ import HTMLFlipBook from 'react-pageflip';
 import { getCountryBoundary } from '../Utils/CountryBoundary';
 import { getCountryFlag } from '../Utils/CountryFlag';
 import largeLogo from "../assets/large_logo_white.png";
+import ApiService from "../APIServices/ApiService";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://appapi.youguide.com/api';
+const API_BASE_URL = ApiService.baseURL;
 const PRIMARY_COLOR = '#65d2f2';
 
 export default function PDFGenerator() {
@@ -1301,9 +1302,9 @@ export default function PDFGenerator() {
                   maxWidth={screenSize === 'large' ? 590 : screenSize == 'medium' || screenSize == 'tablet' ? 400 : 230}
                   minHeight={screenSize === 'large' ? 450 : screenSize == 'medium' || screenSize == 'tablet' ? 290 : 160}
                   maxHeight={screenSize === 'large' ? 450 : screenSize == 'medium' || screenSize == 'tablet' ? 290 : 160}
-                  showCover={false}
+                  showCover={true}
                   flippingTime={800}
-                  usePortrait={false}
+                  usePortrait={true}
                   startPage={0}
                   drawShadow={true}
                   showPageCorners={true}

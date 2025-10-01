@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import largeLogo from "../assets/large_logo.png";
 import readyMusic from "../assets/ready.mp3";
 import { getCountryFlag } from "../Utils/CountryFlag";
+import ApiService from "../APIServices/ApiService";
 
 const CANVAS_W = 440;
 const CANVAS_H = 720;
@@ -12,7 +13,7 @@ const INTRO_SEC = 8;
 const PER_IMAGE_SEC = 3.0;
 const OUTRO_SEC = 2.0;
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://appapi.youguide.com/api';
+const API_BASE_URL = ApiService.baseURL;
 
 export default function VideoGenerator() {
   const { tripId } = useParams();
