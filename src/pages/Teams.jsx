@@ -121,14 +121,13 @@ const Teams = () => {
   };
 
   const handleTeamLimitChange = async (teamAdminId, newLimit) => {
-    try {
-      await axios.patch(`/api/team-admin/${teamAdminId}/limit`, { team_limit: newLimit });
+    ApiService.updateTeamLimit(teamAdminId, { team_limit: newLimit }).then((response) => {
       message.success('Team limit updated successfully');
       fetchTeams();
-    } catch (error) {
+    }).catch((error) => {
       console.error('Error updating team limit:', error);
       message.error('Error updating team limit');
-    }
+    })
   };
 
   const expandedRowRender = (record) => {
