@@ -7,7 +7,7 @@ import { getCountryBoundary } from '../Utils/CountryBoundary';
 import { getCountryFlag } from '../Utils/CountryFlag';
 import largeLogo from "../assets/large_logo_white.png";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://appapi.youguide.com/api';
 const PRIMARY_COLOR = '#65d2f2';
 
 export default function PDFGenerator() {
@@ -1295,12 +1295,12 @@ export default function PDFGenerator() {
                 <HTMLFlipBook
                   ref={flipBookRef}
                   width={screenSize === 'large' ? 590 : screenSize == 'medium' || screenSize == 'tablet' ? 400 : 230}
-                  height={screenSize === 'large' ? 450 : screenSize == 'medium' || screenSize == 'tablet' ? 290 : 140}
-                  size="fixed"
+                  height={screenSize === 'large' ? 450 : screenSize == 'medium' || screenSize == 'tablet' ? 290 : 160}
+                  size="stretch"
                   minWidth={screenSize === 'large' ? 590 : screenSize == 'medium' || screenSize == 'tablet' ? 400 : 230}
                   maxWidth={screenSize === 'large' ? 590 : screenSize == 'medium' || screenSize == 'tablet' ? 400 : 230}
-                  minHeight={screenSize === 'large' ? 450 : screenSize == 'medium' || screenSize == 'tablet' ? 290 : 140}
-                  maxHeight={screenSize === 'large' ? 450 : screenSize == 'medium' || screenSize == 'tablet' ? 290 : 140}
+                  minHeight={screenSize === 'large' ? 450 : screenSize == 'medium' || screenSize == 'tablet' ? 290 : 160}
+                  maxHeight={screenSize === 'large' ? 450 : screenSize == 'medium' || screenSize == 'tablet' ? 290 : 160}
                   showCover={false}
                   flippingTime={800}
                   usePortrait={false}

@@ -12,7 +12,7 @@ const INTRO_SEC = 8;
 const PER_IMAGE_SEC = 3.0;
 const OUTRO_SEC = 2.0;
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://appapi.youguide.com/api';
 
 export default function VideoGenerator() {
   const { tripId } = useParams();

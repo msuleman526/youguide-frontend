@@ -1,13 +1,13 @@
 import axios from 'axios';
 
 class ApiService {
-    // static URLL = "https://appapi.youguide.com"
-    // static baseURL = ApiService.URLL + '/api'; // Set your base URL here
-    // static documentURL = "https://appapi.youguide.com" + '/';
-
-    static URLL = "http://localhost:5001"
+    static URLL = "https://appapi.youguide.com"
     static baseURL = ApiService.URLL + '/api'; // Set your base URL here
-    static documentURL = "http://localhost:5001" + '/';
+    static documentURL = "https://appapi.youguide.com" + '/';
+
+    //static URLL = "http://localhost:5001"
+    //static baseURL = ApiService.URLL + '/api'; // Set your base URL here
+    //static documentURL = "http://localhost:5001" + '/';
 
     static async loginUser(data) {
         try {
@@ -203,6 +203,21 @@ class ApiService {
     static async saveTeamUser(data) {
         try {
             const response = await axios.post(`${this.baseURL}/team-user`, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get vendorSubscription:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async updateTeamLimit(teamAdminId, data) {
+        try {
+            const response = await axios.patch(`${this.baseURL}/team-admin/${teamAdminId}/limit`, data, {
                 headers: {
                     'Content-Type': 'application/json',
                     "Authorization": "Bearer " + localStorage.getItem("token")
