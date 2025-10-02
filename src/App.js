@@ -35,6 +35,7 @@ import AuthRedirect from './components/AuthRedirect'
 import VideoGenerator from './pages/VideoGenerator'
 import PDFGenerator from './pages/PDFGenerator'
 import Teams from './pages/Teams'
+import PrivacyPolicy from './pages/PrivacyPolicy'
 
 const App = () => {
   return (
@@ -44,6 +45,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/affiliate-login" element={<Login />} /> {/* Unified login for affiliates too */}
         <Route path="/travel-guides/:id" element={<GuidePreview />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/payment/cancel" element={<PaymentError />} />
         <Route path="/account/remove" element={<DeleteAccount />} />
