@@ -151,8 +151,8 @@ const HotelSubscriptionGuides = () => {
       {/* Fixed Search Bar */}
       <div
         style={{
-          position: "fixed",
-          top: 0,
+          position: "absolute",
+          top: '63px',
           left: "50%",
           transform: "translateX(-50%)",
           width: "550px",
@@ -190,7 +190,7 @@ const HotelSubscriptionGuides = () => {
       </div>
 
       {/* Main Content - No separate scroll container */}
-      <div style={{ paddingTop: '60px' }}>
+      <div style={{ paddingTop: '40px' }}>
         {/* Title Section */}
         <div
           style={{
