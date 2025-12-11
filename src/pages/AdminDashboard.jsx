@@ -32,6 +32,11 @@ import { themeState } from '../atom';
 import Card from '../components/Card';
 import ApiService from '../APIServices/ApiService';
 import moment from 'moment';
+import Joyride, { ACTIONS, EVENTS, STATUS } from 'react-joyride';
+import { useTour } from '../hooks/useTour';
+import { TOUR_PAGES, PAGE_TOURS } from '../Utils/TourConfig';
+import FirstTimeTourPopup from '../components/FirstTimeTourPopup';
+import { useTourContext } from '../context/TourContext';
 
 const { RangePicker } = DatePicker;
 
@@ -40,6 +45,19 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [selectedDateRange, setSelectedDateRange] = useState('thisYear');
   const [customDateRange, setCustomDateRange] = useState(null);
+
+  // Tour setup
+  const {
+    runTour,
+    startTour,
+    stopTour,
+    markTourCompleted,
+    showFirstTimePopup,
+    handleStartFirstTour,
+    handleSkipFirstTour,
+  } = useTour(TOUR_PAGES.ADMIN_DASHBOARD);
+
+  const { runTour: contextRunTour, setPageTour } = useTourContext();
   
   // State for all analytics data
   const [dashboardStats, setDashboardStats] = useState({});
@@ -61,7 +79,15 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchAllAnalyticsData('thisYear'); // Load with 'thisYear' filter by default
-  }, []);
+    setPageTour(TOUR_PAGES.ADMIN_DASHBOARD);
+  }, [setPageTour]);
+
+  // Sync tour state with context
+  useEffect(() => {
+    if (contextRunTour) {
+      startTour();
+    }
+  }, [contextRunTour, startTour]);
 
   const getDateRangeFromFilter = (filter) => {
     const now = moment();
@@ -189,6 +215,18 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleJoyrideCallback = (data) => {
+    const { action, index, status, type } = data;
+
+    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+      stopTour();
+      markTourCompleted();
+    } else if (action === ACTIONS.CLOSE) {
+      stopTour();
+      markTourCompleted();
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
@@ -263,13 +301,43 @@ const AdminDashboard = () => {
 
   return (
     <div style={{ padding: '20px' }}>
+      <Joyride
+        steps={PAGE_TOURS[TOUR_PAGES.ADMIN_DASHBOARD]}
+        run={runTour}
+        continuous
+        showSkipButton
+        showProgress
+        scrollToFirstStep
+        disableScrolling={false}
+        callback={handleJoyrideCallback}
+        styles={{
+          options: {
+            primaryColor: '#29b8e3',
+            zIndex: 10000,
+          },
+        }}
+        locale={{
+          back: 'Back',
+          close: 'Close',
+          last: 'Finish',
+          next: 'Next',
+          skip: 'Skip All Tour',
+        }}
+      />
+
+      <FirstTimeTourPopup
+        visible={showFirstTimePopup}
+        onStart={handleStartFirstTour}
+        onSkip={handleSkipFirstTour}
+      />
+
       <Row gutter={[16, 16]}>
         {/* Header and Filters */}
         <Col xs={24}>
           <Flex justify="space-between" align="center" wrap="wrap" gap="middle">
             <Typography.Title level={2} style={{ margin: 0 }}>Admin Dashboard</Typography.Title>
-            
-            <Flex align="center" gap="middle" wrap="wrap">
+
+            <Flex align="center" gap="middle" wrap="wrap" className="date-filter">
               <Space wrap>
                 {filterButtons.map((filter) => (
                   <Button
@@ -282,13 +350,13 @@ const AdminDashboard = () => {
                   </Button>
                 ))}
               </Space>
-              
+
               <RangePicker
                 value={customDateRange}
                 onChange={handleCustomDateChange}
                 format="YYYY-MM-DD"
               />
-              
+
               <ReloadOutlined
                 style={{ fontSize: '20px', cursor: 'pointer', color: '#1890ff' }}
                 onClick={() => fetchAllAnalyticsData()}
@@ -298,9 +366,11 @@ const AdminDashboard = () => {
         </Col>
 
         {/* Statistics Cards - 4 cards per row on desktop (4-4 layout) */}
-        {statsCards.map((stat, index) => (
-          <Col xs={12} sm={12} md={6} lg={6} xl={6} xxl={6} key={index}>
-            <Card>
+        <Col xs={24} className="stats-cards">
+          <Row gutter={[16, 16]}>
+            {statsCards.map((stat, index) => (
+              <Col xs={12} sm={12} md={6} lg={6} xl={6} xxl={6} key={index}>
+                <Card>
               <Flex justify="space-between" align="center">
                 <div>
                   <Typography.Text type="secondary">{stat.title}</Typography.Text>
@@ -316,8 +386,12 @@ const AdminDashboard = () => {
             </Card>
           </Col>
         ))}
+          </Row>
+        </Col>
 
         {/* Revenue Over Time - Line Chart */}
+        <Col xs={24} className="analytics-charts">
+          <Row gutter={[16, 16]}>
         <Col xs={24} md={12} lg={8}>
           <Card>
             <Typography.Title level={4}>Revenue Over Time</Typography.Title>
@@ -911,6 +985,8 @@ const AdminDashboard = () => {
               </div>
             )}
           </Card>
+        </Col>
+          </Row>
         </Col>
       </Row>
     </div>

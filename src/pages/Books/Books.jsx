@@ -9,6 +9,8 @@ import UploadFormPopup from './UploadFormPopup';
 import ApiService from '../../APIServices/ApiService';
 import { Link } from 'react-router-dom';
 import UploadPDF from './UploadPDF';
+import PageTourWrapper from '../../components/PageTourWrapper';
+import { TOUR_PAGES } from '../../Utils/TourConfig';
 
 const languageOptions = [
   { name: "Arabic", code: "ar" },
@@ -185,7 +187,7 @@ const Books = () => {
           {/* <Button type="link" onClick={() => console.log('Edit functionality here')}>
             <FaEdit />
           </Button> */}
-          <Button type="link" onClick={() => handleUpload(record)}>
+          <Button type="link" className="upload-pdf-button" onClick={() => handleUpload(record)}>
             <FaUpload />
           </Button>
           <Button type="link" danger onClick={() => confirmDelete(record._id)}>
@@ -235,7 +237,7 @@ const Books = () => {
   };
 
   return (
-    <>
+    <PageTourWrapper pageName={TOUR_PAGES.BOOKS}>
       <div>
         <Flex justify="space-between" align="center" className="mb-2">
           <div>
@@ -246,7 +248,7 @@ const Books = () => {
               Manage all travel guide books in the library
             </Typography.Title>
           </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '10px' }} className="books-filters">
             <Select
               defaultValue={language}
               style={{ width: '330px' }}
@@ -269,7 +271,7 @@ const Books = () => {
               <span>Upload Guides</span>
             </Button>
             <Button
-              className="custom-primary-btn"
+              className="custom-primary-btn books-add-button"
               type="primary"
               size="large"
               onClick={handleAddBook}
@@ -282,7 +284,7 @@ const Books = () => {
       <CustomCard>
         <Table
           size="middle"
-          className="custom_table"
+          className="custom_table books-table"
           bordered
           columns={columns}
           dataSource={books}
@@ -295,7 +297,7 @@ const Books = () => {
       <UploadFormPopup visible={uploadVisible} setVisible={() => setUploadVisible(false)} fetchAllBooks={() => fetchAllBooks(pagination.current, query)} />
       <BookPopup visible={isModalVisible} onClose={handleCancel} onAddBook={onAddBook} />
       <UploadPDF visible={uploadPopupVisible} onClose={() => setUploadPopUpVisible(false)} bookID={selectedBook} onUploadPDF={onUploadPDF} />
-    </>
+    </PageTourWrapper>
   );
 };
 

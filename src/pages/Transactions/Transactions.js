@@ -4,6 +4,8 @@ import { themeState } from '../../atom';
 import CustomCard from '../../components/Card';
 import { useEffect, useState } from 'react';
 import ApiService from '../../APIServices/ApiService';
+import PageTourWrapper from '../../components/PageTourWrapper';
+import { TOUR_PAGES } from '../../Utils/TourConfig';
 
 const Transactions = () => {
   const theme = useRecoilValue(themeState);
@@ -110,7 +112,7 @@ const Transactions = () => {
   ];
 
   return (
-    <>
+    <PageTourWrapper pageName={TOUR_PAGES.TRANSACTIONS}>
       <div>
         <Typography.Title level={2} className="my-0 fw-500">
           Transactions
@@ -135,7 +137,7 @@ const Transactions = () => {
       <CustomCard>
         <Table
           size="middle"
-          className="custom_table"
+          className="custom_table transactions-table"
           bordered
           columns={columns}
           dataSource={filteredTransactions}
@@ -145,7 +147,7 @@ const Transactions = () => {
           pagination={{ pageSize: 10 }}
         />
       </CustomCard>
-    </>
+    </PageTourWrapper>
   );
 };
 

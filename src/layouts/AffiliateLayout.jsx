@@ -9,16 +9,18 @@ import {
   dashboardDarkTheme,
   dashboardLightTheme,
 } from '../theme/dashboardTheme';
+import { TourProvider, useTourContext } from '../context/TourContext';
 
 const { Content } = Layout;
 
-const AffiliateLayout = ({ children }) => {
+const AffiliateLayoutContent = ({ children }) => {
   const [collapsed, setCollapsed] = useState(true);
   const [theme, setTheme] = useRecoilState(themeState);
   const [isMobile, setIsMobile] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [affiliate, setAffiliate] = useState(null);
   const navigate = useNavigate();
+  const { startTour } = useTourContext();
 
   const toggleTheme = () => {
     setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
@@ -90,6 +92,7 @@ const AffiliateLayout = ({ children }) => {
             collapsed={collapsed}
             setCollapsed={setCollapsed}
             affiliate={affiliate}
+            onStartTour={startTour}
           />
           <Content className="layout-content">
             <Outlet />
@@ -97,6 +100,14 @@ const AffiliateLayout = ({ children }) => {
         </Layout>
       </Layout>
     </ConfigProvider>
+  );
+};
+
+const AffiliateLayout = ({ children }) => {
+  return (
+    <TourProvider>
+      <AffiliateLayoutContent>{children}</AffiliateLayoutContent>
+    </TourProvider>
   );
 };
 

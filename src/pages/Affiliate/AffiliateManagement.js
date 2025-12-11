@@ -11,6 +11,8 @@ import AffiliatePopup from './AffiliatePopup';
 import QRCode from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
 import ExtendSubscriptionModal from './ExtendSubscriptionModal';
+import PageTourWrapper from '../../components/PageTourWrapper';
+import { TOUR_PAGES } from '../../Utils/TourConfig';
 
 const AffiliateManagement = () => {
     const navigate = useNavigate();
@@ -113,16 +115,17 @@ const AffiliateManagement = () => {
             title: 'QR Code',
             key: 'qrCode',
             width: 120,
+            className: 'affiliate-qr-column',
             render: (_, record) => {
                 const affiliateUrl = `${window.location.origin}/#/affiliate-guides/${record._id}`;
                 return (
-                    <div 
+                    <div
                         style={{ cursor: 'pointer' }}
                         onClick={() => handleQrCodeClick(record._id)}
                         title="Click to enlarge QR code"
                     >
-                        <QRCode 
-                            value={affiliateUrl} 
+                        <QRCode
+                            value={affiliateUrl}
                             size={80}
                             level="M"
                             includeMargin={true}
@@ -211,7 +214,7 @@ const AffiliateManagement = () => {
     };
 
     return (
-        <>
+        <PageTourWrapper pageName={TOUR_PAGES.AFFILIATES}>
             <div>
                 <Flex justify="space-between" align="center" className="mb-2">
                     <div>
@@ -223,7 +226,7 @@ const AffiliateManagement = () => {
                         </Typography.Title>
                     </div>
                     <Button
-                        className="custom-primary-btn"
+                        className="custom-primary-btn affiliates-add-button"
                         type="primary"
                         size="large"
                         onClick={onAddAffiliate}
@@ -238,7 +241,7 @@ const AffiliateManagement = () => {
             <CustomCard>
                 <Table
                     size="middle"
-                    className="custom_table"
+                    className="custom_table affiliates-table"
                     bordered
                     columns={columns}
                     dataSource={affiliates}
@@ -292,7 +295,7 @@ const AffiliateManagement = () => {
                 affiliate={selectedAffiliateForExtend}
                 onExtendSuccess={onExtendSuccess}
             />
-        </>
+        </PageTourWrapper>
     );
 };
 

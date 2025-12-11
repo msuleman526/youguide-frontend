@@ -6,6 +6,11 @@ import CustomCard from '../../components/Card'
 import { useEffect, useState } from 'react'
 import UsersPopup from './UsersPopup'
 import ApiService from '../../APIServices/ApiService'
+import Joyride, { ACTIONS, STATUS } from 'react-joyride'
+import { useTour } from '../../hooks/useTour'
+import { TOUR_PAGES, PAGE_TOURS } from '../../Utils/TourConfig'
+import FirstTimeTourPopup from '../../components/FirstTimeTourPopup'
+import { useTourContext } from '../../context/TourContext'
 
 const Users = () => {
   const theme = useRecoilValue(themeState)
@@ -15,6 +20,19 @@ const Users = () => {
   const [popupVisible, setPopupVisible] = useState(false)
   const [popupType, setPopupType] = useState("Add")
   const [selectedUser, setSelectedUser] = useState(null)
+
+  // Tour setup
+  const {
+    runTour,
+    startTour,
+    stopTour,
+    markTourCompleted,
+    showFirstTimePopup,
+    handleStartFirstTour,
+    handleSkipFirstTour,
+  } = useTour(TOUR_PAGES.USERS)
+
+  const { runTour: contextRunTour, setPageTour } = useTourContext()
 
   useEffect(() => {
       setTableLoading(true)
@@ -27,7 +45,27 @@ const Users = () => {
           message.error(error?.response?.data?.message || "Users Failed.")
           setUsers([])
       });
-  }, [])
+      setPageTour(TOUR_PAGES.USERS)
+  }, [setPageTour])
+
+  // Sync tour state with context
+  useEffect(() => {
+    if (contextRunTour) {
+      startTour()
+    }
+  }, [contextRunTour, startTour])
+
+  const handleJoyrideCallback = (data) => {
+    const { action, status } = data
+
+    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+      stopTour()
+      markTourCompleted()
+    } else if (action === ACTIONS.CLOSE) {
+      stopTour()
+      markTourCompleted()
+    }
+  }
 
   const deleteUser = async (userId) => {
     setTableLoading(true)
@@ -156,6 +194,36 @@ const Users = () => {
 
   return (
     <>
+    <Joyride
+      steps={PAGE_TOURS[TOUR_PAGES.USERS]}
+      run={runTour}
+      continuous
+      showSkipButton
+      showProgress
+      scrollToFirstStep
+      disableScrolling={false}
+      callback={handleJoyrideCallback}
+      styles={{
+        options: {
+          primaryColor: '#29b8e3',
+          zIndex: 10000,
+        },
+      }}
+      locale={{
+        back: 'Back',
+        close: 'Close',
+        last: 'Finish',
+        next: 'Next',
+        skip: 'Skip All Tour',
+      }}
+    />
+
+    <FirstTimeTourPopup
+      visible={showFirstTimePopup}
+      onStart={handleStartFirstTour}
+      onSkip={handleSkipFirstTour}
+    />
+
     <div>
       <Flex justify="space-between" align="center" className="mb-2">
         <div>
@@ -196,7 +264,7 @@ const Users = () => {
             </Select>
           </Flex> */}
           <Button
-            className="custom-primary-btn"
+            className="custom-primary-btn users-add-button"
             type="primary"
             size="large"
             onClick={onAddUser}
@@ -211,7 +279,7 @@ const Users = () => {
     <CustomCard>
       <Table
         size="middle"
-        className="custom_table"
+        className="custom_table users-table"
         bordered
         columns={columns}
         dataSource={filteredUsers}

@@ -14,10 +14,10 @@ import { GoChevronDown } from 'react-icons/go';
 import { FaChevronCircleLeft, FaChevronCircleRight } from 'react-icons/fa';
 import { CiLight, CiDark } from 'react-icons/ci';
 import { Link } from 'react-router-dom';
-import { MenuOutlined } from '@ant-design/icons';
+import { MenuOutlined, RocketOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 
-const AffiliateLayoutHeader = ({ isMobile, collapsed, setCollapsed, theme, toggleTheme, showDrawer, affiliate }) => {
+const AffiliateLayoutHeader = ({ isMobile, collapsed, setCollapsed, theme, toggleTheme, showDrawer, affiliate, onStartTour }) => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -88,13 +88,26 @@ const AffiliateLayoutHeader = ({ isMobile, collapsed, setCollapsed, theme, toggl
         </Flex>
 
         <Flex gap="small" align="center">
+          {onStartTour && (
+            <Button
+              type="default"
+              icon={<RocketOutlined />}
+              onClick={onStartTour}
+              style={{
+                borderRadius: '8px',
+                height: '40px',
+              }}
+            >
+              Tour
+            </Button>
+          )}
           <Button
             type="text"
             icon={theme === 'light' ? <CiDark size={20} /> : <CiLight size={20} />}
             onClick={toggleTheme}
             style={{ fontSize: '16px', width: 40, height: 40 }}
           />
-          
+
           <Dropdown
             menu={{ items }}
             placement="bottomRight"

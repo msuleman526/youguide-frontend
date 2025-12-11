@@ -30,6 +30,8 @@ import {
 } from '@ant-design/icons';
 import axios from 'axios';
 import ApiService from '../APIServices/ApiService';
+import PageTourWrapper from '../components/PageTourWrapper';
+import { TOUR_PAGES } from '../Utils/TourConfig';
 
 const { Title, Text } = Typography;
 
@@ -298,6 +300,7 @@ const Teams = () => {
   ];
 
   return (
+    <PageTourWrapper pageName={TOUR_PAGES.TEAMS}>
     <div style={{ padding: '24px' }}>
       <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
         <Col>
@@ -310,6 +313,7 @@ const Teams = () => {
             type="primary"
             icon={<PlusOutlined />}
             size="large"
+            className="teams-add-admin-button"
             onClick={() => showModal('team-admin')}
           >
             Add Team Admin
@@ -319,6 +323,7 @@ const Teams = () => {
 
       <Card>
         <Table
+          className="teams-table"
           columns={columns}
           dataSource={teams}
           loading={loading}
@@ -465,6 +470,7 @@ const Teams = () => {
         </Form>
       </Modal>
     </div>
+    </PageTourWrapper>
   );
 };
 
