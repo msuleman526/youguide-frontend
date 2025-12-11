@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Typography, message, Row, Col, Statistic, Table, Tag, Space, Select } from 'antd';
 import { LineChart, BarChart } from '@mui/x-charts';
-import { 
-  DollarCircleOutlined, 
-  EyeOutlined, 
+import {
+  DollarCircleOutlined,
+  EyeOutlined,
   TeamOutlined,
   LineChartOutlined,
   BankOutlined,
@@ -12,6 +12,8 @@ import {
 import ApiService from '../../APIServices/ApiService';
 import { useNavigate, useParams } from 'react-router-dom';
 import moment from 'moment';
+import PageTourWrapper from '../../components/PageTourWrapper';
+import { TOUR_PAGES } from '../../Utils/TourConfig';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -85,6 +87,7 @@ const AffiliateDashboard = () => {
     }
 
     return (
+        <PageTourWrapper pageName={TOUR_PAGES.AFFILIATE_DASHBOARD}>
         <div style={{ padding: '24px', backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
             
             {/* Welcome Header */}
@@ -132,7 +135,7 @@ const AffiliateDashboard = () => {
             </Row>
 
             {/* 4 Key Metrics Cards */}
-            <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+            <Row gutter={[16, 16]} style={{ marginBottom: '24px' }} className="affiliate-stats-cards">
                 <Col xs={24} sm={12} lg={6}>
                     <Card style={{ textAlign: 'center' }}>
                         <Statistic
@@ -176,8 +179,8 @@ const AffiliateDashboard = () => {
             </Row>
 
             {/* Charts Row */}
-            <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-                
+            <Row gutter={[16, 16]} style={{ marginBottom: '24px' }} className="affiliate-analytics-section">
+
                 {/* Hotels by Date */}
                 <Col xs={24} lg={12}>
                     <Card title="Hotels by Date" extra={<BankOutlined />}>
@@ -242,6 +245,7 @@ const AffiliateDashboard = () => {
                 </Col>
             </Row>
         </div>
+        </PageTourWrapper>
     );
 };
 

@@ -31,7 +31,7 @@ const Login = () => {
         message.success("Welcome " + adminResponse.user.firstName + " " + adminResponse.user.lastName);
         localStorage.setItem("user", JSON.stringify(adminResponse.user));
         localStorage.setItem("token", adminResponse.token);
-        navigate('/roles');
+        navigate('/admin-dashboard');
         setLoading(false);
         return;
       } else {

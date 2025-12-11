@@ -15,10 +15,10 @@ import { GoChevronDown } from 'react-icons/go'
 import { FaChevronCircleLeft, FaChevronCircleRight } from 'react-icons/fa'
 import { CiLight, CiDark } from 'react-icons/ci'
 import { Link } from 'react-router-dom'
-import { MenuOutlined } from '@ant-design/icons';
+import { MenuOutlined, RocketOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react'
 
-const LayoutHeader = ({ isMobile, collapsed, setCollapsed, theme, toggleTheme, showDrawer}) => {
+const LayoutHeader = ({ isMobile, collapsed, setCollapsed, theme, toggleTheme, showDrawer, onStartTour }) => {
 
   const [user, setUser] = useState(null)
 
@@ -101,6 +101,19 @@ const LayoutHeader = ({ isMobile, collapsed, setCollapsed, theme, toggleTheme, s
             size="large"
             placeholder="Search"
           /> */}
+          {onStartTour && (
+            <Button
+              type="default"
+              icon={<RocketOutlined />}
+              onClick={onStartTour}
+              style={{
+                borderRadius: '8px',
+                height: '40px',
+              }}
+            >
+              Tour
+            </Button>
+          )}
           <Dropdown menu={{ items }}>
             <Flex gap={'large'} align="center" style={{ cursor: 'pointer' }}>
               <Flex gap={'small'} align="center" flex={1}>

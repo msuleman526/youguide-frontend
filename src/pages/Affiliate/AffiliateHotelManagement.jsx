@@ -8,6 +8,8 @@ import HotelPopup from './HotelPopup';
 import QRCode from 'qrcode.react';
 import moment from 'moment';
 import ExtendHotelModal from './ExtendHotelModal';
+import PageTourWrapper from '../../components/PageTourWrapper';
+import { TOUR_PAGES } from '../../Utils/TourConfig';
 
 const { Title, Text } = Typography;
 
@@ -207,6 +209,7 @@ const AffiliateHotelManagement = () => {
     }
 
     return (
+        <PageTourWrapper pageName={TOUR_PAGES.AFFILIATE_HOTELS}>
         <div style={{ padding: '24px', backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
             
             {/* Header */}
@@ -262,6 +265,7 @@ const AffiliateHotelManagement = () => {
                     <Button
                         type="primary"
                         size="large"
+                        className="affiliate-hotels-add-button"
                         onClick={onAddHotel}
                         style={{ backgroundColor: affiliate.primaryColor }}
                     >
@@ -275,6 +279,7 @@ const AffiliateHotelManagement = () => {
                 <Table
                     size="middle"
                     bordered
+                    className="affiliate-hotels-table"
                     columns={columns}
                     dataSource={hotels}
                     loading={loading}
@@ -331,6 +336,7 @@ const AffiliateHotelManagement = () => {
                 onExtendSuccess={onExtendSuccess}
             />
         </div>
+        </PageTourWrapper>
     );
 };
 

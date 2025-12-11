@@ -8,6 +8,8 @@ import { useEffect, useState } from 'react';
 import ApiService from '../../APIServices/ApiService';
 import VendorPopup from './VendorPopup';
 import moment from 'moment';
+import PageTourWrapper from '../../components/PageTourWrapper';
+import { TOUR_PAGES } from '../../Utils/TourConfig';
 
 const VendorManagement = () => {
   const theme = useRecoilValue(themeState);
@@ -154,7 +156,7 @@ const VendorManagement = () => {
   };
 
   return (
-    <>
+    <PageTourWrapper pageName={TOUR_PAGES.VENDORS}>
       <div>
         <Flex justify="space-between" align="center" className="mb-2">
           <div>
@@ -166,7 +168,7 @@ const VendorManagement = () => {
             </Typography.Title>
           </div>
           <Button
-            className="custom-primary-btn"
+            className="custom-primary-btn vendors-add-button"
             type="primary"
             size="large"
             onClick={onAddVendor}
@@ -181,7 +183,7 @@ const VendorManagement = () => {
       <CustomCard>
         <Table
           size="middle"
-          className="custom_table"
+          className="custom_table vendors-table"
           bordered
           columns={columns}
           dataSource={vendors}
@@ -198,7 +200,7 @@ const VendorManagement = () => {
         type={popupType}
         categories={categories}
       />
-    </>
+    </PageTourWrapper>
   );
 };
 

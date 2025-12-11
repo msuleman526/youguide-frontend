@@ -9,14 +9,16 @@ import {
   dashboardDarkTheme,
   dashboardLightTheme,
 } from '../theme/dashboardTheme'
+import { TourProvider, useTourContext } from '../context/TourContext'
 const { Content } = Layout
 
-const DashboardLayout = ({ children }) => {
+const DashboardLayoutContent = ({ children }) => {
   const [collapsed, setCollapsed] = useState(true)
   const [theme, setTheme] = useRecoilState(themeState)
   const [isMobile, setIsMobile] = useState(false)
   const [drawerVisible, setDrawerVisible] = useState(false)
   const navigate = useNavigate();
+  const { startTour } = useTourContext();
 
   const toggleTheme = () => {
     setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'))
@@ -69,6 +71,7 @@ const DashboardLayout = ({ children }) => {
             theme={theme}
             collapsed={collapsed}
             setCollapsed={setCollapsed}
+            onStartTour={startTour}
           />
           <Content className="layout-content">
             <Outlet />
@@ -78,4 +81,13 @@ const DashboardLayout = ({ children }) => {
     </ConfigProvider>
   )
 }
+
+const DashboardLayout = ({ children }) => {
+  return (
+    <TourProvider>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+    </TourProvider>
+  );
+};
+
 export default DashboardLayout
