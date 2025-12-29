@@ -160,13 +160,13 @@ export const affiliateDashboardTour = [
 export const affiliateHotelsTour = [
   {
     target: '.affiliate-hotels-add-button',
-    content: 'Click here to add a new hotel under your affiliate account. Each hotel can have its own subscription and branding.',
+    content: 'Click here to add a new client under your affiliate account. Each client can have its own subscription and branding.',
     disableBeacon: true,
     placement: 'bottom',
   },
   {
     target: '.affiliate-hotels-table',
-    content: 'This table shows all hotels under your affiliate. You can manage hotel subscriptions, extend expiry dates, and view hotel-specific travel guides.',
+    content: 'This table shows all clients under your affiliate. You can manage client subscriptions, extend expiry dates, and view client-specific travel guides.',
     placement: 'top',
   },
 ];

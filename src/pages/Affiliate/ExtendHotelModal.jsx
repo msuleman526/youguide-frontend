@@ -56,7 +56,7 @@ const ExtendHotelModal = ({ open, onClose, hotel, affiliate, onExtendSuccess }) 
 
     return (
         <Modal
-            title="Extend Hotel Subscription"
+            title="Extend Client Subscription"
             open={open}
             onCancel={onClose}
             footer={null}
@@ -74,10 +74,10 @@ const ExtendHotelModal = ({ open, onClose, hotel, affiliate, onExtendSuccess }) 
                         border: '1px solid #d6e4ff'
                     }}>
                         <Title level={5} style={{ margin: 0, marginBottom: '12px' }}>
-                            Hotel: {hotel.hotelName}
+                            Client: {hotel.hotelName}
                         </Title>
                         <Text type="secondary" style={{ display: 'block', marginBottom: '12px' }}>
-                            Note: Hotels inherit subscription from their affiliate ({affiliate.affiliateName})
+                            Note: Clients inherit subscription from their affiliate ({affiliate.affiliateName})
                         </Text>
                         <Row gutter={[16, 8]}>
                             <Col span={12}>

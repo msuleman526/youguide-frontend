@@ -74,7 +74,7 @@ const AffiliateSidebar = ({ collapsed, drawerVisible, setDrawerVisible, affiliat
     {
       key: 'my-hotels',
       icon: <FaHotel {...iconProps} />,
-      label: 'My Hotels',
+      label: 'My Clients',
     },
   ];
 
