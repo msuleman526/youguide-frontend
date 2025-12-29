@@ -185,8 +185,8 @@ const AffiliateManagement = () => {
                     <Button type="link" onClick={() => handleExtendSubscription(record)} title="Extend Subscription">
                         <FaClock />
                     </Button>
-                    <Button type="link" onClick={() => handleHotelManagement(record._id)} title="Manage Hotels">
-                        🏨
+                    <Button type="link" onClick={() => handleHotelManagement(record._id)} title="Manage Clients">
+                        👥
                     </Button>
                     <Button type="link" danger onClick={() => confirmDelete(record._id)}>
                         <FaTrashAlt />

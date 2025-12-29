@@ -136,7 +136,7 @@ const HotelSubscriptionGuides = () => {
         {currentHotel?.logo && (
           <img
             src={currentHotel.logo}
-            alt="Hotel Logo"
+            alt="Client Logo"
             style={{
               height: "auto",
               width: 'auto',
@@ -320,7 +320,7 @@ const HotelSubscriptionGuides = () => {
               {currentHotel?.logo && (
                 <img
                   src={currentHotel.logo}
-                  alt="Hotel Logo"
+                  alt="Client Logo"
                   style={{
                     height: "60px",
                     width: 'auto',

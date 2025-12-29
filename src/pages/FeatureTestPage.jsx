@@ -17,7 +17,7 @@ const FeatureTestPage = () => {
                 <ExperimentOutlined style={{ fontSize: '48px', color: '#1890ff', marginBottom: '16px' }} />
                 <Title level={2}>YouGuide Feature Testing Guide</Title>
                 <Paragraph type="secondary">
-                    Test the new QR Code and Hotel Management features
+                    Test the new QR Code and Client Management features
                 </Paragraph>
             </Card>
 
@@ -43,33 +43,33 @@ const FeatureTestPage = () => {
                         </div>
 
                         <div>
-                            <Title level={4}>2. Hotel QR Codes</Title>
+                            <Title level={4}>2. Client QR Codes</Title>
                             <ul style={{ paddingLeft: '20px' }}>
-                                <li>Go to hotel management page</li>
-                                <li>Click hotel QR codes to enlarge</li>
-                                <li>Should link to hotel guides</li>
+                                <li>Go to client management page</li>
+                                <li>Click client QR codes to enlarge</li>
+                                <li>Should link to client guides</li>
                             </ul>
                         </div>
                     </Card>
                 </Col>
 
-                {/* Hotel Management */}
+                {/* Client Management */}
                 <Col xs={24} lg={12}>
-                    <Card title="🏨 Hotel Management" style={{ height: '100%' }}>
+                    <Card title="👥 Client Management" style={{ height: '100%' }}>
                         <div style={{ marginBottom: '16px' }}>
-                            <Title level={4}>1. Admin Hotel Management</Title>
+                            <Title level={4}>1. Admin Client Management</Title>
                             <ul style={{ paddingLeft: '20px' }}>
                                 <li>Go to affiliates list</li>
-                                <li>Click 🏨 icon for any affiliate</li>
+                                <li>Click 👥 icon for any affiliate</li>
                                 <li>Should open with header/sidebar</li>
-                                <li>Try adding a new hotel</li>
+                                <li>Try adding a new client</li>
                                 <li>Test extend subscription (🕐 icon)</li>
                             </ul>
-                            <Button 
-                                size="small" 
+                            <Button
+                                size="small"
                                 onClick={() => window.open('/#/affiliates', '_blank')}
                             >
-                                Test Admin Hotel Management
+                                Test Admin Client Management
                             </Button>
                         </div>
 
@@ -78,7 +78,7 @@ const FeatureTestPage = () => {
                             <ul style={{ paddingLeft: '20px' }}>
                                 <li>Create affiliate with <code>isLogin: true</code></li>
                                 <li>Go to <code>/affiliate-login</code></li>
-                                <li>Login and manage own hotels</li>
+                                <li>Login and manage own clients</li>
                             </ul>
                             <Button 
                                 size="small" 
@@ -109,16 +109,16 @@ const FeatureTestPage = () => {
                                 </ul>
                             </Col>
                             <Col xs={24} md={12}>
-                                <Title level={4}>Hotel Subscription Extension</Title>
+                                <Title level={4}>Client Subscription Extension</Title>
                                 <ul style={{ paddingLeft: '20px' }}>
-                                    <li><strong>Location:</strong> Hotel management → 🕐 icon</li>
+                                    <li><strong>Location:</strong> Client management → 🕐 icon</li>
                                     <li><strong>Features:</strong></li>
                                     <ul style={{ paddingLeft: '20px' }}>
                                         <li>Extends the affiliate's subscription</li>
-                                        <li>Hotels inherit affiliate subscription</li>
+                                        <li>Clients inherit affiliate subscription</li>
                                         <li>Same interface as affiliate extension</li>
                                     </ul>
-                                    <li><strong>Result:</strong> Updates affiliate subscription (hotels inherit)</li>
+                                    <li><strong>Result:</strong> Updates affiliate subscription (clients inherit)</li>
                                 </ul>
                             </Col>
                         </Row>
@@ -170,8 +170,8 @@ const FeatureTestPage = () => {
                                     message="Backend Features Implemented"
                                     description={
                                         <ul style={{ paddingLeft: '20px', margin: '8px 0' }}>
-                                            <li>Hotel Model & Controller</li>
-                                            <li>Hotel Routes & Authentication</li>
+                                            <li>Client Model & Controller</li>
+                                            <li>Client Routes & Authentication</li>
                                             <li>Affiliate Login System</li>
                                             <li>Subscription Extension APIs</li>
                                             <li>Click Inheritance Logic</li>
@@ -187,7 +187,7 @@ const FeatureTestPage = () => {
                                     description={
                                         <ul style={{ paddingLeft: '20px', margin: '8px 0' }}>
                                             <li>QR Code Generation & Modals</li>
-                                            <li>Hotel Management Components</li>
+                                            <li>Client Management Components</li>
                                             <li>Affiliate Dashboard</li>
                                             <li>Extend Subscription Modals</li>
                                             <li>Proper Layout Integration</li>

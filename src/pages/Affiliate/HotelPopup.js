@@ -15,7 +15,7 @@ const HotelPopup = ({ open, setOpen, onSaveHotel, categories, hotel, type, affil
                 primaryColor: hotel.primaryColor,
                 categories: hotel.categories.map(cat => cat._id || cat),
             });
-            
+
             // Set existing logo file if available
             if (hotel.logo) {
                 setFileList([{
@@ -34,13 +34,13 @@ const HotelPopup = ({ open, setOpen, onSaveHotel, categories, hotel, type, affil
 
     const handleSave = async (values) => {
         setLoading(true);
-        
+
         try {
             const formData = new FormData();
             formData.append('hotelName', values.hotelName);
             formData.append('primaryColor', values.primaryColor || '#3498db');
             formData.append('categories', JSON.stringify(values.categories || []));
-            
+
             // Add logo if uploaded
             if (fileList.length > 0 && fileList[0].originFileObj) {
                 formData.append('logo', fileList[0].originFileObj);
@@ -61,11 +61,11 @@ const HotelPopup = ({ open, setOpen, onSaveHotel, categories, hotel, type, affil
                 }
             }
 
-            message.success(`Hotel ${type === 'Edit' ? 'updated' : 'created'} successfully!`);
+            message.success(`Client ${type === 'Edit' ? 'updated' : 'created'} successfully!`);
             onSaveHotel();
             handleClose();
         } catch (error) {
-            const errorMessage = error.response?.data?.message || `Failed to ${type.toLowerCase()} hotel`;
+            const errorMessage = error.response?.data?.message || `Failed to ${type.toLowerCase()} client`;
             message.error(errorMessage);
         } finally {
             setLoading(false);
@@ -80,10 +80,10 @@ const HotelPopup = ({ open, setOpen, onSaveHotel, categories, hotel, type, affil
 
     const handleLogoChange = (info) => {
         let newFileList = [...info.fileList];
-        
+
         // Limit to one file
         newFileList = newFileList.slice(-1);
-        
+
         // Add preview URL
         newFileList = newFileList.map(file => {
             if (file.response) {
@@ -91,7 +91,7 @@ const HotelPopup = ({ open, setOpen, onSaveHotel, categories, hotel, type, affil
             }
             return file;
         });
-        
+
         setFileList(newFileList);
     };
 
@@ -106,7 +106,7 @@ const HotelPopup = ({ open, setOpen, onSaveHotel, categories, hotel, type, affil
 
     return (
         <Modal
-            title={`${type} Hotel`}
+            title={`${type} Client`}
             open={open}
             onCancel={handleClose}
             footer={null}
@@ -122,11 +122,11 @@ const HotelPopup = ({ open, setOpen, onSaveHotel, categories, hotel, type, affil
                 }}
             >
                 <Form.Item
-                    label="Hotel Name"
+                    label="Client Name"
                     name="hotelName"
-                    rules={[{ required: true, message: 'Please enter hotel name!' }]}
+                    rules={[{ required: true, message: 'Please enter Client name!' }]}
                 >
-                    <Input placeholder="Enter hotel name" />
+                    <Input placeholder="Enter Client name" />
                 </Form.Item>
 
                 <Form.Item
@@ -173,7 +173,7 @@ const HotelPopup = ({ open, setOpen, onSaveHotel, categories, hotel, type, affil
                         Cancel
                     </Button>
                     <Button type="primary" htmlType="submit" loading={loading}>
-                        {type === 'Edit' ? 'Update' : 'Create'} Hotel
+                        {type === 'Edit' ? 'Update' : 'Create'} Client
                     </Button>
                 </Form.Item>
             </Form>

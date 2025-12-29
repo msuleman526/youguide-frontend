@@ -54,7 +54,7 @@ const AffiliateHotelManagement = () => {
             const response = await ApiService.getMyHotels();
             setHotels(response);
         } catch (error) {
-            message.error('Failed to fetch hotels');
+            message.error('Failed to fetch clients');
         } finally {
             setLoading(false);
         }
@@ -72,10 +72,10 @@ const AffiliateHotelManagement = () => {
         setLoading(true);
         try {
             await ApiService.deleteHotel(hotelId);
-            message.success('Hotel deleted successfully.');
+            message.success('Client deleted successfully.');
             setHotels((prev) => prev.filter((h) => h._id !== hotelId));
         } catch (err) {
-            message.error('Failed to delete hotel.');
+            message.error('Failed to delete client.');
         } finally {
             setLoading(false);
         }
@@ -83,7 +83,7 @@ const AffiliateHotelManagement = () => {
 
     const confirmDelete = (hotelId) => {
         Modal.confirm({
-            title: 'Are you sure you want to delete this hotel?',
+            title: 'Are you sure you want to delete this client?',
             onOk: () => deleteHotel(hotelId),
             okText: 'Yes',
             cancelText: 'No',
@@ -138,7 +138,7 @@ const AffiliateHotelManagement = () => {
             render: (logo) => logo ? <Avatar style={{ width: '100px', height: 'fit-content' }} src={logo} shape="square" /> : 'N/A',
         },
         {
-            title: 'Hotel Name',
+            title: 'Client Name',
             dataIndex: 'hotelName',
             key: 'hotelName',
         },
@@ -223,10 +223,10 @@ const AffiliateHotelManagement = () => {
                 <Row justify="space-between" align="middle">
                     <Col>
                         <Title level={2} style={{ color: 'white', margin: 0 }}>
-                            Hotel Management
+                            Clients Management
                         </Title>
                         <Text style={{ color: 'white', fontSize: '16px' }}>
-                            Manage your hotel sub-affiliates and QR codes
+                            Manage your clients/sub-affiliates and QR codes
                         </Text>
                         <br />
                         <Text style={{ color: 'white', fontSize: '14px' }}>
@@ -256,10 +256,10 @@ const AffiliateHotelManagement = () => {
                 <Flex justify="space-between" align="center" style={{ marginBottom: '20px' }}>
                     <div>
                         <Title level={3} style={{ margin: 0 }}>
-                            Your Hotels
+                           Clients
                         </Title>
                         <Text type="secondary">
-                            Manage your hotel sub-affiliates
+                            Manage your clients/sub-affiliates
                         </Text>
                     </div>
                     <Button
@@ -270,7 +270,7 @@ const AffiliateHotelManagement = () => {
                         style={{ backgroundColor: affiliate.primaryColor }}
                     >
                         <Flex gap="small" align="center">
-                            <span>Add Hotel</span>
+                            <span>Add Client</span>
                             <HiOutlineUpload size={20} color="#fff" />
                         </Flex>
                     </Button>
@@ -301,7 +301,7 @@ const AffiliateHotelManagement = () => {
             
             {/* QR Code Modal */}
             <Modal
-                title="QR Code - Hotel Guide Link"
+                title="QR Code - Client Guide Link"
                 open={qrModalVisible}
                 onCancel={() => setQrModalVisible(false)}
                 footer={[

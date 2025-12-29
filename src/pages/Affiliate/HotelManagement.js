@@ -48,7 +48,7 @@ const HotelManagement = () => {
             const response = await ApiService.getHotelsByAffiliate(affiliateId);
             setHotels(response);
         } catch (error) {
-            message.error(error?.response?.data?.message || 'Failed to fetch hotels.');
+            message.error(error?.response?.data?.message || 'Failed to fetch clients.');
             setHotels([]);
         } finally {
             setTableLoading(false);
@@ -59,10 +59,10 @@ const HotelManagement = () => {
         setTableLoading(true);
         try {
             await ApiService.deleteHotel(hotelId);
-            message.success('Hotel deleted successfully.');
+            message.success('Client deleted successfully.');
             setHotels((prev) => prev.filter((h) => h._id !== hotelId));
         } catch (err) {
-            message.error('Failed to delete hotel.');
+            message.error('Failed to delete client.');
         } finally {
             setTableLoading(false);
         }
@@ -70,7 +70,7 @@ const HotelManagement = () => {
 
     const confirmDelete = (hotelId) => {
         Modal.confirm({
-            title: 'Are you sure you want to delete this hotel?',
+            title: 'Are you sure you want to delete this client?',
             onOk: () => deleteHotel(hotelId),
             okText: 'Yes',
             cancelText: 'No',
@@ -108,7 +108,7 @@ const HotelManagement = () => {
             render: (logo) => logo ? <Avatar style={{ width: '150px', height: 'fit-content' }} src={logo} shape="square" /> : 'N/A',
         },
         {
-            title: 'Hotel Name',
+            title: 'Client Name',
             dataIndex: 'hotelName',
             key: 'hotelName',
         },
@@ -218,10 +218,10 @@ const HotelManagement = () => {
                 <Flex justify="space-between" align="center" className="mb-2">
                     <div>
                         <Typography.Title level={2} className="my-0 fw-500">
-                            Hotel Management
+                            Client Management
                         </Typography.Title>
                         <Typography.Title level={4} className="my-0 fw-500">
-                            Manage hotels for {affiliate?.affiliateName}
+                            Manage clients for {affiliate?.affiliateName}
                         </Typography.Title>
                     </div>
                     <Button
@@ -231,7 +231,7 @@ const HotelManagement = () => {
                         onClick={onAddHotel}
                     >
                         <Flex gap="small" align="center">
-                            <span>Add Hotel</span>
+                            <span>Add Clients</span>
                             <HiOutlineUpload size={20} color="#fff" />
                         </Flex>
                     </Button>
@@ -263,7 +263,7 @@ const HotelManagement = () => {
 
             {/* QR Code Modal */}
             <Modal
-                title="QR Code - Hotel Guide Link"
+                title="QR Code - Client Guide Link"
                 open={qrModalVisible}
                 onCancel={() => setQrModalVisible(false)}
                 footer={[

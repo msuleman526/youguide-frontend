@@ -139,7 +139,7 @@ const AffiliateDashboard = () => {
                 <Col xs={24} sm={12} lg={6}>
                     <Card style={{ textAlign: 'center' }}>
                         <Statistic
-                            title="Total Hotels"
+                            title="Total Clients"
                             value={analyticsData?.overview?.totalHotels || 0}
                             valueStyle={{ color: '#1890ff', fontSize: '32px', fontWeight: 'bold' }}
                             prefix={<BankOutlined style={{ color: '#1890ff' }} />}
@@ -183,7 +183,7 @@ const AffiliateDashboard = () => {
 
                 {/* Hotels by Date */}
                 <Col xs={24} lg={12}>
-                    <Card title="Hotels by Date" extra={<BankOutlined />}>
+                    <Card title="Clients by Date" extra={<BankOutlined />}>
                         <div style={{ width: '100%', height: 300 }}>
                             {analyticsData?.hotelsByDate?.dates?.length > 0 ? (
                                 <LineChart
@@ -195,7 +195,7 @@ const AffiliateDashboard = () => {
                                         data: analyticsData.hotelsByDate.hotels,
                                         color: '#1890ff',
                                         curve: 'smooth',
-                                        label: 'Hotels Added'
+                                        label: 'Clients Added'
                                     }]}
                                     width={500}
                                     height={300}
@@ -204,17 +204,17 @@ const AffiliateDashboard = () => {
                             ) : (
                                 <div style={{ textAlign: 'center', padding: '50px', color: '#999' }}>
                                     <BankOutlined style={{ fontSize: '48px', marginBottom: '16px' }} />
-                                    <div>No hotel data available yet</div>
-                                    <div>Add hotels to see growth trends</div>
+                                    <div>No client data available yet</div>
+                                    <div>Add clients to see growth trends</div>
                                 </div>
                             )}
                         </div>
                     </Card>
                 </Col>
 
-                {/* Clicks by Hotels */}
+                {/* Clicks by Clients */}
                 <Col xs={24} lg={12}>
-                    <Card title="Clicks by Hotels" extra={<LineChartOutlined />}>
+                    <Card title="Clicks by Clients" extra={<LineChartOutlined />}>
                         <div style={{ width: '100%', height: 300 }}>
                             {analyticsData?.clicksByHotels?.length > 0 ? (
                                 <BarChart
@@ -237,7 +237,7 @@ const AffiliateDashboard = () => {
                                 <div style={{ textAlign: 'center', padding: '50px', color: '#999' }}>
                                     <LineChartOutlined style={{ fontSize: '48px', marginBottom: '16px' }} />
                                     <div>No click data available yet</div>
-                                    <div>Hotel clicks will appear here once traffic starts</div>
+                                    <div>Client clicks will appear here once traffic starts</div>
                                 </div>
                             )}
                         </div>
