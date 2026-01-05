@@ -40,6 +40,10 @@ import Teams from './pages/Teams'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import RequestForm from './pages/RequestForm'
 import AllRequests from './pages/Requests/AllRequests'
+import ContactForm from './pages/ContactForm'
+import AllContacts from './pages/Contact/AllContacts'
+import ApiAccessDashboard from './pages/ApiAccess/ApiAccessDashboard'
+import ApiAccessList from './pages/ApiAccess/ApiAccessList'
 
 const App = () => {
   return (
@@ -51,6 +55,7 @@ const App = () => {
         <Route path="/travel-guides/:id" element={<GuidePreview />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/request-form" element={<RequestForm />} />
+        <Route path="/contact" element={<ContactForm />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/payment/cancel" element={<PaymentError />} />
         <Route path="/guide-success/pdf" element={<PdfGuideSuccess />} />
@@ -84,6 +89,9 @@ const App = () => {
           <Route path="/users" element={<Users />} />
           <Route path="/books" element={<Books />} />
           <Route path="/all-requests" element={<AllRequests />} />
+          <Route path="/all-contacts" element={<AllContacts />} />
+          <Route path="/api-access/dashboard" element={<ApiAccessDashboard />} />
+          <Route path="/api-access/list" element={<ApiAccessList />} />
         </Route>
 
         {/* Affiliate Layout Routes */}

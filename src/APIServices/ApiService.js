@@ -1334,7 +1334,39 @@ class ApiService {
         }
     }
 
-    static async submitContactRequest(data) {
+    // Request Form APIs
+    static async submitRequest(data) {
+        try {
+            const response = await axios.post(`${this.baseURL}/request`, data, {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error submitting request:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getAllRequests(page = 1, limit = 20) {
+        try {
+            const response = await axios.get(`${this.baseURL}/requests/admin/list`, {
+                params: { page, limit },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching requests:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    // Contact Form APIs
+    static async submitContact(data) {
         try {
             const response = await axios.post(`${this.baseURL}/contact`, data, {
                 headers: {
@@ -1343,12 +1375,12 @@ class ApiService {
             });
             return response.data;
         } catch (error) {
-            console.error('Error submitting contact request:', error.response?.data || error.message);
+            console.error('Error submitting contact:', error.response?.data || error.message);
             throw error;
         }
     }
 
-    static async getAllContactRequests(page = 1, limit = 20) {
+    static async getAllContacts(page = 1, limit = 20) {
         try {
             const response = await axios.get(`${this.baseURL}/contact/admin/list`, {
                 params: { page, limit },
@@ -1359,7 +1391,119 @@ class ApiService {
             });
             return response.data;
         } catch (error) {
-            console.error('Error fetching contact requests:', error.response?.data || error.message);
+            console.error('Error fetching contacts:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    // API Access Management APIs
+    static async getAllApiAccessTokens(page = 1, limit = 20, type = null, payment_type = null) {
+        try {
+            const params = { page, limit };
+            if (type) params.type = type;
+            if (payment_type) params.payment_type = payment_type;
+
+            const response = await axios.get(`${this.baseURL}/api-access`, {
+                params,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching API access tokens:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async createApiAccessToken(data) {
+        try {
+            const response = await axios.post(`${this.baseURL}/api-access`, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error creating API access token:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getApiAccessTokenById(id) {
+        try {
+            const response = await axios.get(`${this.baseURL}/api-access/${id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching API access token:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async updateApiAccessToken(id, data) {
+        try {
+            const response = await axios.put(`${this.baseURL}/api-access/${id}`, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error updating API access token:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async deleteApiAccessToken(id) {
+        try {
+            const response = await axios.delete(`${this.baseURL}/api-access/${id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error deleting API access token:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getApiAccessTokenLogs(id, page = 1, limit = 20) {
+        try {
+            const response = await axios.get(`${this.baseURL}/api-access/${id}/logs`, {
+                params: { page, limit },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching API access logs:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getApiAccessTokenStats(id) {
+        try {
+            const response = await axios.get(`${this.baseURL}/api-access/${id}/stats`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching API access stats:', error.response?.data || error.message);
             throw error;
         }
     }

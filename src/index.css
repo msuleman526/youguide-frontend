@@ -103,6 +103,15 @@
   height: 38px !important;
 }
 
+.custom_menu_sidebar .ant-menu-item-selected {
+  background-color: #e6f7ff !important;
+  color: #1890ff !important;
+}
+
+.custom_menu_sidebar .ant-menu-submenu-selected > .ant-menu-submenu-title {
+  color: #1890ff !important;
+}
+
 .text-black {
   color: var(--black-1) !important;
 }
