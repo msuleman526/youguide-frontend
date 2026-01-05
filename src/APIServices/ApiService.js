@@ -1292,6 +1292,47 @@ class ApiService {
             throw error;
         }
     }
+
+    static async getSecureJsonData(guideId, transactionId, bearerToken) {
+        try {
+            const response = await axios.get(`${this.baseURL}/travel-guides/digital/secure/data`, {
+                params: {
+                    guide_id: guideId,
+                    transaction_id: transactionId
+                },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${bearerToken}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get secure JSON data:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async viewSecureHtml(guideId, transactionId, bearerToken, options = {}) {
+        try {
+            const params = {
+                guide_id: guideId,
+                transaction_id: transactionId,
+                ...options // heading_font_size, heading_color, sub_heading_font_size, mode
+            };
+
+            const response = await axios.get(`${this.baseURL}/travel-guides/digital/secure/view`, {
+                params,
+                headers: {
+                    'Authorization': `Bearer ${bearerToken}`
+                },
+                responseType: 'text' // Expecting HTML text
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error view secure HTML:', error.response?.data || error.message);
+            throw error;
+        }
+    }
 }
 
 export default ApiService;
