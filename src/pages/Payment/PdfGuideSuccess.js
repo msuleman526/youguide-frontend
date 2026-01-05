@@ -12,10 +12,21 @@ const PdfGuideSuccess = () => {
     const [guide, setGuide] = useState(null);
     const [pdfUrl, setPdfUrl] = useState(null);
     const [error, setError] = useState(null);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     const guideId = searchParams.get('guide_id');
     const transactionId = searchParams.get('transaction_id');
     const bearerToken = searchParams.get('token');
+
+    // Handle responsive layout
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         const fetchGuideDetails = async () => {
@@ -145,27 +156,29 @@ const PdfGuideSuccess = () => {
                         {/* Guide Info Container */}
                         <div style={{
                             display: 'flex',
+                            flexDirection: isMobile ? 'column' : 'row',
                             gap: '20px',
                             marginBottom: 24,
-                            alignItems: 'flex-start'
+                            alignItems: isMobile ? 'center' : 'flex-start'
                         }}>
-                            {/* Guide Cover Image - Left */}
+                            {/* Guide Cover Image - Left (Desktop) / Top (Mobile) */}
                             {guide.fullCover && (
                                 <img
                                     src={guide.fullCover}
                                     alt={guide.name}
                                     style={{
-                                        width: '150px',
-                                        minWidth: '214px',
+                                        width: isMobile ? '100%' : '150px',
+                                        maxWidth: isMobile ? '300px' : '214px',
+                                        minWidth: isMobile ? 'auto' : '214px',
                                         height: 'auto',
-                                        borderRadius: '8px',
+                                        borderRadius: '20px',
                                         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
                                     }}
                                 />
                             )}
 
-                            {/* Guide Details - Right */}
-                            <div style={{ flex: 1 }}>
+                            {/* Guide Details - Right (Desktop) / Bottom (Mobile) */}
+                            <div style={{ flex: 1, width: isMobile ? '100%' : 'auto', textAlign: isMobile ? 'center' : 'left' }}>
                                 <Title level={3} style={{ marginTop: 0, marginBottom: 8 }}>
                                     {guide.name}
                                 </Title>
