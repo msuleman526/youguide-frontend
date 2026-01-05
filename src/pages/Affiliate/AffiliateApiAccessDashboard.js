@@ -38,6 +38,7 @@ const AffiliateApiAccessDashboard = () => {
     const fetchTokens = async () => {
         try {
             const response = await ApiService.getAffiliateApiAccessTokens(affiliateId, 1, 100);
+            setLoading(false);
             if (response.success && response.data) {
                 setTokens(response.data);
                 if (response.data.length > 0) {
@@ -47,6 +48,7 @@ const AffiliateApiAccessDashboard = () => {
                 setTokens([])
             }
         } catch (error) {
+            setLoading(false);
             setTokens([])
             message.error('Failed to fetch API tokens');
         }
