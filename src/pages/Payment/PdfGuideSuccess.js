@@ -118,13 +118,14 @@ const PdfGuideSuccess = () => {
         }}>
             <Card
                 style={{
-                    maxWidth: 600,
+                    maxWidth: 700,
                     width: '100%',
                     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                     borderRadius: '8px'
                 }}
             >
                 <Result
+                    style={{ padding: '5px 5px' }}
                     status="success"
                     icon={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
                     title={
@@ -155,7 +156,7 @@ const PdfGuideSuccess = () => {
                                     alt={guide.name}
                                     style={{
                                         width: '150px',
-                                        minWidth: '150px',
+                                        minWidth: '214px',
                                         height: 'auto',
                                         borderRadius: '8px',
                                         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
