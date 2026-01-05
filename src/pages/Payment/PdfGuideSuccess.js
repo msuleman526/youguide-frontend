@@ -140,56 +140,64 @@ const PdfGuideSuccess = () => {
                 />
 
                 {guide && (
-                    <div style={{ marginTop: 20, textAlign: 'center' }}>
-                        {/* Guide Cover Image */}
-                        {guide.fullCover && (
-                            <img
-                                src={guide.fullCover}
-                                alt={guide.name}
-                                style={{
-                                    width: '100%',
-                                    maxWidth: 300,
-                                    height: 'auto',
-                                    borderRadius: '8px',
-                                    marginBottom: 20,
-                                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
-                                }}
-                            />
-                        )}
-
-                        {/* Guide Details */}
-                        <Title level={3} style={{ marginBottom: 8 }}>
-                            {guide.name}
-                        </Title>
-
-                        {guide.description && (
-                            <Paragraph style={{ color: '#666', fontSize: 14, marginBottom: 16 }}>
-                                {guide.description}
-                            </Paragraph>
-                        )}
-
-                        {/* Guide Info */}
+                    <div style={{ marginTop: 20 }}>
+                        {/* Guide Info Container */}
                         <div style={{
-                            backgroundColor: '#f9f9f9',
-                            padding: '16px',
-                            borderRadius: '6px',
-                            marginBottom: 20
+                            display: 'flex',
+                            gap: '20px',
+                            marginBottom: 24,
+                            alignItems: 'flex-start'
                         }}>
-                            {guide.city && guide.country && (
-                                <Text style={{ display: 'block', marginBottom: 8 }}>
-                                    <strong>Destination:</strong> {guide.city}, {guide.country}
-                                </Text>
+                            {/* Guide Cover Image - Left */}
+                            {guide.fullCover && (
+                                <img
+                                    src={guide.fullCover}
+                                    alt={guide.name}
+                                    style={{
+                                        width: '150px',
+                                        minWidth: '150px',
+                                        height: 'auto',
+                                        borderRadius: '8px',
+                                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+                                    }}
+                                />
                             )}
-                            {guide.category && (
-                                <Text style={{ display: 'block', marginBottom: 8 }}>
-                                    <strong>Category:</strong> {guide.category.name}
-                                </Text>
-                            )}
-                            {guide.lang && (
-                                <Text style={{ display: 'block' }}>
-                                    <strong>Language:</strong> {guide.lang}
-                                </Text>
-                            )}
+
+                            {/* Guide Details - Right */}
+                            <div style={{ flex: 1 }}>
+                                <Title level={3} style={{ marginTop: 0, marginBottom: 8 }}>
+                                    {guide.name}
+                                </Title>
+
+                                {guide.description && (
+                                    <Paragraph style={{ color: '#666', fontSize: 14, marginBottom: 16 }}>
+                                        {guide.description}
+                                    </Paragraph>
+                                )}
+
+                                {/* Guide Info */}
+                                <div style={{
+                                    backgroundColor: '#f9f9f9',
+                                    padding: '12px 16px',
+                                    borderRadius: '6px'
+                                }}>
+                                    {guide.city && guide.country && (
+                                        <Text style={{ display: 'block', marginBottom: 8 }}>
+                                            <strong>Destination:</strong> {guide.city}, {guide.country}
+                                        </Text>
+                                    )}
+                                    {guide.category && (
+                                        <Text style={{ display: 'block', marginBottom: 8 }}>
+                                            <strong>Category:</strong> {guide.category.name}
+                                        </Text>
+                                    )}
+                                    {guide.lang && (
+                                        <Text style={{ display: 'block' }}>
+                                            <strong>Language:</strong> {guide.lang}
+                                        </Text>
+                                    )}
+                                </div>
+                            </div>
                         </div>
 
                         {/* Open PDF Button */}
@@ -198,9 +206,8 @@ const PdfGuideSuccess = () => {
                             size="large"
                             icon={<FilePdfOutlined />}
                             onClick={handleOpenPdf}
+                            block
                             style={{
-                                width: '100%',
-                                maxWidth: 300,
                                 height: 48,
                                 fontSize: 16
                             }}
@@ -209,7 +216,7 @@ const PdfGuideSuccess = () => {
                         </Button>
 
                         {pdfUrl && (
-                            <Paragraph style={{ marginTop: 16, fontSize: 12, color: '#999' }}>
+                            <Paragraph style={{ marginTop: 16, fontSize: 12, color: '#999', textAlign: 'center' }}>
                                 You can access this guide anytime using your transaction details.
                             </Paragraph>
                         )}
