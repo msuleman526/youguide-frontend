@@ -137,7 +137,7 @@ const AffiliateApiAccessDashboard = () => {
         },
     ];
 
-    if (loading || !statsData) {
+    if (loading && !statsData) {
         return (
             <div style={{ textAlign: 'center', padding: '100px 0' }}>
                 <Spin size="large" />
@@ -150,6 +150,15 @@ const AffiliateApiAccessDashboard = () => {
         return (
             <div style={{ textAlign: 'center', padding: '100px 0' }}>
                 <Text style={{ display: 'block', marginTop: 16 }}>No Dashboard Available...</Text>
+            </div>
+        );
+    }
+
+    if (!statsData) {
+        return (
+            <div style={{ textAlign: 'center', padding: '100px 0' }}>
+                <Spin size="large" />
+                <Text style={{ display: 'block', marginTop: 16 }}>Loading statistics...</Text>
             </div>
         );
     }
