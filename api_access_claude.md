@@ -142,7 +142,22 @@ Core Concept
   | PUT    | /api/api-access/:id       | Update API access token       | Body: { name?, company_name?, end_date?, allowed_travel_guides?, categories[]? } (cannot change type/payment_type) |
   | DELETE | /api/api-access/:id       | Delete/deactivate token       | -                                                                                                                  |
   | GET    | /api/api-access/:id/logs  | View usage logs for token     | Query: page, limit                                                                                                 |
-  | GET    | /api/api-access/:id/stats | Get token usage statistics    | - (returns: total_accessed_guides, remaining_quota, access_breakdown)                                              |
+  | GET    | /api/api-access/:id/stats | Get token usage statistics with graphs | - (returns: stats summary, graph data, recent logs - see details below)                                   |
+
+  Admin Stats Endpoint Response:
+  {
+    "success": true,
+    "data": {
+      "token_info": { name, company_name, type, payment_type, is_active, end_date },
+      "usage": { total_accesses, unique_guides_accessed, remaining_quota, access_breakdown },
+      "graphs": {
+        "daily_usage": [{ date, count }],  // Last 30 days
+        "category_breakdown": [{ category_id, category_name, count }],
+        "access_type_breakdown": [{ type, count }]
+      },
+      "recent_logs": [ /* Last 20 logs with guide details */ ]
+    }
+  }
 
   Validation:
   - Ensure categories array contains valid category IDs
@@ -233,6 +248,102 @@ Core Concept
   - Token must be valid and not expired
   - Guide must exist (404 if not found)
   - Guide's category must be in token's allowed categories (403 if not allowed)
+
+  2️⃣.1 Client Usage Statistics API
+
+  | Method | Endpoint                    | Purpose                              | Response                                              |
+  |--------|-----------------------------|--------------------------------------|-------------------------------------------------------|
+  | GET    | /api/travel-content/stats   | Get usage stats for current token    | Detailed statistics, graphs data, logs (see below)    |
+
+  Authentication: Bearer Token
+  Access: All valid tokens can view their own stats
+
+  Response Structure:
+  {
+    "success": true,
+    "data": {
+      "token_info": {
+        "name": "Client Name",
+        "company_name": "Company Inc",
+        "type": "pdf",
+        "payment_type": "free",
+        "is_active": true,
+        "end_date": "2026-12-31T00:00:00.000Z",
+        "allowed_categories": 5
+      },
+      "usage_summary": {
+        "total_accesses": 150,
+        "unique_guides_accessed": 45,
+        "remaining_quota": 55,
+        "date_range": {
+          "first_access": "2025-01-01T10:00:00.000Z",
+          "last_access": "2025-01-05T15:30:00.000Z"
+        },
+        "access_breakdown": {
+          "pdf": 100,
+          "html": 30,
+          "json": 20
+        }
+      },
+      "graphs": {
+        "daily_usage": [
+          { "date": "2025-01-01", "count": 10 },
+          { "date": "2025-01-02", "count": 15 },
+          ...
+        ],
+        "weekly_usage": [
+          { "week": "2025-W01", "count": 50 },
+          ...
+        ],
+        "monthly_usage": [
+          { "month": "2025-01", "count": 150 },
+          ...
+        ],
+        "category_breakdown": [
+          { "category_id": "cat1", "category_name": "City Trips", "count": 80 },
+          { "category_id": "cat2", "category_name": "Campers", "count": 70 }
+        ],
+        "access_type_breakdown": [
+          { "type": "pdf", "count": 100 },
+          { "type": "html", "count": 30 },
+          { "type": "json", "count": 20 }
+        ]
+      },
+      "top_guides": [
+        {
+          "guide_id": "guide123",
+          "guide_name": "Amsterdam Guide",
+          "city": "Amsterdam",
+          "country": "Netherlands",
+          "count": 25,
+          "last_accessed": "2025-01-05T15:30:00.000Z",
+          "access_types": ["pdf", "html"]
+        }
+      ],
+      "recent_logs": [
+        {
+          "_id": "log123",
+          "guide": {
+            "_id": "guide123",
+            "name": "Amsterdam Guide",
+            "city": "Amsterdam",
+            "country": "Netherlands"
+          },
+          "access_type": "pdf",
+          "transaction_id": null,
+          "created_at": "2025-01-05T15:30:00.000Z"
+        }
+      ]
+    }
+  }
+
+  Graph Data Details:
+  - daily_usage: Last 30 days
+  - weekly_usage: Last 12 weeks
+  - monthly_usage: Last 12 months
+  - category_breakdown: Sorted by count (descending)
+  - top_guides: Top 10 most accessed guides
+  - recent_logs: Last 50 access entries
 
   ---
   3️⃣ PDF Content APIs (/api/travel-guides/pdf/content/*)
@@ -644,6 +755,7 @@ Core Concept
   |                 | /api/travel-content/categories                   | GET    | Bearer (any)            | List categories     |
   |                 | /api/travel-content/guides                       | GET    | Bearer (any)            | List guides         |
   |                 | /api/travel-content/guides/:guideId              | GET    | Bearer (any)            | Get guide details   |
+  |                 | /api/travel-content/stats                        | GET    | Bearer (any)            | Client usage stats  |
   | PDF Content     | /api/travel-guides/pdf/content/:guideId          | GET    | Bearer (pdf+free)       | Get PDF             |
   | PDF Secure      | /api/travel-guides/pdf/secure/checkout           | POST   | Bearer (pdf+paid)       | Create checkout     |
   |                 | /api/travel-guides/pdf/secure/download           | GET    | Bearer (pdf+paid)       | Download PDF        |
@@ -654,7 +766,7 @@ Core Concept
   |                 | /api/travel-guides/digital/secure/view           | GET    | Bearer (html_json+paid) | View HTML           |
   | Webhook         | /webhook/api-access                              | POST   | Stripe signature        | Payment complete    |
 
-  Total: 19 endpoints (7 admin + 4 common + 8 client-facing)
+  Total: 20 endpoints (7 admin + 5 common + 8 client-facing)
 
   ---
   🎨 HTML Rendering from JSON
