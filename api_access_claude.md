@@ -1,0 +1,767 @@
+Core Concept
+
+  A B2B API system for external clients to access YouGuide's travel guides programmatically with:
+  - Strict type enforcement: PDF tokens cannot access HTML/JSON APIs and vice versa
+  - Payment type isolation: Free tokens cannot use secure (paid) endpoints and vice versa
+  - Token-based authentication with Bearer tokens
+  - Quota management with first-access deduction
+  - Category-based access control
+  - HTML rendering from JSON (similar to reference.html)
+
+  Business Flow
+
+  For "Content" Access (payment_type=free):
+  1. Admin creates token with pre-paid quota (e.g., 100 guides)
+  2. Client uses token to access guides directly via /content endpoints
+  3. System validates: token type, payment type, category, quota
+  4. First access deducts quota, subsequent access to same guide = free
+  5. HTML is rendered server-side from JSON with optional styling
+
+  For "Secure" Access (payment_type=paid):
+  1. Client requests checkout link via /secure/checkout
+  2. System generates Stripe session with unique transaction_id
+  3. Client completes payment, redirected to success page
+  4. Client accesses content via /secure/* endpoints with transaction_id
+  5. System validates payment success, ownership, and guide match
+  6. Quota deducted only after successful payment verification
+
+  Strict Validation Rules
+
+  Type Validation:
+  - type=pdf tokens → ONLY /pdf/* endpoints allowed
+  - type=html_json tokens → ONLY /digital/* endpoints allowed
+  - Cross-type access = 403 Forbidden
+
+  Payment Type Validation:
+  - payment_type=free tokens → ONLY /content endpoints allowed
+  - payment_type=paid tokens → ONLY /secure endpoints allowed
+  - Cross-payment access = 403 Forbidden
+
+  Combined Example:
+  - Token with type=pdf, payment_type=free → Can ONLY access /api/travel-guides/pdf/content/:guideId
+  - Token with type=html_json, payment_type=paid → Can ONLY access /api/travel-guides/digital/secure/*
+
+  ---
+  📁 Files I Will Create
+
+  Models (4 files)
+
+  1. src/models/ApiAccess.js
+  {
+    token: String (unique, indexed) - Bearer token
+    name: String - Client contact name
+    company_name: String - Company name
+    user_id: ObjectId (nullable) - Optional affiliate linkage
+    end_date: Date - Token expiration
+    allowed_travel_guides: Number - Remaining quota
+    type: String (enum: 'pdf', 'html_json') - Content format
+    payment_type: String (enum: 'free', 'paid') - Payment model
+    categories: [ObjectId] - Allowed category IDs
+    createdAt, updatedAt
+  }
+  1. Indexes: token (unique), end_date, type, payment_type
+  2. src/models/ApiAccessLog.js
+  {
+    api_access_id: ObjectId - Reference to ApiAccess
+    token: String - For quick lookups
+    travel_guide_id: ObjectId - Guide accessed
+    transaction_id: String (nullable) - For paid access
+    access_type: String - 'pdf', 'html', 'json'
+    created_at: Date
+  }
+  2. Indexes:
+    - Compound: { token: 1, travel_guide_id: 1 } (for duplicate access check)
+    - api_access_id, transaction_id
+  3. src/models/ApiTransaction.js
+  {
+    transaction_id: String (unique, indexed) - UUID
+    api_access_id: ObjectId - Token used
+    token: String - For validation
+    travel_guide_id: ObjectId - Guide purchased
+    content_type: String (enum: 'pdf', 'html', 'json') - Format purchased
+    stripe_session_id: String - Stripe checkout session
+    stripe_payment_intent_id: String (nullable)
+    amount: Number - Payment amount
+    currency: String - e.g., 'usd'
+    status: String (enum: 'pending', 'completed', 'failed')
+    paid_at: Date (nullable)
+    createdAt, updatedAt
+  }
+  3. Indexes: transaction_id (unique), stripe_session_id, compound: { token: 1, travel_guide_id: 1 }
+  4. Existing Models Used:
+    - Book (travel guides)
+    - Category
+
+  ---
+  Middleware (1 file)
+
+  src/middleware/authenticateBearerToken.js
+  - Extracts token from Authorization: Bearer <token> header
+  - Validates token exists in ApiAccess collection
+  - Checks end_date >= today
+  - Attaches apiAccess object to req.apiAccess
+  - Returns 401 if invalid/expired
+
+  ---
+  Services (1 file - recommended)
+
+  src/services/apiAccessService.js
+  - validateTokenAccess(apiAccess, requiredType, requiredPaymentType) - Type/payment enforcement
+  - checkCategoryAccess(apiAccess, guideId) - Category authorization
+  - checkAndDeductQuota(apiAccess, guideId) - Quota validation & deduction
+  - logAccess(apiAccess, guideId, transactionId, accessType) - Usage logging
+  - generateTransactionId() - UUID generation
+  - validateTransaction(transactionId, token, guideId, contentType) - Transaction verification
+  - renderHtmlFromJson(jsonContent, options) - HTML generation from JSON (like reference.html)
+
+  ---
+  Controllers (2 files)
+
+  1. src/controllers/apiAccessController.js - Admin operations
+  2. src/controllers/travelContentController.js - All client-facing APIs
+
+  ---
+  Routes (2 files)
+
+  1. src/routes/apiAccess.js - Admin routes
+  2. src/routes/travelContent.js - Client routes
+
+  ---
+  🔌 APIs I Will Create (By Category)
+
+  1️⃣ Admin APIs (/api/api-access/*)
+
+  Authentication: JWT (existing admin auth)
+  Controller: apiAccessController.js
+
+  | Method | Endpoint                  | Purpose                       | Request Body/Query                                                                                                 |
+  |--------|---------------------------|-------------------------------|--------------------------------------------------------------------------------------------------------------------|
+  | GET    | /api/api-access           | List all API access tokens    | Query: page, limit, type, payment_type                                                                             |
+  | POST   | /api/api-access           | Create new API access token   | Body: { name, company_name, user_id?, end_date, allowed_travel_guides, type, payment_type, categories[] }          |
+  | GET    | /api/api-access/:id       | Get single API access details | -                                                                                                                  |
+  | PUT    | /api/api-access/:id       | Update API access token       | Body: { name?, company_name?, end_date?, allowed_travel_guides?, categories[]? } (cannot change type/payment_type) |
+  | DELETE | /api/api-access/:id       | Delete/deactivate token       | -                                                                                                                  |
+  | GET    | /api/api-access/:id/logs  | View usage logs for token     | Query: page, limit                                                                                                 |
+  | GET    | /api/api-access/:id/stats | Get token usage statistics    | - (returns: total_accessed_guides, remaining_quota, access_breakdown)                                              |
+
+  Validation:
+  - Ensure categories array contains valid category IDs
+  - type must be 'pdf' or 'html_json'
+  - payment_type must be 'free' or 'paid'
+  - end_date must be future date
+  - allowed_travel_guides must be positive integer
+
+  ---
+  2️⃣ Common Content APIs (/api/travel-content/*)
+
+  Authentication: Bearer Token
+  Controller: travelContentController.js
+  Validation: None (accessible by all valid tokens)
+
+  | Method | Endpoint                           | Purpose                       | Response                                                            |
+  |--------|------------------------------------|-------------------------------|---------------------------------------------------------------------|
+  | GET    | /api/travel-content/languages      | Get supported languages       | [{ name: "English", code: "en" }, ...] (12 languages hardcoded)     |
+  | GET    | /api/travel-content/categories     | Get categories for this token | [{ _id, name, slug, image }] (filtered by token's categories array) |
+  | GET    | /api/travel-content/guides         | List travel guides            | Paginated guide list                                                |
+  | GET    | /api/travel-content/guides/:guideId| Get single guide details      | Full guide object with presigned image URLs                         |
+
+  /api/travel-content/guides Query Parameters:
+  - category_id (optional) - Must be in token's allowed categories
+  - lang (optional) - Filter by language code (en, ar, zh, etc.)
+  - query (optional) - Search in guide name/description
+  - page (optional, default: 1)
+  - limit (optional, default: 20, max: 100)
+
+  Response Structure (List):
+  {
+    "currentPage": 1,
+    "pageSize": 20,
+    "totalPages": 8,
+    "totalBooks": 150,
+    "books": [
+      {
+        "_id": "guide123",
+        "name": "Amsterdam Travel Guide",
+        "eng_name": "Amsterdam Travel Guide",
+        "description": "...",
+        "category": { "_id": "cat1", "name": "City Trips" },
+        "city": "Amsterdam",
+        "country": "Netherlands",
+        "price": 9.99,
+        "imagePath": "https://presigned-url...",
+        "fullCover": "https://presigned-url...",
+        "latitude": 52.3676,
+        "longitude": 4.9041
+      }
+    ]
+  }
+
+  /api/travel-content/guides/:guideId Response Structure:
+  {
+    "success": true,
+    "guide": {
+      "_id": "guide123",
+      "name": "Amsterdam Travel Guide",
+      "eng_name": "Amsterdam Travel Guide",
+      "description": "Complete travel guide for Amsterdam...",
+      "eng_description": "Complete travel guide for Amsterdam...",
+      "city": "Amsterdam",
+      "country": "Netherlands",
+      "address": "Amsterdam, Netherlands",
+      "latitude": 52.3676,
+      "longitude": 4.9041,
+      "price": 9.99,
+      "status": true,
+      "category": {
+        "_id": "cat1",
+        "name": "City Trips",
+        "slug": "city-trips",
+        "description": "Urban exploration guides"
+      },
+      "lang": "English",
+      "lang_short": "en",
+      "imagePath": "https://presigned-url-for-thumbnail...",
+      "fullCover": "https://presigned-url-for-full-cover...",
+      "has_pdf": true,
+      "has_json": true,
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-02T00:00:00.000Z"
+    }
+  }
+
+  Validation:
+  - Token must be valid and not expired
+  - Guide must exist (404 if not found)
+  - Guide's category must be in token's allowed categories (403 if not allowed)
+
+  ---
+  3️⃣ PDF Content APIs (/api/travel-guides/pdf/content/*)
+
+  Authentication: Bearer Token
+  Required Token: type=pdf, payment_type=free
+  Controller: travelContentController.js
+
+  | Method | Endpoint                                | Purpose                    | Validation                                               |
+  |--------|-----------------------------------------|----------------------------|----------------------------------------------------------|
+  | GET    | /api/travel-guides/pdf/content/:guideId | Get PDF file or secure URL | Type=pdf, Payment=free, Category access, Quota available |
+
+  Process Flow:
+  1. Validate bearer token
+  2. Validate apiAccess.type === 'pdf' (403 if not)
+  3. Validate apiAccess.payment_type === 'free' (403 if not)
+  4. Verify guide exists and category is allowed
+  5. Check if guide already accessed (ApiAccessLog lookup)
+  6. If first access:
+    - Check allowed_travel_guides > 0 (403 if zero)
+    - Deduct 1 from allowed_travel_guides
+  7. Log access in ApiAccessLog
+  8. Return PDF presigned URL or direct file
+
+  Response:
+  {
+    "success": true,
+    "guide": {
+      "_id": "guide123",
+      "name": "Amsterdam Guide",
+      "language": "en"
+    },
+    "pdf_url": "https://wasabi.../presigned-url",
+    "expires_in": 3600,
+    "access_info": {
+      "first_access": true,
+      "remaining_quota": 99
+    }
+  }
+
+  ---
+  4️⃣ PDF Secure APIs (/api/travel-guides/pdf/secure/*)
+
+  Authentication: Bearer Token
+  Required Token: type=pdf, payment_type=paid
+  Controller: travelContentController.js
+
+  4.1 Generate Checkout Link
+
+  | Method | Endpoint                               | Purpose                    |
+  |--------|----------------------------------------|----------------------------|
+  | POST   | /api/travel-guides/pdf/secure/checkout | Create Stripe payment link |
+
+  Request Body:
+  {
+    "guide_id": "guide123"
+  }
+
+  Validation:
+  1. Validate bearer token
+  2. Validate apiAccess.type === 'pdf' (403 if not)
+  3. Validate apiAccess.payment_type === 'paid' (403 if not)
+  4. Verify guide exists and category allowed
+
+  Process:
+  1. Generate unique transaction_id (UUID)
+  2. Fetch guide price from Book model
+  3. Create ApiTransaction record (status: 'pending')
+  4. Create Stripe checkout session with:
+    - Line item: guide name + price
+    - Success URL: http://appadmin.youguide.com/guide-success/pdf?guide_id={guide_id}&transaction_id={transaction_id}&token={bearer_token}
+    - Cancel URL: http://appadmin.youguide.com/guide-cancel
+    - Metadata: { transaction_id, api_access_id, guide_id, content_type: 'pdf', token: bearer_token }
+
+  Response:
+  {
+    "success": true,
+    "checkout_url": "https://checkout.stripe.com/...",
+    "transaction_id": "uuid-here",
+    "expires_in": 1800
+  }
+
+  4.2 Download PDF
+
+  | Method | Endpoint                               | Purpose              |
+  |--------|----------------------------------------|----------------------|
+  | GET    | /api/travel-guides/pdf/secure/download | Access purchased PDF |
+
+  Query Parameters:
+  - transaction_id (required)
+  - guide_id (required)
+
+  Validation:
+  1. Validate bearer token
+  2. Validate apiAccess.type === 'pdf' (403 if not)
+  3. Validate apiAccess.payment_type === 'paid' (403 if not)
+  4. Fetch transaction by transaction_id
+  5. Verify transaction.status === 'completed' (403 if not)
+  6. Verify transaction.token === apiAccess.token (403 if mismatch)
+  7. Verify transaction.travel_guide_id === guide_id (403 if mismatch)
+  8. Verify transaction.content_type === 'pdf' (403 if mismatch)
+
+  Process:
+  1. Check if guide already logged (ApiAccessLog lookup by transaction_id)
+  2. If first access after payment:
+    - Check allowed_travel_guides > 0 (should always be true, but verify)
+    - Deduct 1 from allowed_travel_guides
+    - Log access in ApiAccessLog
+  3. Return PDF presigned URL
+
+  Response:
+  {
+    "success": true,
+    "guide": {
+      "_id": "guide123",
+      "name": "Amsterdam Guide",
+      "language": "en"
+    },
+    "pdf_url": "https://wasabi.../presigned-url",
+    "expires_in": 3600,
+    "transaction": {
+      "transaction_id": "uuid",
+      "paid_at": "2026-01-02T10:30:00Z",
+      "amount": 9.99,
+      "currency": "usd"
+    }
+  }
+
+  ---
+  5️⃣ Digital Content APIs (/api/travel-guides/digital/content/*)
+
+  Authentication: Bearer Token
+  Required Token: type=html_json, payment_type=free
+  Controller: travelContentController.js
+
+  5.1 Get JSON Data
+
+  | Method | Endpoint                                         | Purpose        |
+  |--------|--------------------------------------------------|----------------|
+  | GET    | /api/travel-guides/digital/content/data/:guideId | Get guide JSON |
+
+  Validation:
+  1. Validate bearer token
+  2. Validate apiAccess.type === 'html_json' (403 if not)
+  3. Validate apiAccess.payment_type === 'free' (403 if not)
+  4. Verify guide category access
+  5. Check quota (first access deducts)
+
+  Process:
+  1. Fetch JSON file from Wasabi/S3
+  2. Parse JSON content
+  3. Log access (type: 'json')
+  4. Return parsed JSON
+
+  Response:
+  {
+    "success": true,
+    "guide": {
+      "_id": "guide123",
+      "name": "Amsterdam Guide",
+      "language": "en"
+    },
+    "content": {
+      "overview": "...",
+      "sections": [...],
+      "places": [...]
+    },
+    "access_info": {
+      "first_access": true,
+      "remaining_quota": 99
+    }
+  }
+
+  5.2 View HTML
+
+  | Method | Endpoint                                         | Purpose           |
+  |--------|--------------------------------------------------|-------------------|
+  | GET    | /api/travel-guides/digital/content/view/:guideId | Get rendered HTML |
+
+  Query Parameters (optional):
+  - heading_font_size (default: 24)
+  - heading_color (default: #333333)
+  - sub_heading_font_size (default: 18)
+  - mode (light or dark, default: light)
+
+  Validation:
+  1. Validate bearer token
+  2. Validate apiAccess.type === 'html_json' (403 if not)
+  3. Validate apiAccess.payment_type === 'free' (403 if not)
+  4. Verify guide category access
+  5. Check quota (first access deducts)
+
+  Process:
+  1. Fetch JSON file from Wasabi/S3
+  2. Parse JSON content
+  3. Render HTML using reference.html template with customizations:
+    - Apply heading styles
+    - Apply color scheme (light/dark mode)
+    - Inject guide content sections
+  4. Log access (type: 'html')
+  5. Return HTML (Content-Type: text/html)
+
+  Response: Full HTML page (similar to reference.html structure)
+
+  ---
+  6️⃣ Digital Secure APIs (/api/travel-guides/digital/secure/*)
+
+  Authentication: Bearer Token
+  Required Token: type=html_json, payment_type=paid
+  Controller: travelContentController.js
+
+  6.1 Generate Checkout Link
+
+  | Method | Endpoint                                   | Purpose                    |
+  |--------|--------------------------------------------|----------------------------|
+  | POST   | /api/travel-guides/digital/secure/checkout | Create Stripe payment link |
+
+  Request Body:
+  {
+    "guide_id": "guide123",
+    "content_type": "html" // or "json"
+  }
+
+  Validation:
+  1. Validate bearer token
+  2. Validate apiAccess.type === 'html_json' (403 if not)
+  3. Validate apiAccess.payment_type === 'paid' (403 if not)
+  4. Verify content_type is 'html' or 'json'
+  5. Verify guide exists and category allowed
+
+  Process:
+  1. Generate unique transaction_id
+  2. Fetch guide price
+  3. Create ApiTransaction record (content_type: html/json, status: 'pending')
+  4. Create Stripe checkout session with:
+    - Success URL: http://appadmin.youguide.com/guide-success/{content_type}?guide_id={guide_id}&transaction_id={transaction_id}&token={bearer_token}
+    - Metadata: { transaction_id, api_access_id, guide_id, content_type, token: bearer_token }
+
+  Response:
+  {
+    "success": true,
+    "checkout_url": "https://checkout.stripe.com/...",
+    "transaction_id": "uuid-here",
+    "content_type": "html",
+    "expires_in": 1800
+  }
+
+  6.2 Get JSON Data (Paid)
+
+  | Method | Endpoint                               | Purpose               |
+  |--------|----------------------------------------|-----------------------|
+  | GET    | /api/travel-guides/digital/secure/data | Access purchased JSON |
+
+  Query Parameters:
+  - transaction_id (required)
+  - guide_id (required)
+
+  Validation:
+  1. Validate bearer token
+  2. Validate apiAccess.type === 'html_json' (403 if not)
+  3. Validate apiAccess.payment_type === 'paid' (403 if not)
+  4. Fetch transaction by transaction_id
+  5. Verify transaction.status === 'completed'
+  6. Verify transaction.token === apiAccess.token
+  7. Verify transaction.travel_guide_id === guide_id
+  8. Verify transaction.content_type === 'json' (403 if mismatch - user bought HTML but trying to access JSON)
+
+  Process:
+  1. Fetch JSON file
+  2. Parse content
+  3. Log access if first time
+  4. Deduct quota if first access
+  5. Return JSON
+
+  Response: Same as 5.1 but with transaction info
+
+  6.3 View HTML (Paid)
+
+  | Method | Endpoint                               | Purpose               |
+  |--------|----------------------------------------|-----------------------|
+  | GET    | /api/travel-guides/digital/secure/view | Access purchased HTML |
+
+  Query Parameters:
+  - transaction_id (required)
+  - guide_id (required)
+  - heading_font_size (optional)
+  - heading_color (optional)
+  - sub_heading_font_size (optional)
+  - mode (optional)
+
+  Validation:
+  1. Validate bearer token
+  2. Validate apiAccess.type === 'html_json' (403 if not)
+  3. Validate apiAccess.payment_type === 'paid' (403 if not)
+  4. Fetch transaction
+  5. Verify transaction status, ownership, guide match
+  6. Verify transaction.content_type === 'html' (403 if user bought JSON but trying HTML)
+
+  Process:
+  1. Fetch JSON file
+  2. Render HTML with customizations (like 5.2)
+  3. Log access if first time
+  4. Deduct quota if first access
+  5. Return HTML
+
+  Response: Full HTML page with styling applied
+
+  ---
+  ⚠️ Success URL Parameters
+
+  All Stripe checkout success URLs include these query parameters for client verification:
+
+  | Parameter       | Description                                | Example                                      |
+  |-----------------|-----------------------------------------------|----------------------------------------------|
+  | guide_id        | MongoDB ObjectId of the purchased guide      | 677abc123def456789012345                     |
+  | transaction_id  | Unique UUID for this transaction             | 550e8400-e29b-41d4-a716-446655440000         |
+  | token           | Bearer token (URL encoded)                   | tok_abc123def456...                          |
+
+  Success URL Format:
+  - PDF: `http://appadmin.youguide.com/guide-success/pdf?guide_id={guide_id}&transaction_id={transaction_id}&token={bearer_token}`
+  - HTML: `http://appadmin.youguide.com/guide-success/html?guide_id={guide_id}&transaction_id={transaction_id}&token={bearer_token}`
+  - JSON: `http://appadmin.youguide.com/guide-success/json?guide_id={guide_id}&transaction_id={transaction_id}&token={bearer_token}`
+
+  Client Usage:
+  After successful payment, the client receives these parameters and can:
+  1. Use the `transaction_id` and `token` to download/access the content
+  2. Call the appropriate `/secure/download`, `/secure/data`, or `/secure/view` endpoint
+  3. Verify the purchase was successful
+
+  ---
+  7️⃣ Stripe Webhook
+
+  No authentication (Stripe signature verification)
+
+  | Method | Endpoint            | Purpose                      |
+  |--------|---------------------|------------------------------|
+  | POST   | /webhook/api-access | Handle Stripe payment events |
+
+  Handled Events:
+  - checkout.session.completed
+
+  Process:
+  1. Verify Stripe signature
+  2. Extract transaction_id from metadata
+  3. Fetch ApiTransaction by transaction_id
+  4. Update transaction:
+    - status = 'completed'
+    - stripe_payment_intent_id = session.payment_intent
+    - paid_at = new Date()
+  5. (Optional) Send email confirmation to client
+
+  ---
+  🔐 Security & Validation Matrix
+
+  Token Type Enforcement
+
+  | Token Type     | Allowed Endpoints            | Blocked Endpoints                            |
+  |----------------|------------------------------|----------------------------------------------|
+  | type=pdf       | /api/travel-guides/pdf/*     | /api/travel-guides/digital/* (403 Forbidden) |
+  | type=html_json | /api/travel-guides/digital/* | /api/travel-guides/pdf/* (403 Forbidden)     |
+
+  Payment Type Enforcement
+
+  | Payment Type      | Allowed Endpoints | Blocked Endpoints           |
+  |-------------------|-------------------|-----------------------------|
+  | payment_type=free | */content/*       | */secure/* (403 Forbidden)  |
+  | payment_type=paid | */secure/*        | */content/* (403 Forbidden) |
+
+  Combined Enforcement Examples
+
+  | Token Config     | Valid Endpoint                       | Invalid Endpoints (403)    |
+  |------------------|--------------------------------------|----------------------------|
+  | pdf + free       | /api/travel-guides/pdf/content/:id   | /pdf/secure/*, /digital/*  |
+  | pdf + paid       | /api/travel-guides/pdf/secure/*      | /pdf/content/*, /digital/* |
+  | html_json + free | /api/travel-guides/digital/content/* | /digital/secure/*, /pdf/*  |
+  | html_json + paid | /api/travel-guides/digital/secure/*  | /digital/content/*, /pdf/* |
+
+  Content Type Enforcement (Paid Only)
+
+  For paid transactions, the content_type in ApiTransaction must match:
+
+  | Purchased Type    | Can Access           | Cannot Access               |
+  |-------------------|----------------------|-----------------------------|
+  | content_type=pdf  | /pdf/secure/download | N/A (only one PDF endpoint) |
+  | content_type=html | /digital/secure/view | /digital/secure/data (403)  |
+  | content_type=json | /digital/secure/data | /digital/secure/view (403)  |
+
+  Example Error: User buys HTML access but tries to get JSON:
+  {
+    "error": "Content type mismatch",
+    "message": "This transaction is for HTML access only. You purchased 'html' but are trying to access 'json'.",
+    "purchased_type": "html",
+    "requested_type": "json"
+  }
+
+  ---
+  📊 Complete API Summary Table
+
+  | Category        | Endpoint                                         | Method | Token Requirements      | Description         |
+  |-----------------|--------------------------------------------------|--------|-------------------------|---------------------|
+  | Admin           | /api/api-access                                  | GET    | JWT Admin               | List tokens         |
+  |                 | /api/api-access                                  | POST   | JWT Admin               | Create token        |
+  |                 | /api/api-access/:id                              | GET    | JWT Admin               | Get token details   |
+  |                 | /api/api-access/:id                              | PUT    | JWT Admin               | Update token        |
+  |                 | /api/api-access/:id                              | DELETE | JWT Admin               | Delete token        |
+  |                 | /api/api-access/:id/logs                         | GET    | JWT Admin               | View logs           |
+  |                 | /api/api-access/:id/stats                        | GET    | JWT Admin               | Usage stats         |
+  | Common          | /api/travel-content/languages                    | GET    | Bearer (any)            | List languages      |
+  |                 | /api/travel-content/categories                   | GET    | Bearer (any)            | List categories     |
+  |                 | /api/travel-content/guides                       | GET    | Bearer (any)            | List guides         |
+  |                 | /api/travel-content/guides/:guideId              | GET    | Bearer (any)            | Get guide details   |
+  | PDF Content     | /api/travel-guides/pdf/content/:guideId          | GET    | Bearer (pdf+free)       | Get PDF             |
+  | PDF Secure      | /api/travel-guides/pdf/secure/checkout           | POST   | Bearer (pdf+paid)       | Create checkout     |
+  |                 | /api/travel-guides/pdf/secure/download           | GET    | Bearer (pdf+paid)       | Download PDF        |
+  | Digital Content | /api/travel-guides/digital/content/data/:guideId | GET    | Bearer (html_json+free) | Get JSON            |
+  |                 | /api/travel-guides/digital/content/view/:guideId | GET    | Bearer (html_json+free) | View HTML           |
+  | Digital Secure  | /api/travel-guides/digital/secure/checkout       | POST   | Bearer (html_json+paid) | Create checkout     |
+  |                 | /api/travel-guides/digital/secure/data           | GET    | Bearer (html_json+paid) | Get JSON            |
+  |                 | /api/travel-guides/digital/secure/view           | GET    | Bearer (html_json+paid) | View HTML           |
+  | Webhook         | /webhook/api-access                              | POST   | Stripe signature        | Payment complete    |
+
+  Total: 19 endpoints (7 admin + 4 common + 8 client-facing)
+
+  ---
+  🎨 HTML Rendering from JSON
+
+  The HTML rendering will follow the reference.html structure with these features:
+
+  Template Structure
+
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{guide.name}</title>
+    <style>
+      /* Base styles */
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: {mode === 'dark' ? '#1a1a1a' : '#ffffff'};
+        color: {mode === 'dark' ? '#e0e0e0' : '#333333'};
+      }
+      h1 {
+        font-size: {heading_font_size}px;
+        color: {heading_color};
+      }
+      h2 {
+        font-size: {sub_heading_font_size}px;
+      }
+      /* Responsive styles, sections, images, etc. */
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>{guide.name}</h1>
+      <p>{guide.description}</p>
+    </header>
+
+    <main>
+      {/* Render JSON sections dynamically */}
+      {json.sections.map(section => `
+        <section>
+          <h2>${section.title}</h2>
+          <p>${section.content}</p>
+          ${section.images ? renderImages(section.images) : ''}
+        </section>
+      `)}
+    </main>
+
+    <footer>
+      <p>Generated by YouGuide API</p>
+    </footer>
+  </body>
+  </html>
+
+  Customization Parameters
+
+  - heading_font_size: 16-48px (default: 24)
+  - heading_color: Any hex color (default: #333333 or #e0e0e0 for dark)
+  - sub_heading_font_size: 14-36px (default: 18)
+  - mode: 'light' or 'dark' (switches background, text colors, borders)
+
+  Dark Mode Colors
+
+  - Background: #1a1a1a
+  - Text: #e0e0e0
+  - Headings: #ffffff
+  - Borders: #444444
+
+  Light Mode Colors
+
+  - Background: #ffffff
+  - Text: #333333
+  - Headings: Custom or default
+  - Borders: #e0e0e0
+
+  ---
+  🚀 Implementation Order
+
+  1. Models (ApiAccess, ApiAccessLog, ApiTransaction)
+  2. Middleware (authenticateBearerToken)
+  3. Services (apiAccessService with all validation logic)
+  4. Controllers (apiAccessController, travelContentController)
+  5. Routes (apiAccess.js, travelContent.js)
+  6. Webhook (Update existing webhook handler or create new)
+  7. Testing (Postman collection for all 18 endpoints)
+
+  ---
+  ✅ Error Response Standards
+
+  All errors will follow consistent format:
+
+  {
+    "success": false,
+    "error": "Error Type",
+    "message": "Human-readable message",
+    "code": "ERROR_CODE",
+    "details": {} // Optional
+  }
+
+  Common Error Codes:
+  - TOKEN_INVALID - Bearer token not found
+  - TOKEN_EXPIRED - Token past end_date
+  - TYPE_MISMATCH - Wrong content type for token
+  - PAYMENT_TYPE_MISMATCH - Wrong payment model for endpoint
+  - CATEGORY_FORBIDDEN - Guide not in allowed categories
+  - QUOTA_EXCEEDED - No remaining guide quota
+  - TRANSACTION_NOT_FOUND - Invalid transaction_id
+  - TRANSACTION_INCOMPLETE - Payment not completed
+  - TRANSACTION_MISMATCH - Transaction doesn't match guide/token
+  - CONTENT_TYPE_MISMATCH - Bought HTML trying to access JSON (or vice versa)
