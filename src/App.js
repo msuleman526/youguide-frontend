@@ -13,6 +13,7 @@ import Categories from './pages/Categories/Categories'
 import VendorManagement from './pages/Vendors/VendorManagement'
 import PaymentSuccess from './pages/Payment/PaymentSuccess'
 import PaymentError from './pages/Payment/PaymentError'
+import PdfGuideSuccess from './pages/Payment/PdfGuideSuccess'
 import Transactions from './pages/Transactions/Transactions'
 import SubscriptionGuides from './pages/Vendors/SubscriptionGuides'
 import PdfViewer from './pages/Vendors/PdfViewer'
@@ -48,6 +49,7 @@ const App = () => {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/payment/cancel" element={<PaymentError />} />
+        <Route path="/guide-success/pdf" element={<PdfGuideSuccess />} />
         <Route path="/account/remove" element={<DeleteAccount />} />
         <Route path="/subscription-expired" element={<ContractExpired />} />
         <Route path="/subscription-guides/:id" element={<SubscriptionGuides />} />

@@ -1257,6 +1257,41 @@ class ApiService {
             throw error;
         }
     }
+
+    // API Access - Travel Content API methods
+    static async getTravelGuideById(guideId, bearerToken) {
+        try {
+            const response = await axios.get(`${this.baseURL}/travel-content/guides/${guideId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${bearerToken}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error get travel guide:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async downloadSecurePDF(guideId, transactionId, bearerToken) {
+        try {
+            const response = await axios.get(`${this.baseURL}/travel-guides/pdf/secure/download`, {
+                params: {
+                    guide_id: guideId,
+                    transaction_id: transactionId
+                },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${bearerToken}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error download secure PDF:', error.response?.data || error.message);
+            throw error;
+        }
+    }
 }
 
 export default ApiService;
