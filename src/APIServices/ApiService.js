@@ -1397,11 +1397,12 @@ class ApiService {
     }
 
     // API Access Management APIs
-    static async getAllApiAccessTokens(page = 1, limit = 20, type = null, payment_type = null) {
+    static async getAllApiAccessTokens(page = 1, limit = 20, type = null, payment_type = null, user_id = null) {
         try {
             const params = { page, limit };
             if (type) params.type = type;
             if (payment_type) params.payment_type = payment_type;
+            if (user_id) params.user_id = user_id;
 
             const response = await axios.get(`${this.baseURL}/api-access`, {
                 params,
@@ -1413,6 +1414,55 @@ class ApiService {
             return response.data;
         } catch (error) {
             console.error('Error fetching API access tokens:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getAffiliateApiAccessTokens(userId, page = 1, limit = 20) {
+        try {
+            const params = { page, limit, user_id: userId };
+
+            const response = await axios.get(`${this.baseURL}/api-access`, {
+                params,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('affiliateToken')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching affiliate API access tokens:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getAffiliateApiAccessTokenStats(id) {
+        try {
+            const response = await axios.get(`${this.baseURL}/api-access/${id}/stats`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('affiliateToken')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching affiliate API access stats:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getAffiliateApiAccessTokenLogs(id, page = 1, limit = 20) {
+        try {
+            const response = await axios.get(`${this.baseURL}/api-access/${id}/logs`, {
+                params: { page, limit },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('affiliateToken')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching affiliate API access logs:', error.response?.data || error.message);
             throw error;
         }
     }

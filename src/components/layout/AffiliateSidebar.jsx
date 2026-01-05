@@ -1,6 +1,7 @@
 import { Flex, Image, Layout, Menu, Typography, Drawer } from 'antd';
 import { FaChartBar, FaHotel } from 'react-icons/fa';
 import { TbLogout2 } from 'react-icons/tb';
+import { ApiOutlined } from '@ant-design/icons';
 import { useEffect, useState, useLayoutEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import smallLogo from '../../assets/small_logo.png';
@@ -30,6 +31,8 @@ const AffiliateSidebar = ({ collapsed, drawerVisible, setDrawerVisible, affiliat
       setSelectedMenu('affiliate-dashboard');
     } else if (path.includes('affiliate-hotels')) {
       setSelectedMenu('my-hotels');
+    } else if (path.includes('affiliate-api-access')) {
+      setSelectedMenu('api-access-dashboard');
     }
   }, [location.pathname]);
 
@@ -51,6 +54,8 @@ const AffiliateSidebar = ({ collapsed, drawerVisible, setDrawerVisible, affiliat
       navigate(`/affiliate-dashboard/${affiliate?.id}`);
     } else if (key === 'my-hotels') {
       navigate(`/affiliate-hotels/${affiliate?.id}`);
+    } else if (key === 'api-access-dashboard') {
+      navigate(`/affiliate-api-access/${affiliate?.id}`);
     }
     setSelectedMenu(key);
     if (isMobile) {
@@ -75,6 +80,11 @@ const AffiliateSidebar = ({ collapsed, drawerVisible, setDrawerVisible, affiliat
       key: 'my-hotels',
       icon: <FaHotel {...iconProps} />,
       label: 'My Clients',
+    },
+    {
+      key: 'api-access-dashboard',
+      icon: <ApiOutlined style={iconStyle} />,
+      label: 'API Access Dashboard',
     },
   ];
 
