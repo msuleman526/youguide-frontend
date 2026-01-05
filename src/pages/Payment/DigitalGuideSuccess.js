@@ -251,17 +251,22 @@ const DigitalGuideSuccess = () => {
                         </div>
 
                         {/* Action Buttons */}
-                        <Space direction={isMobile ? 'vertical' : 'horizontal'} style={{ width: '100%', marginBottom: 16 }} size="middle">
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: isMobile ? 'column' : 'row',
+                            gap: isMobile ? '12px' : '16px',
+                            width: '100%',
+                            marginBottom: 16
+                        }}>
                             <Button
                                 type="primary"
                                 size="large"
                                 icon={<FileTextOutlined />}
                                 onClick={handleViewGuide}
-                                block={isMobile}
                                 style={{
                                     height: 48,
                                     fontSize: 16,
-                                    flex: isMobile ? 'none' : 1
+                                    width: isMobile ? '100%' : '50%'
                                 }}
                             >
                                 View Guide
@@ -271,16 +276,15 @@ const DigitalGuideSuccess = () => {
                                 size="large"
                                 icon={<CodeOutlined />}
                                 onClick={handleOpenJson}
-                                block={isMobile}
                                 style={{
                                     height: 48,
                                     fontSize: 16,
-                                    flex: isMobile ? 'none' : 1
+                                    width: isMobile ? '100%' : '50%'
                                 }}
                             >
                                 Open JSON
                             </Button>
-                        </Space>
+                        </div>
 
                         <Paragraph style={{ marginTop: 16, fontSize: 12, color: '#999', textAlign: 'center' }}>
                             You can access this guide anytime using your transaction details.
