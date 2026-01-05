@@ -9,6 +9,7 @@ import smallLogo from '../../assets/small_logo.png';
 import largeLogo from '../../assets/large_logo.png';
 import { BiUser } from 'react-icons/bi';
 import { MdEmail } from 'react-icons/md';
+import { ApiOutlined, PhoneOutlined } from '@ant-design/icons';
 
 const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
   const navigate = useNavigate();
@@ -31,11 +32,18 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
   useEffect(() => {
     const path = location.pathname.split('/');
     const menuKey = (path[1] === 'admin-dashboard' || path[1] === 'dashboard') ? 'admin-dashboard' : (path[1] || 'admin-dashboard');
-    setSelectedMenu(menuKey);
-    if (path[1].includes('reports')) {
-      setOpenKeys(['reports']);
+
+    // Handle nested routes
+    if (path[1] === 'api-access' && path[2]) {
+      setSelectedMenu(`api-access/${path[2]}`);
+      setOpenKeys(['api-access']);
     } else {
-      setOpenKeys([]);
+      setSelectedMenu(menuKey);
+      if (path[1].includes('reports')) {
+        setOpenKeys(['reports']);
+      } else {
+        setOpenKeys([]);
+      }
     }
   }, [location.pathname]);
 
@@ -107,6 +115,26 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
       key: 'all-requests',
       icon: <MdEmail {...iconProps} />,
       label: 'All Requests',
+    },
+    {
+      key: 'all-contacts',
+      icon: <PhoneOutlined style={iconStyle} />,
+      label: 'Contact',
+    },
+    {
+      key: 'api-access',
+      icon: <ApiOutlined style={iconStyle} />,
+      label: 'API Access',
+      children: [
+        {
+          key: 'api-access/dashboard',
+          label: 'Dashboard',
+        },
+        {
+          key: 'api-access/list',
+          label: 'API Access List',
+        },
+      ],
     },
     {
       key: 'vendors',

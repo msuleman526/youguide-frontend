@@ -9,21 +9,21 @@ import moment from 'moment';
 
 const { Title } = Typography;
 
-const AllRequests = () => {
+const AllContacts = () => {
   const theme = useRecoilValue(themeState);
-  const [requests, setRequests] = useState([]);
+  const [contacts, setContacts] = useState([]);
   const [stats, setStats] = useState({});
   const [pagination, setPagination] = useState({ current: 1, pageSize: 20, total: 0 });
   const [tableLoading, setTableLoading] = useState(false);
 
-  // Fetch contact requests
-  const fetchRequests = async (page = 1, limit = 20) => {
+  // Fetch contacts
+  const fetchContacts = async (page = 1, limit = 20) => {
     try {
       setTableLoading(true);
-      const response = await ApiService.getAllRequests(page, limit);
+      const response = await ApiService.getAllContacts(page, limit);
 
       if (response.success) {
-        setRequests(response.data);
+        setContacts(response.data);
         setStats(response.stats || {});
         setPagination({
           current: response.pagination?.page || 1,
@@ -34,17 +34,17 @@ const AllRequests = () => {
       setTableLoading(false);
     } catch (error) {
       setTableLoading(false);
-      message.error(error?.response?.data?.message || 'Failed to fetch contact requests.');
-      setRequests([]);
+      message.error(error?.response?.data?.message || 'Failed to fetch contacts.');
+      setContacts([]);
     }
   };
 
   useEffect(() => {
-    fetchRequests();
+    fetchContacts();
   }, []);
 
   const handleTableChange = (newPagination) => {
-    fetchRequests(newPagination.current, newPagination.pageSize);
+    fetchContacts(newPagination.current, newPagination.pageSize);
   };
 
   const getStatusColor = (status) => {
@@ -58,22 +58,15 @@ const AllRequests = () => {
 
   const columns = [
     {
-      title: 'Full Name',
-      dataIndex: 'full_name',
-      key: 'full_name',
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
       width: 150,
-    },
-    {
-      title: 'Company',
-      dataIndex: 'company_name',
-      key: 'company_name',
-      width: 150,
-      render: (text) => text || 'N/A',
     },
     {
       title: 'Email',
-      dataIndex: 'email_address',
-      key: 'email_address',
+      dataIndex: 'email',
+      key: 'email',
       width: 200,
     },
     {
@@ -84,11 +77,12 @@ const AllRequests = () => {
       render: (text) => text || 'N/A',
     },
     {
-      title: 'Interested In',
-      dataIndex: 'interested_id',
-      key: 'interested_id',
-      width: 180,
+      title: 'Message',
+      dataIndex: 'message',
+      key: 'message',
+      width: 250,
       render: (text) => text || 'N/A',
+      ellipsis: true,
     },
     {
       title: 'Status',
@@ -113,14 +107,6 @@ const AllRequests = () => {
       ),
     },
     {
-      title: 'Additional Info',
-      dataIndex: 'additional_information',
-      key: 'additional_information',
-      width: 200,
-      render: (text) => text || 'N/A',
-      ellipsis: true,
-    },
-    {
       title: 'Submitted',
       dataIndex: 'createdAt',
       key: 'createdAt',
@@ -132,14 +118,14 @@ const AllRequests = () => {
 
   return (
     <div>
-      <Title level={2}>All Requests</Title>
+      <Title level={2}>All Contacts</Title>
 
       {/* Stats Cards */}
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
-              title="Total Requests"
+              title="Total Contacts"
               value={stats.total || 0}
               prefix={<MailOutlined />}
               valueStyle={{ color: '#1890ff' }}
@@ -178,17 +164,17 @@ const AllRequests = () => {
         </Col>
       </Row>
 
-      {/* Requests Table */}
+      {/* Contacts Table */}
       <CustomCard theme={theme}>
         <Table
           columns={columns}
-          dataSource={requests}
+          dataSource={contacts}
           loading={tableLoading}
           rowKey="_id"
           pagination={{
             ...pagination,
             showSizeChanger: true,
-            showTotal: (total) => `Total ${total} requests`,
+            showTotal: (total) => `Total ${total} contacts`,
             pageSizeOptions: ['10', '20', '50', '100'],
           }}
           onChange={handleTableChange}
@@ -199,4 +185,4 @@ const AllRequests = () => {
   );
 };
 
-export default AllRequests;
+export default AllContacts;

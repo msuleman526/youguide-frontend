@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import { Card, Form, Input, Select, Button, message, Row, Col, Typography } from 'antd';
+import { Card, Form, Input, Button, message, Row, Col, Typography } from 'antd';
 import { SendOutlined } from '@ant-design/icons';
 import ApiService from '../APIServices/ApiService';
 import logo from '../assets/large_logo.png';
 
 const { TextArea } = Input;
-const { Option } = Select;
 const { Title } = Typography;
 
-const RequestForm = () => {
+const ContactForm = () => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
 
@@ -17,24 +16,22 @@ const RequestForm = () => {
             setLoading(true);
 
             const payload = {
-                full_name: values.full_name,
-                company_name: values.company_name || undefined,
-                email_address: values.email_address,
+                name: values.name,
+                email: values.email,
                 phone_no: values.phone_no || undefined,
-                interested_id: values.interested_id || undefined,
-                additional_information: values.additional_information || undefined
+                message: values.message
             };
 
             // Remove undefined values
             Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
 
-            const response = await ApiService.submitRequest(payload);
+            const response = await ApiService.submitContact(payload);
 
-            message.success('Your request has been submitted successfully!');
+            message.success('Your message has been sent successfully!');
             form.resetFields();
         } catch (error) {
-            console.error('Error submitting request:', error);
-            message.error(error.response?.data?.message || 'Failed to submit request. Please try again.');
+            console.error('Error submitting contact:', error);
+            message.error(error.response?.data?.message || 'Failed to send message. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -72,7 +69,7 @@ const RequestForm = () => {
                 }}
             >
                 <Title level={3} style={{ textAlign: 'center', marginBottom: 24 }}>
-                    Submit Your Request
+                    Contact Us
                 </Title>
 
                 <Form
@@ -81,90 +78,63 @@ const RequestForm = () => {
                     onFinish={handleSubmit}
                     autoComplete="off"
                 >
-                    {/* Row 1: Full Name & Company Name */}
+                    {/* Row 1: Name & Email */}
                     <Row gutter={16}>
                         <Col xs={24} sm={12}>
                             <Form.Item
-                                label="Full Name"
-                                name="full_name"
+                                label="Name"
+                                name="name"
                                 rules={[
-                                    { required: true, message: 'Please enter your full name' },
-                                    { min: 2, message: 'Full name must be at least 2 characters' }
+                                    { required: true, message: 'Please enter your name' },
+                                    { min: 2, message: 'Name must be at least 2 characters' }
                                 ]}
                             >
                                 <Input
-                                    placeholder="Enter your full name"
+                                    placeholder="Enter your name"
                                     size="large"
                                 />
                             </Form.Item>
                         </Col>
                         <Col xs={24} sm={12}>
                             <Form.Item
-                                label="Company Name"
-                                name="company_name"
-                            >
-                                <Input
-                                    placeholder="Enter your company name"
-                                    size="large"
-                                />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-
-                    {/* Row 2: Email Address & Phone No */}
-                    <Row gutter={16}>
-                        <Col xs={24} sm={12}>
-                            <Form.Item
-                                label="Email Address"
-                                name="email_address"
+                                label="Email"
+                                name="email"
                                 rules={[
-                                    { required: true, message: 'Please enter your email address' },
+                                    { required: true, message: 'Please enter your email' },
                                     { type: 'email', message: 'Please enter a valid email address' }
                                 ]}
                             >
                                 <Input
-                                    placeholder="Enter your email address"
-                                    size="large"
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={12}>
-                            <Form.Item
-                                label="Phone No"
-                                name="phone_no"
-                            >
-                                <Input
-                                    placeholder="Enter your phone number"
+                                    placeholder="Enter your email"
                                     size="large"
                                 />
                             </Form.Item>
                         </Col>
                     </Row>
 
-                    {/* Row 3: I am interested in (Dropdown) */}
+                    {/* Row 2: Phone */}
                     <Form.Item
-                        label="I am interested in"
-                        name="interested_id"
+                        label="Phone No"
+                        name="phone_no"
                     >
-                        <Select
-                            placeholder="Select an option"
+                        <Input
+                            placeholder="Enter your phone number"
                             size="large"
-                            allowClear
-                        >
-                            <Option value="Platform Demo">Platform Demo</Option>
-                            <Option value="Free Trial">Free Trial</Option>
-                            <Option value="Both Free Trial and Demo">Both Free Trial and Demo</Option>
-                        </Select>
+                        />
                     </Form.Item>
 
-                    {/* Row 4: Additional Notes */}
+                    {/* Row 3: Message */}
                     <Form.Item
-                        label="Additional Notes"
-                        name="additional_information"
+                        label="Message"
+                        name="message"
+                        rules={[
+                            { required: true, message: 'Please enter your message' },
+                            { min: 10, message: 'Message must be at least 10 characters' }
+                        ]}
                     >
                         <TextArea
-                            placeholder="Enter any additional information or questions"
-                            rows={4}
+                            placeholder="Enter your message"
+                            rows={5}
                             size="large"
                         />
                     </Form.Item>
@@ -184,7 +154,7 @@ const RequestForm = () => {
                                 fontWeight: 500
                             }}
                         >
-                            Submit Your Request
+                            Send Message
                         </Button>
                     </Form.Item>
                 </Form>
@@ -193,4 +163,4 @@ const RequestForm = () => {
     );
 };
 
-export default RequestForm;
+export default ContactForm;

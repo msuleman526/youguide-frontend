@@ -136,7 +136,7 @@ Core Concept
 
   | Method | Endpoint                  | Purpose                       | Request Body/Query                                                                                                 |
   |--------|---------------------------|-------------------------------|--------------------------------------------------------------------------------------------------------------------|
-  | GET    | /api/api-access           | List all API access tokens    | Query: page, limit, type, payment_type                                                                             |
+  | GET    | /api/api-access           | List all API access tokens    | Query: page, limit, type, payment_type, user_id                                                                    |
   | POST   | /api/api-access           | Create new API access token   | Body: { name, company_name, user_id?, end_date, allowed_travel_guides, type, payment_type, categories[] }          |
   | GET    | /api/api-access/:id       | Get single API access details | -                                                                                                                  |
   | PUT    | /api/api-access/:id       | Update API access token       | Body: { name?, company_name?, end_date?, allowed_travel_guides?, categories[]? } (cannot change type/payment_type) |
@@ -765,8 +765,282 @@ Core Concept
   |                 | /api/travel-guides/digital/secure/data           | GET    | Bearer (html_json+paid) | Get JSON            |
   |                 | /api/travel-guides/digital/secure/view           | GET    | Bearer (html_json+paid) | View HTML           |
   | Webhook         | /webhook/api-access                              | POST   | Stripe signature        | Payment complete    |
+  | Request Form    | /api/request                                     | POST   | Public (no auth)        | Submit request form |
+  | Request Admin   | /api/requests/admin/list                         | GET    | JWT Admin               | List all requests   |
+  |                 | /api/requests/admin/:id                          | GET    | JWT Admin               | Get request details |
+  |                 | /api/requests/admin/:id                          | PUT    | JWT Admin               | Update request      |
+  |                 | /api/requests/admin/:id                          | DELETE | JWT Admin               | Delete request      |
+  | Contact Form    | /api/contact                                     | POST   | Public (no auth)        | Submit contact form |
+  | Contact Admin   | /api/contact/admin/list                          | GET    | JWT Admin               | List all contacts   |
+  |                 | /api/contact/admin/:id                           | GET    | JWT Admin               | Get contact details |
+  |                 | /api/contact/admin/:id                           | PUT    | JWT Admin               | Update contact      |
+  |                 | /api/contact/admin/:id                           | DELETE | JWT Admin               | Delete contact      |
 
-  Total: 20 endpoints (7 admin + 5 common + 8 client-facing)
+  Total: 30 endpoints (11 admin + 5 common + 8 client-facing + 2 public + 4 request admin + 4 contact admin)
+
+  ---
+  8️⃣ Request Form API
+
+  8.1 Public Request Form Submission
+
+  No authentication required
+
+  | Method | Endpoint      | Purpose                            |
+  |--------|---------------|------------------------------------|
+  | POST   | /api/request  | Submit request form from admin portal |
+
+  Request Body:
+  {
+    "full_name": "John Doe",              // Required
+    "company_name": "Tech Corp",          // Optional
+    "email_address": "john@example.com",  // Required (validated)
+    "phone_no": "+1234567890",            // Optional
+    "interested_id": "API Access",        // Optional (text field for interest area)
+    "additional_information": "..."       // Optional (free text)
+  }
+
+  Process:
+  1. Validates full_name and email_address (required fields)
+  2. Validates email format
+  3. Saves request to database (Request collection)
+  4. Creates formatted HTML email template
+  5. Sends email:
+     - TO: Affiliates@youguide.com
+     - CC: msuleman526@gmail.com
+     - Subject: "Request from Youguide Admin Portal"
+     - Reply-To: customer's email for easy response
+  6. Returns success with request_id
+
+  Response (Success):
+  {
+    "success": true,
+    "message": "Request form submitted successfully. We will get back to you soon!",
+    "data": {
+      "request_id": "request_id_here"
+    }
+  }
+
+  Response (Validation Error):
+  {
+    "success": false,
+    "error": "Validation error",
+    "message": "Full name and email address are required fields"
+  }
+
+  Response (Server Error):
+  {
+    "success": false,
+    "error": "Server error",
+    "message": "Failed to submit request form. Please try again later."
+  }
+
+  Email Template Features:
+  - Professional gradient header with YouGuide branding
+  - Organized request information in a table format
+  - Separate section for additional information (if provided)
+  - Direct "Reply to Request" button
+  - Timestamp of submission
+  - Responsive HTML design
+
+  8.2 Admin Request Management APIs
+
+  Authentication: JWT (Admin)
+
+  | Method | Endpoint                   | Purpose                      | Request/Query                                            |
+  |--------|----------------------------|------------------------------|----------------------------------------------------------|
+  | GET    | /api/requests/admin/list   | List all requests with stats | Query: page, limit, status, is_read, search              |
+  | GET    | /api/requests/admin/:id    | Get single request details   | -                                                        |
+  | PUT    | /api/requests/admin/:id    | Update request status/notes  | Body: { status?, notes?, is_read? }                      |
+  | DELETE | /api/requests/admin/:id    | Delete request               | -                                                        |
+
+  Request Model Fields:
+  - full_name (String, required)
+  - company_name (String, optional)
+  - email_address (String, required)
+  - phone_no (String, optional)
+  - interested_id (String, optional)
+  - additional_information (String, optional)
+  - status (Enum: 'new', 'contacted', 'in_progress', 'resolved', 'closed', default: 'new')
+  - notes (String, optional) - Admin notes
+  - is_read (Boolean, default: false)
+  - createdAt, updatedAt (timestamps)
+
+  GET /api/requests/admin/list Response:
+  {
+    "success": true,
+    "data": [
+      {
+        "_id": "request_id",
+        "full_name": "John Doe",
+        "company_name": "Tech Corp",
+        "email_address": "john@example.com",
+        "phone_no": "+1234567890",
+        "interested_id": "API Access",
+        "additional_information": "Need info about pricing",
+        "status": "new",
+        "notes": null,
+        "is_read": false,
+        "createdAt": "2026-01-05T10:00:00.000Z",
+        "updatedAt": "2026-01-05T10:00:00.000Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 150,
+      "pages": 8
+    },
+    "stats": {
+      "total": 150,
+      "unread": 45,
+      "new": 30,
+      "in_progress": 20,
+      "resolved": 100
+    }
+  }
+
+  Query Parameters for List:
+  - page (optional, default: 1)
+  - limit (optional, default: 20)
+  - status (optional) - Filter by status: 'new', 'contacted', 'in_progress', 'resolved', 'closed'
+  - is_read (optional) - Filter by read status: 'true' or 'false'
+  - search (optional) - Search in full_name, company_name, email_address, phone_no
+
+  PUT /api/requests/admin/:id Request Body:
+  {
+    "status": "in_progress",     // Optional: 'new', 'contacted', 'in_progress', 'resolved', 'closed'
+    "notes": "Called customer",  // Optional: Admin notes
+    "is_read": true              // Optional: Mark as read/unread
+  }
+
+  ---
+  9️⃣ Contact Form API (Simple)
+
+  9.1 Public Contact Form Submission
+
+  No authentication required
+
+  | Method | Endpoint      | Purpose                                     |
+  |--------|---------------|---------------------------------------------|
+  | POST   | /api/contact  | Submit simple contact form from admin portal |
+
+  Request Body:
+  {
+    "name": "John Doe",                   // Required
+    "email": "john@example.com",          // Required (validated)
+    "phone": "+1234567890",               // Optional
+    "message": "I need help with..."      // Required
+  }
+
+  Process:
+  1. Validates name, email, and message (required fields)
+  2. Validates email format
+  3. Saves contact to database (Contact collection)
+  4. Creates formatted HTML email template
+  5. Sends email:
+     - TO: Affiliates@youguide.com
+     - CC: msuleman526@gmail.com
+     - Subject: "New Contact from Youguide Admin Portal"
+     - Reply-To: customer's email for easy response
+  6. Returns success with contact_id
+
+  Response (Success):
+  {
+    "success": true,
+    "message": "Contact form submitted successfully. We will get back to you soon!",
+    "data": {
+      "contact_id": "contact_id_here"
+    }
+  }
+
+  Response (Validation Error):
+  {
+    "success": false,
+    "error": "Validation error",
+    "message": "Name, email, and message are required fields"
+  }
+
+  Response (Server Error):
+  {
+    "success": false,
+    "error": "Server error",
+    "message": "Failed to submit contact form. Please try again later."
+  }
+
+  Email Template Features:
+  - Professional gradient header with YouGuide branding
+  - Contact information in a table format
+  - Message section with proper formatting
+  - Direct "Reply to Contact" button
+  - Timestamp of submission
+  - Responsive HTML design
+
+  9.2 Admin Contact Management APIs
+
+  Authentication: JWT (Admin)
+
+  | Method | Endpoint                  | Purpose                      | Request/Query                                            |
+  |--------|---------------------------|------------------------------|----------------------------------------------------------|
+  | GET    | /api/contact/admin/list   | List all contacts with stats | Query: page, limit, status, is_read, search              |
+  | GET    | /api/contact/admin/:id    | Get single contact details   | -                                                        |
+  | PUT    | /api/contact/admin/:id    | Update contact status/notes  | Body: { status?, notes?, is_read? }                      |
+  | DELETE | /api/contact/admin/:id    | Delete contact               | -                                                        |
+
+  Contact Model Fields:
+  - name (String, required)
+  - email (String, required)
+  - phone (String, optional)
+  - message (String, required)
+  - status (Enum: 'new', 'contacted', 'in_progress', 'resolved', 'closed', default: 'new')
+  - notes (String, optional) - Admin notes
+  - is_read (Boolean, default: false)
+  - createdAt, updatedAt (timestamps)
+
+  GET /api/contact/admin/list Response:
+  {
+    "success": true,
+    "data": [
+      {
+        "_id": "contact_id",
+        "name": "John Doe",
+        "email": "john@example.com",
+        "phone": "+1234567890",
+        "message": "I need help with...",
+        "status": "new",
+        "notes": null,
+        "is_read": false,
+        "createdAt": "2026-01-05T10:00:00.000Z",
+        "updatedAt": "2026-01-05T10:00:00.000Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 150,
+      "pages": 8
+    },
+    "stats": {
+      "total": 150,
+      "unread": 45,
+      "new": 30,
+      "in_progress": 20,
+      "resolved": 100
+    }
+  }
+
+  Query Parameters for List:
+  - page (optional, default: 1)
+  - limit (optional, default: 20)
+  - status (optional) - Filter by status: 'new', 'contacted', 'in_progress', 'resolved', 'closed'
+  - is_read (optional) - Filter by read status: 'true' or 'false'
+  - search (optional) - Search in name, email, phone
+
+  PUT /api/contact/admin/:id Request Body:
+  {
+    "status": "in_progress",     // Optional: 'new', 'contacted', 'in_progress', 'resolved', 'closed'
+    "notes": "Called customer",  // Optional: Admin notes
+    "is_read": true              // Optional: Mark as read/unread
+  }
 
   ---
   🎨 HTML Rendering from JSON
