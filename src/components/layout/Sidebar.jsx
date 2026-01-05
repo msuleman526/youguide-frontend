@@ -8,6 +8,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import smallLogo from '../../assets/small_logo.png';
 import largeLogo from '../../assets/large_logo.png';
 import { BiUser } from 'react-icons/bi';
+import { MdEmail } from 'react-icons/md';
 
 const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
   const navigate = useNavigate();
@@ -101,6 +102,11 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
       key: 'transactions',
       icon: <FaCog {...iconProps} />,
       label: 'Transactions',
+    },
+    {
+      key: 'all-requests',
+      icon: <MdEmail {...iconProps} />,
+      label: 'All Requests',
     },
     {
       key: 'vendors',
