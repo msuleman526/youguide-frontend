@@ -118,9 +118,22 @@ const ApiAccessList = () => {
     const handleAddSubmit = async (values) => {
         try {
             const payload = {
-                ...values,
+                name: values.name,
+                company_name: values.company_name,
+                type: values.type,
+                payment_type: values.payment_type,
+                allowed_travel_guides: values.allowed_travel_guides,
                 end_date: values.end_date.format('YYYY-MM-DD'),
+                categories: values.categories,
             };
+
+            // Only add user_id if it's selected
+            if (values.user_id) {
+                payload.user_id = values.user_id;
+            }
+
+            console.log('Submitting payload:', payload); // Debug log
+
             await ApiService.createApiAccessToken(payload);
             message.success('Token created successfully');
             setAddModalVisible(false);
