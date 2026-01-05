@@ -55,7 +55,8 @@ const AffiliateSidebar = ({ collapsed, drawerVisible, setDrawerVisible, affiliat
     } else if (key === 'my-hotels') {
       navigate(`/affiliate-hotels/${affiliate?.id}`);
     } else if (key === 'api-access-dashboard') {
-      navigate(`/affiliate-api-access/${affiliate?.id}`);
+      let user = JSON.parse(localStorage.getItem('affiliateUser'));
+      navigate(`/affiliate-api-access/${user?.id}`);
     }
     setSelectedMenu(key);
     if (isMobile) {

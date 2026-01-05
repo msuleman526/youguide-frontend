@@ -43,8 +43,11 @@ const AffiliateApiAccessDashboard = () => {
                 if (response.data.length > 0) {
                     setSelectedTokenId(response.data[0]._id);
                 }
+            } else {
+                setTokens([])
             }
         } catch (error) {
+            setTokens([])
             message.error('Failed to fetch API tokens');
         }
     };
@@ -137,6 +140,14 @@ const AffiliateApiAccessDashboard = () => {
             <div style={{ textAlign: 'center', padding: '100px 0' }}>
                 <Spin size="large" />
                 <Text style={{ display: 'block', marginTop: 16 }}>Loading dashboard...</Text>
+            </div>
+        );
+    }
+
+    if (!loading && tokens.length === 0) {
+        return (
+            <div style={{ textAlign: 'center', padding: '100px 0' }}>
+                <Text style={{ display: 'block', marginTop: 16 }}>No Dashboard Available...</Text>
             </div>
         );
     }
