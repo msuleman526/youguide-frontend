@@ -38,6 +38,8 @@ import VideoGenerator from './pages/VideoGenerator'
 import PDFGenerator from './pages/PDFGenerator'
 import Teams from './pages/Teams'
 import PrivacyPolicy from './pages/PrivacyPolicy'
+import RequestForm from './pages/RequestForm'
+import AllRequests from './pages/Requests/AllRequests'
 
 const App = () => {
   return (
@@ -48,6 +50,7 @@ const App = () => {
         <Route path="/affiliate-login" element={<Login />} /> {/* Unified login for affiliates too */}
         <Route path="/travel-guides/:id" element={<GuidePreview />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/request-form" element={<RequestForm />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/payment/cancel" element={<PaymentError />} />
         <Route path="/guide-success/pdf" element={<PdfGuideSuccess />} />
@@ -80,6 +83,7 @@ const App = () => {
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/users" element={<Users />} />
           <Route path="/books" element={<Books />} />
+          <Route path="/all-requests" element={<AllRequests />} />
         </Route>
 
         {/* Affiliate Layout Routes */}

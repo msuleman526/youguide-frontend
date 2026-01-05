@@ -1333,6 +1333,36 @@ class ApiService {
             throw error;
         }
     }
+
+    static async submitContactRequest(data) {
+        try {
+            const response = await axios.post(`${this.baseURL}/contact`, data, {
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error submitting contact request:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getAllContactRequests(page = 1, limit = 20) {
+        try {
+            const response = await axios.get(`${this.baseURL}/contact/admin/list`, {
+                params: { page, limit },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching contact requests:', error.response?.data || error.message);
+            throw error;
+        }
+    }
 }
 
 export default ApiService;
