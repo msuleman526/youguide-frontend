@@ -45,6 +45,7 @@ import ContactForm from './pages/ContactForm'
 import AllContacts from './pages/Contact/AllContacts'
 import ApiAccessDashboard from './pages/ApiAccess/ApiAccessDashboard'
 import ApiAccessList from './pages/ApiAccess/ApiAccessList'
+import ApiDocumentation from './pages/ApiDocumentation/ApiDocumentation'
 
 const App = () => {
   return (
@@ -57,6 +58,7 @@ const App = () => {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/request-form" element={<RequestForm />} />
         <Route path="/contact" element={<ContactForm />} />
+        <Route path="/api-documentation" element={<ApiDocumentation />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/payment/cancel" element={<PaymentError />} />
         <Route path="/guide-success/pdf" element={<PdfGuideSuccess />} />
