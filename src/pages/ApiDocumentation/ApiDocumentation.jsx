@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Layout, Menu, Typography, Card, Tag, Divider, Space, Button } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Layout, Menu, Typography, Card, Tag, Divider, Space, Button, Drawer } from 'antd';
 import {
   ApiOutlined,
   FileTextOutlined,
@@ -7,6 +7,7 @@ import {
   CodeOutlined,
   DollarOutlined,
   FreeOutlined,
+  MenuOutlined,
 } from '@ant-design/icons';
 import './ApiDocumentation.css';
 
@@ -16,6 +17,21 @@ const { Title, Paragraph, Text } = Typography;
 const ApiDocumentation = () => {
   const [selectedSection, setSelectedSection] = useState('overview');
   const [collapsed, setCollapsed] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileDrawerVisible, setMobileDrawerVisible] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) {
+        setMobileDrawerVisible(false);
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const BASE_URL = 'https://appapi.youguide.com';
 
@@ -46,6 +62,13 @@ const ApiDocumentation = () => {
       label: 'HTML/JSON Paid API',
     },
   ];
+
+  const handleMenuClick = ({ key }) => {
+    setSelectedSection(key);
+    if (isMobile) {
+      setMobileDrawerVisible(false);
+    }
+  };
 
   const renderApiEndpoint = (method, endpoint, description, params = [], response = '') => (
     <Card className="api-card" style={{ marginBottom: 24 }}>
@@ -675,37 +698,89 @@ const ApiDocumentation = () => {
     }
   };
 
+  const renderSidebarContent = () => (
+    <>
+      <div className="api-doc-logo">
+        <Title level={4} style={{ color: '#fff', margin: '16px', textAlign: 'center' }}>
+          {!isMobile && collapsed ? 'API' : 'YouGuide API'}
+        </Title>
+      </div>
+      <Menu
+        theme="dark"
+        mode="inline"
+        selectedKeys={[selectedSection]}
+        items={menuItems}
+        onClick={handleMenuClick}
+      />
+    </>
+  );
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider
-        collapsible
-        collapsed={collapsed}
-        onCollapse={setCollapsed}
-        width={250}
-        style={{
-          background: '#001529',
-          position: 'fixed',
-          left: 0,
-          top: 0,
-          bottom: 0,
-          overflow: 'auto',
-        }}
-      >
-        <div className="api-doc-logo">
-          <Title level={4} style={{ color: '#fff', margin: '16px', textAlign: 'center' }}>
-            {collapsed ? 'API' : 'YouGuide API'}
-          </Title>
-        </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[selectedSection]}
-          items={menuItems}
-          onClick={({ key }) => setSelectedSection(key)}
-        />
-      </Sider>
-      <Layout style={{ marginLeft: collapsed ? 80 : 250, transition: 'margin-left 0.2s' }}>
-        <Content style={{ padding: '24px', background: '#f0f2f5', minHeight: '100vh' }}>
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <Sider
+          collapsible
+          collapsed={collapsed}
+          onCollapse={setCollapsed}
+          width={250}
+          className="desktop-sidebar"
+          style={{
+            background: '#001529',
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            overflow: 'auto',
+          }}
+        >
+          {renderSidebarContent()}
+        </Sider>
+      )}
+
+      {/* Mobile Drawer */}
+      {isMobile && (
+        <Drawer
+          title="YouGuide API"
+          placement="left"
+          onClose={() => setMobileDrawerVisible(false)}
+          open={mobileDrawerVisible}
+          className="mobile-drawer"
+          styles={{
+            body: { padding: 0, background: '#001529' },
+            header: { background: '#001529', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.1)' }
+          }}
+        >
+          <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[selectedSection]}
+            items={menuItems}
+            onClick={handleMenuClick}
+            style={{ background: '#001529', border: 'none' }}
+          />
+        </Drawer>
+      )}
+
+      <Layout style={{ marginLeft: !isMobile ? (collapsed ? 80 : 250) : 0, transition: 'margin-left 0.2s' }}>
+        {/* Mobile Header with Menu Button */}
+        {isMobile && (
+          <div className="mobile-header">
+            <Button
+              type="primary"
+              icon={<MenuOutlined />}
+              onClick={() => setMobileDrawerVisible(true)}
+              className="mobile-menu-btn"
+            >
+              Menu
+            </Button>
+            <Title level={4} style={{ margin: 0, color: '#001529' }}>
+              YouGuide API Docs
+            </Title>
+          </div>
+        )}
+
+        <Content className="api-content" style={{ padding: isMobile ? '16px' : '24px', background: '#f0f2f5', minHeight: '100vh' }}>
           <div style={{ maxWidth: 1200, margin: '0 auto' }}>
             {renderContent()}
           </div>

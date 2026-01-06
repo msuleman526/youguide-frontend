@@ -14,6 +14,7 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
 .code-block {
@@ -24,6 +25,7 @@
   overflow-x: auto;
   font-family: 'Courier New', Courier, monospace;
   font-size: 13px;
+  max-width: 100%;
 }
 
 .code-block code {
@@ -31,6 +33,7 @@
   border: none;
   padding: 0;
   color: #c7254e;
+  word-break: break-all;
 }
 
 .code-block pre {
@@ -38,15 +41,153 @@
   color: #333;
   white-space: pre-wrap;
   word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
+.mobile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.mobile-menu-btn {
+  flex-shrink: 0;
+}
+
+.desktop-sidebar {
+  z-index: 200;
+}
+
+.mobile-drawer .ant-drawer-body {
+  padding: 0;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
-  .ant-layout-sider {
-    position: fixed !important;
-    z-index: 999;
+  .api-card {
+    margin-bottom: 16px !important;
+  }
+
+  .api-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .code-block {
+    font-size: 11px;
+    padding: 8px;
+  }
+
+  .ant-card {
+    border-radius: 4px;
+  }
+
+  .ant-card-body {
+    padding: 16px;
+  }
+
+  .ant-typography {
+    font-size: 14px;
+  }
+
+  h1.ant-typography {
+    font-size: 24px !important;
+  }
+
+  h2.ant-typography {
+    font-size: 20px !important;
+  }
+
+  h3.ant-typography {
+    font-size: 18px !important;
+  }
+
+  h4.ant-typography {
+    font-size: 16px !important;
+  }
+
+  .ant-space-vertical {
+    gap: 12px !important;
+  }
+
+  .ant-divider {
+    margin: 16px 0;
+  }
+
+  .api-content {
+    padding: 12px !important;
+  }
+
+  .mobile-header h4 {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-header {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .mobile-header h4 {
+    font-size: 14px;
+  }
+
+  .api-content {
+    padding: 8px !important;
+  }
+
+  .code-block {
+    font-size: 10px;
+    padding: 6px;
+  }
+
+  .ant-card-body {
+    padding: 12px;
+  }
+
+  h1.ant-typography {
+    font-size: 20px !important;
+  }
+
+  h2.ant-typography {
+    font-size: 18px !important;
+  }
+
+  h3.ant-typography {
+    font-size: 16px !important;
+  }
+
+  h4.ant-typography {
+    font-size: 14px !important;
+  }
+
+  .ant-tag {
+    font-size: 11px;
+    padding: 0 4px;
+  }
+}
+
+/* Ensure proper scrolling on mobile */
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
   }
 
   .ant-layout {
-    margin-left: 80px !important;
+    overflow-x: hidden;
+  }
+
+  .api-content > div {
+    max-width: 100%;
+    overflow-x: hidden;
   }
 }
