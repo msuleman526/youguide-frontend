@@ -49,7 +49,7 @@ const ApiDocumentation = () => {
     {
       key: 'pdf-free',
       icon: <FilePdfOutlined />,
-      label: 'PDF Free API',
+      label: 'PDF Pre-Paid API',
     },
     {
       key: 'pdf-paid',
@@ -59,7 +59,7 @@ const ApiDocumentation = () => {
     {
       key: 'html-json-free',
       icon: <CodeOutlined />,
-      label: 'HTML/JSON Free API',
+      label: 'HTML/JSON Pre-Paid API',
     },
     {
       key: 'html-json-paid',
@@ -273,7 +273,7 @@ const ApiDocumentation = () => {
         <Title level={4}>Payment Types</Title>
         <Space direction="vertical" size="small" style={{ width: '100%' }}>
           <div>
-            <Tag color="cyan">Free Tokens</Tag>
+            <Tag color="cyan">Pre-Paid Tokens</Tag>
             <Text>Access /content/* endpoints with pre-paid quota</Text>
           </div>
           <div>
@@ -285,7 +285,7 @@ const ApiDocumentation = () => {
 
       <Card>
         <Title level={4}>Business Flow</Title>
-        <Paragraph><strong>For Free Access (payment_type=free):</strong></Paragraph>
+        <Paragraph><strong>For Pre-Paid Access (payment_type=free):</strong></Paragraph>
         <ol>
           <li>Admin creates token with pre-paid quota (e.g., 100 guides)</li>
           <li>Client uses token to access guides directly via /content endpoints</li>
@@ -307,7 +307,7 @@ const ApiDocumentation = () => {
 
   const renderPdfFreeApis = () => (
     <div>
-      <Title level={2}>PDF Free API</Title>
+      <Title level={2}>PDF Pre-Paid API</Title>
       <Paragraph>
         These endpoints are for tokens with <Tag color="blue">type=pdf</Tag> and <Tag color="cyan">payment_type=free</Tag>
       </Paragraph>
@@ -586,7 +586,7 @@ const ApiDocumentation = () => {
 
   const renderHtmlJsonFreeApis = () => (
     <div>
-      <Title level={2}>HTML/JSON Free API</Title>
+      <Title level={2}>HTML/JSON Pre-Paid API</Title>
       <Paragraph>
         These endpoints are for tokens with <Tag color="green">type=html_json</Tag> and <Tag color="cyan">payment_type=free</Tag>
       </Paragraph>
