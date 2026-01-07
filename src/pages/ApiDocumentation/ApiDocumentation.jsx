@@ -731,7 +731,11 @@ const ApiDocumentation = () => {
         '/api/travel-content/languages',
         'Get supported languages',
         [],
-        `[...]`
+        `[
+  { "name": "English", "code": "en" },
+  { "name": "Arabic", "code": "ar" },
+  { "name": "Chinese", "code": "zh" }
+]`
       )}
 
       {renderApiEndpoint(
@@ -739,15 +743,43 @@ const ApiDocumentation = () => {
         '/api/travel-content/categories',
         'Get categories',
         [],
-        `[...]`
+        `[
+  {
+    "_id": "cat1",
+    "name": "City Trips",
+    "slug": "city-trips",
+    "image": "https://presigned-url..."
+  }
+]`
       )}
 
       {renderApiEndpoint(
         'GET',
         '/api/travel-content/guides',
         'List guides',
-        [],
-        `{...}`
+        [
+          { name: 'category_id', description: 'Filter by category', required: false },
+          { name: 'lang', description: 'Filter by language code', required: false },
+          { name: 'page', description: 'Page number', required: false },
+        ],
+        `{
+  "currentPage": 1,
+  "pageSize": 20,
+  "totalPages": 8,
+  "totalBooks": 150,
+  "books": [
+    {
+      "_id": "guide123",
+      "name": "Amsterdam Travel Guide",
+      "description": "...",
+      "category": { "_id": "cat1", "name": "City Trips" },
+      "city": "Amsterdam",
+      "country": "Netherlands",
+      "price": 9.99,
+      "imagePath": "https://presigned-url..."
+    }
+  ]
+}`
       )}
 
       {renderApiEndpoint(
@@ -757,7 +789,25 @@ const ApiDocumentation = () => {
         [
           { name: 'guideId', description: 'Guide ID', required: true },
         ],
-        `{...}`
+        `{
+  "success": true,
+  "guide": {
+    "_id": "guide123",
+    "name": "Amsterdam Travel Guide",
+    "description": "Complete travel guide for Amsterdam...",
+    "city": "Amsterdam",
+    "country": "Netherlands",
+    "price": 9.99,
+    "category": {
+      "_id": "cat1",
+      "name": "City Trips"
+    },
+    "lang": "English",
+    "lang_short": "en",
+    "has_pdf": true,
+    "has_json": true
+  }
+}`
       )}
 
       <Divider orientation="left">Payment & Digital Content Access</Divider>
@@ -842,11 +892,32 @@ const ApiDocumentation = () => {
       {renderApiEndpoint(
         'GET',
         '/api/travel-content/stats',
-        'Get usage statistics',
+        'Get usage statistics for your token',
         [],
         `{
   "success": true,
-  "data": { ... }
+  "data": {
+    "token_info": {
+      "name": "Client Name",
+      "company_name": "Company Inc",
+      "type": "html_json",
+      "payment_type": "paid",
+      "is_active": true
+    },
+    "usage_summary": {
+      "total_accesses": 150,
+      "unique_guides_accessed": 45,
+      "remaining_quota": 55
+    },
+    "graphs": {
+      "daily_usage": [
+        { "date": "2025-01-01", "count": 10 }
+      ],
+      "category_breakdown": [
+        { "category_name": "City Trips", "count": 80 }
+      ]
+    }
+  }
 }`
       )}
     </div>
