@@ -362,10 +362,14 @@ const ApiDocumentation = () => {
         [],
         `[
   {
-    "_id": "cat1",
+    "_id": "672a73fc3ff8e4cf3ba9084a",
     "name": "City Trips",
     "slug": "city-trips",
-    "image": "https://presigned-url..."
+  },
+  {
+    "_id": "672a73fd3ff8e4cf3ba9084f",
+    "name": "Country Guides",
+    "slug": "country-guides",
   }
 ]`
       )}
@@ -388,14 +392,18 @@ const ApiDocumentation = () => {
   "totalBooks": 150,
   "books": [
     {
-      "_id": "guide123",
+      "_id": "672a73fc3ff8e4cf3ba9084a",
       "name": "Amsterdam Travel Guide",
+      "eng_name": "Amsterdam Travel Guide",
       "description": "Discover the vibrant capital of Netherlands with this comprehensive travel guide. Explore historic canals, world-class museums, charming neighborhoods, and the unique Dutch culture.",
-      "category": { "_id": "cat1", "name": "City Trips" },
+      "category": { "_id": "672a73fc3ff8e4cf3ba9084a", "name": "City Trips" },
       "city": "Amsterdam",
       "country": "Netherlands",
       "price": 9.99,
-      "imagePath": "https://presigned-url..."
+      "imagePath": "https://presigned-url...",
+      "fullCover": "https://presigned-url...",
+      "latitude": 52.3676,
+      "longitude": 4.9041
     }
   ]
 }`
@@ -413,23 +421,30 @@ const ApiDocumentation = () => {
   "guide": {
     "_id": "672a73fc3ff8e4cf3ba9084a",
     "name": "Amsterdam Travel Guide",
-    "description": "Discover the vibrant capital of Netherlands with this comprehensive travel guide. Explore historic canals, world-class museums, charming neighborhoods, and the unique Dutch culture.",
+    "eng_name": "Amsterdam Travel Guide",
+    "description": "Complete travel guide for Amsterdam with historic canals, world-class museums, charming neighborhoods, and unique Dutch culture.",
+    "eng_description": "Complete travel guide for Amsterdam with historic canals, world-class museums, charming neighborhoods, and unique Dutch culture.",
     "city": "Amsterdam",
     "country": "Netherlands",
-    "price": 12.99,
+    "address": "Amsterdam, Netherlands",
+    "latitude": 52.3676,
+    "longitude": 4.9041,
+    "price": 9.99,
+    "status": true,
     "category": {
       "_id": "672a73fc3ff8e4cf3ba9084a",
       "name": "City Trips",
-      "slug": "city-trips"
+      "slug": "city-trips",
+      "description": "Urban exploration guides"
     },
     "lang": "English",
     "lang_short": "en",
+    "imagePath": "https://presigned-url-for-thumbnail...",
+    "fullCover": "https://presigned-url-for-full-cover...",
     "has_pdf": true,
     "has_json": true,
-    "imagePath": "https://s3.wasabisys.com/youguide/covers/amsterdam-cover.jpg",
-    "pages": 156,
-    "createdAt": "2024-11-05T10:30:00.000Z",
-    "updatedAt": "2025-01-05T14:22:00.000Z"
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-02T00:00:00.000Z"
   }
 }`
       )}
@@ -590,21 +605,30 @@ const ApiDocumentation = () => {
   "guide": {
     "_id": "672a73fc3ff8e4cf3ba9084a",
     "name": "Amsterdam Travel Guide",
-    "description": "Discover the vibrant capital of Netherlands with this comprehensive travel guide.",
+    "eng_name": "Amsterdam Travel Guide",
+    "description": "Complete travel guide for Amsterdam with historic canals, world-class museums, charming neighborhoods, and unique Dutch culture.",
+    "eng_description": "Complete travel guide for Amsterdam with historic canals, world-class museums, charming neighborhoods, and unique Dutch culture.",
     "city": "Amsterdam",
     "country": "Netherlands",
-    "price": 12.99,
+    "address": "Amsterdam, Netherlands",
+    "latitude": 52.3676,
+    "longitude": 4.9041,
+    "price": 9.99,
+    "status": true,
     "category": {
       "_id": "672a73fc3ff8e4cf3ba9084a",
       "name": "City Trips",
-      "slug": "city-trips"
+      "slug": "city-trips",
+      "description": "Urban exploration guides"
     },
     "lang": "English",
     "lang_short": "en",
+    "imagePath": "https://presigned-url-for-thumbnail...",
+    "fullCover": "https://presigned-url-for-full-cover...",
     "has_pdf": true,
     "has_json": true,
-    "imagePath": "https://s3.wasabisys.com/youguide/covers/amsterdam-cover.jpg",
-    "pages": 156
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-02T00:00:00.000Z"
   }
 }`
       )}
@@ -726,7 +750,11 @@ const ApiDocumentation = () => {
         'Get allowed categories',
         [],
         `[
-  { "_id": "cat1", "name": "City Trips" }
+  {
+    "_id": "672a73fc3ff8e4cf3ba9084a",
+    "name": "City Trips",
+    "slug": "city-trips",
+  }
 ]`
       )}
 
@@ -747,18 +775,16 @@ const ApiDocumentation = () => {
     {
       "_id": "672a73fc3ff8e4cf3ba9084a",
       "name": "Amsterdam Travel Guide",
+      "eng_name": "Amsterdam Travel Guide",
       "description": "Discover the vibrant capital of Netherlands with this comprehensive travel guide. Explore historic canals, world-class museums, charming neighborhoods, and the unique Dutch culture.",
-      "category": {
-        "_id": "672a73fc3ff8e4cf3ba9084a",
-        "name": "City Trips"
-      },
+      "category": { "_id": "672a73fc3ff8e4cf3ba9084a", "name": "City Trips" },
       "city": "Amsterdam",
       "country": "Netherlands",
-      "price": 12.99,
-      "imagePath": "https://s3.wasabisys.com/youguide/covers/amsterdam-cover.jpg",
-      "lang_short": "en",
-      "has_pdf": true,
-      "has_json": true
+      "price": 9.99,
+      "imagePath": "https://presigned-url...",
+      "fullCover": "https://presigned-url...",
+      "latitude": 52.3676,
+      "longitude": 4.9041
     }
   ]
 }`
@@ -776,21 +802,30 @@ const ApiDocumentation = () => {
   "guide": {
     "_id": "672a73fc3ff8e4cf3ba9084a",
     "name": "Amsterdam Travel Guide",
-    "description": "Discover the vibrant capital of Netherlands with this comprehensive travel guide.",
+    "eng_name": "Amsterdam Travel Guide",
+    "description": "Complete travel guide for Amsterdam with historic canals, world-class museums, charming neighborhoods, and unique Dutch culture.",
+    "eng_description": "Complete travel guide for Amsterdam with historic canals, world-class museums, charming neighborhoods, and unique Dutch culture.",
     "city": "Amsterdam",
     "country": "Netherlands",
-    "price": 12.99,
+    "address": "Amsterdam, Netherlands",
+    "latitude": 52.3676,
+    "longitude": 4.9041,
+    "price": 9.99,
+    "status": true,
     "category": {
       "_id": "672a73fc3ff8e4cf3ba9084a",
       "name": "City Trips",
-      "slug": "city-trips"
+      "slug": "city-trips",
+      "description": "Urban exploration guides"
     },
     "lang": "English",
     "lang_short": "en",
+    "imagePath": "https://presigned-url-for-thumbnail...",
+    "fullCover": "https://presigned-url-for-full-cover...",
     "has_pdf": true,
     "has_json": true,
-    "imagePath": "https://s3.wasabisys.com/youguide/covers/amsterdam-cover.jpg",
-    "pages": 156
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-02T00:00:00.000Z"
   }
 }`
       )}
@@ -816,66 +851,31 @@ const ApiDocumentation = () => {
     "category": "City Trips",
     "language": "en"
   },
-  "content": {
-    "overview": "Welcome to Amsterdam, the vibrant capital of the Netherlands! This guide will help you discover the city's historic canals, world-renowned museums, and unique Dutch culture.",
-    "sections": [
-      {
-        "heading": "1. Introduction",
-        "subheadings": [
-          {
-            "title": "Welcome to Amsterdam",
-            "content": "<p>Amsterdam is a city of contrasts where historic architecture meets modern innovation...</p>"
-          },
-          {
-            "title": "Best Time to Visit",
-            "content": "<p>The best time to visit Amsterdam is during spring (April-May) when tulips are in bloom...</p>"
-          }
-        ]
-      },
-      {
-        "heading": "2. Navigation",
-        "subheadings": [
-          {
-            "title": "Getting Around",
-            "content": "<p>Amsterdam has an excellent public transport system including trams, buses, and metros...</p>"
-          },
-          {
-            "title": "Bicycle Rentals",
-            "content": "<p>Cycling is the best way to explore Amsterdam like a local. Rental shops are everywhere...</p>"
-          }
-        ]
-      },
-      {
-        "heading": "3. Attractions & Activities",
-        "subheadings": [
-          {
-            "title": "Museums",
-            "content": "<p>Visit the Van Gogh Museum, Rijksmuseum, and Anne Frank House...</p>"
-          },
-          {
-            "title": "Canal Tours",
-            "content": "<p>Experience Amsterdam from the water with a canal boat tour...</p>"
-          }
-        ]
-      }
-    ],
-    "places": [
-      {
-        "name": "Van Gogh Museum",
-        "address": "Museumplein 6, 1071 DJ Amsterdam",
-        "coordinates": { "lat": 52.3584, "lng": 4.8811 },
-        "category": "Museum",
-        "description": "World's largest collection of Van Gogh paintings"
-      },
-      {
-        "name": "Anne Frank House",
-        "address": "Prinsengracht 263-267, 1016 GV Amsterdam",
-        "coordinates": { "lat": 52.3752, "lng": 4.8840 },
-        "category": "Historical Site",
-        "description": "The hiding place of Anne Frank during WWII"
-      }
-    ]
-  },
+  "content": [
+    {
+      "heading": "1. Introduction",
+      "heading_number": 1,
+      "content": "<h2>1. Introduction</h2><p>Welcome to Amsterdam, the vibrant capital of the Netherlands...</p>"
+    },
+    {
+      "heading": "2. Navigation",
+      "heading_number": 2,
+      "content": "<h2>2. Navigation</h2><p>Amsterdam has an excellent public transport system...</p>"
+    },
+    {
+      "heading": "3. Attractions & Activities",
+      "heading_number": 3,
+      "content": "<h2>3. Attractions & Activities</h2><p>Visit the Van Gogh Museum, Rijksmuseum, Anne Frank House...</p>"
+    }
+  ],
+  "headings": [
+    { "number": 1, "title": "Introduction" },
+    { "number": 2, "title": "Navigation" },
+    { "number": 3, "title": "Attractions & Activities" },
+    { "number": 4, "title": "Day Trips" },
+    { "number": 5, "title": "Practical Information" },
+    { "number": 6, "title": "About the Author" }
+  ],
   "access_info": {
     "first_access": true,
     "remaining_quota": 99,
@@ -1086,278 +1086,51 @@ const ApiDocumentation = () => {
       position: relative;
       z-index: 100;
     }
-    .filter-group {
-      position: relative;
-      z-index: 100;
-    }
-    .filter-group label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: #495057;
-      font-size: 14px;
-    }
-    .filter-group select,
-    .filter-group input {
-      width: 100%;
-      padding: 10px 12px;
-      border: 2px solid #dee2e6;
-      border-radius: 6px;
-      font-size: 14px;
-      transition: all 0.3s;
-      position: relative;
-      z-index: 100;
-    }
-    .filter-group select:focus,
-    .filter-group input:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-      z-index: 200;
-    }
-    .stats-bar {
-      background: #e7f3ff;
-      padding: 15px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #bee5eb;
-    }
-    .stat-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .filter-group { position: relative; z-index: 100; }
+    .filter-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #495057; font-size: 14px; }
+    .filter-group select, .filter-group input { width: 100%; padding: 10px 12px; border: 2px solid #dee2e6; border-radius: 6px; font-size: 14px; position: relative; z-index: 100; }
+    .filter-group select:focus, .filter-group input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); z-index: 200; }
+    .stats-bar { background: #e7f3ff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #bee5eb; }
+    .stat-item { display: flex; align-items: center; gap: 8px; }
     .stat-label { font-weight: 600; color: #0c5460; }
-    .stat-value {
-      background: white;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-weight: bold;
-      color: #667eea;
-    }
-    .guides-container {
-      padding: 30px;
-      min-height: 400px;
-    }
-    .guides-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
-    }
-    @media (min-width: 1200px) {
-      .guides-grid {
-        grid-template-columns: repeat(4, 1fr);
-      }
-    }
-    @media (min-width: 768px) and (max-width: 1199px) {
-      .guides-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-    .guide-card {
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      transition: all 0.3s;
-      border: 2px solid transparent;
-    }
-    .guide-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-      border-color: #667eea;
-    }
-    .guide-image {
-      width: 120px;
-      height: 180px;
-      object-fit: cover;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      margin: 0 auto;
-      display: block;
-    }
-    .guide-content {
-      padding: 12px;
-    }
-    .guide-title {
-      font-size: 14px;
-      font-weight: bold;
-      color: #2c3e50;
-      margin-bottom: 6px;
-      line-height: 1.3;
-    }
-    .guide-location {
-      color: #6c757d;
-      font-size: 11px;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      gap: 3px;
-    }
-    .guide-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid #e9ecef;
-    }
-    .guide-price {
-      font-size: 16px;
-      font-weight: bold;
-      color: #667eea;
-    }
-    .guide-lang {
-      background: #e7f3ff;
-      padding: 3px 8px;
-      border-radius: 12px;
-      font-size: 10px;
-      font-weight: 600;
-      color: #0c5460;
-    }
-    .download-btn {
-      width: 100%;
-      padding: 8px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: all 0.3s;
-    }
-    .download-btn:hover {
-      transform: scale(1.02);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    }
-    .download-btn:disabled {
-      background: #6c757d;
-      cursor: not-allowed;
-      transform: scale(1);
-    }
-    .loading {
-      text-align: center;
-      padding: 60px 20px;
-      color: #6c757d;
-      font-size: 18px;
-    }
-    .loading::after {
-      content: '...';
-      animation: dots 1.5s steps(4, end) infinite;
-    }
-    @keyframes dots {
-      0%, 20% { content: '.'; }
-      40% { content: '..'; }
-      60%, 100% { content: '...'; }
-    }
-    .pagination {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 2px solid #e9ecef;
-    }
-    .page-btn {
-      padding: 8px 16px;
-      background: white;
-      border: 2px solid #667eea;
-      color: #667eea;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.3s;
-    }
-    .page-btn:hover:not(:disabled) {
-      background: #667eea;
-      color: white;
-    }
-    .page-btn:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-    }
-    .page-info {
-      padding: 8px 16px;
-      font-weight: 600;
-      color: #495057;
-    }
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.7);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-    }
-    .modal.show {
-      display: flex;
-    }
-    .modal-content {
-      background: white;
-      border-radius: 12px;
-      padding: 30px;
-      max-width: 500px;
-      width: 90%;
-      max-height: 90vh;
-      overflow-y: auto;
-      animation: slideDown 0.3s;
-    }
-    @keyframes slideDown {
-      from { transform: translateY(-50px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    .modal-header {
-      font-size: 24px;
-      font-weight: bold;
-      margin-bottom: 20px;
-      color: #2c3e50;
-    }
-    .modal-body {
-      margin-bottom: 20px;
-    }
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-    }
-    .btn {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    .btn-primary {
-      background: #667eea;
-      color: white;
-    }
-    .btn-primary:hover {
-      background: #5568d3;
-    }
-    .btn-secondary {
-      background: #e9ecef;
-      color: #495057;
-    }
-    .btn-secondary:hover {
-      background: #dee2e6;
-    }
-    .success-message {
-      background: #d4edda;
-      border: 1px solid #c3e6cb;
-      color: #155724;
-      padding: 12px;
-      border-radius: 6px;
-      margin-bottom: 15px;
-    }
+    .stat-value { background: white; padding: 4px 12px; border-radius: 20px; font-weight: bold; color: #667eea; }
+    .guides-container { padding: 30px; min-height: 400px; }
+    .guides-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
+    @media (min-width: 1200px) { .guides-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (min-width: 768px) and (max-width: 1199px) { .guides-grid { grid-template-columns: repeat(3, 1fr); } }
+    .guide-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.3s; border: 2px solid transparent; }
+    .guide-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); border-color: #667eea; }
+    .guide-image { width: 120px; height: 180px; object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0 auto; display: block; }
+    .guide-content { padding: 12px; }
+    .guide-title { font-size: 14px; font-weight: bold; color: #2c3e50; margin-bottom: 6px; line-height: 1.3; }
+    .guide-location { color: #6c757d; font-size: 11px; margin-bottom: 8px; display: flex; align-items: center; gap: 3px; }
+    .guide-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e9ecef; }
+    .guide-price { font-size: 16px; font-weight: bold; color: #667eea; }
+    .guide-lang { background: #e7f3ff; padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; color: #0c5460; }
+    .download-btn { width: 100%; padding: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 10px; transition: all 0.3s; }
+    .download-btn:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+    .download-btn:disabled { background: #6c757d; cursor: not-allowed; transform: scale(1); }
+    .loading { text-align: center; padding: 60px 20px; color: #6c757d; font-size: 18px; }
+    .loading::after { content: '...'; animation: dots 1.5s steps(4, end) infinite; }
+    @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60%, 100% { content: '...'; } }
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e9ecef; }
+    .page-btn { padding: 8px 16px; background: white; border: 2px solid #667eea; color: #667eea; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+    .page-btn:hover:not(:disabled) { background: #667eea; color: white; }
+    .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .page-info { padding: 8px 16px; font-weight: 600; color: #495057; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+    .modal.show { display: flex; }
+    .modal-content { background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; animation: slideDown 0.3s; }
+    @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-header { font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #2c3e50; }
+    .modal-body { margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .btn { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+    .btn-primary { background: #667eea; color: white; }
+    .btn-primary:hover { background: #5568d3; }
+    .btn-secondary { background: #e9ecef; color: #495057; }
+    .btn-secondary:hover { background: #dee2e6; }
+    .success-message { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 12px; border-radius: 6px; margin-bottom: 15px; }
   </style>
 </head>
 <body>
@@ -1440,7 +1213,6 @@ const ApiDocumentation = () => {
     let selectedGuide = null;
     let remainingQuota = null;
 
-    // Initialize the application
     async function init() {
       await loadLanguages();
       await loadCategories();
@@ -1753,7 +1525,6 @@ const ApiDocumentation = () => {
   <meta charset="UTF-8">
   <title>YouGuide - PDF Paid API</title>
   <style>
-    /* Reuse styles from first snippet for consistency */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); min-height: 100vh; padding: 20px; }
     .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow: hidden; }
@@ -1850,6 +1621,21 @@ const ApiDocumentation = () => {
       setupFilters();
     }
 
+    function setupFilters() {
+      ['search-input', 'language-filter', 'category-filter'].forEach(id => {
+        document.getElementById(id).addEventListener('change', loadGuides);
+        document.getElementById(id).addEventListener('input', debounce(loadGuides, 500));
+      });
+    }
+
+    function debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func(...args), wait);
+      };
+    }
+
     async function loadLanguages() {
       try {
         const response = await fetch(\`\${API_BASE}/api/travel-content/languages\`, {
@@ -1862,14 +1648,17 @@ const ApiDocumentation = () => {
           throw new Error(\`HTTP error! status: \${response.status}\`);
         }
 
-        const languages = await response.json();
-        console.log('Languages data:', languages);
+        const response_data = await response.json();
+        console.log('Languages data:', response_data);
 
         const select = document.getElementById('language-filter');
         if (!select) {
           console.error('ERROR: language-filter element not found in DOM!');
           return;
         }
+
+        // Handle both array response and object with data property
+        const languages = Array.isArray(response_data) ? response_data : response_data.data;
 
         if (Array.isArray(languages) && languages.length > 0) {
           languages.forEach(lang => {
@@ -1896,14 +1685,17 @@ const ApiDocumentation = () => {
           throw new Error(\`HTTP error! status: \${response.status}\`);
         }
 
-        const categories = await response.json();
-        console.log('Categories data:', categories);
+        const response_data = await response.json();
+        console.log('Categories data:', response_data);
 
         const select = document.getElementById('category-filter');
         if (!select) {
           console.error('ERROR: category-filter element not found in DOM!');
           return;
         }
+
+        // Handle both array response and object with data property
+        const categories = Array.isArray(response_data) ? response_data : response_data.data;
 
         if (Array.isArray(categories) && categories.length > 0) {
           categories.forEach(cat => {
@@ -1918,31 +1710,16 @@ const ApiDocumentation = () => {
       }
     }
 
-    function setupFilters() {
-      ['search-input', 'language-filter', 'category-filter'].forEach(id => {
-        document.getElementById(id).addEventListener('change', loadGuides);
-        document.getElementById(id).addEventListener('input', debounce(loadGuides, 500));
-      });
-    }
-
-    function debounce(func, wait) {
-      let timeout;
-      return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func(...args), wait);
-      };
-    }
-
     async function loadGuides() {
       const container = document.getElementById('guides-grid');
       container.innerHTML = '<div class="loading">Loading guides...</div>';
 
       try {
+        let url = \`\${API_BASE}/api/travel-content/guides?limit=20\`;
         const search = document.getElementById('search-input').value;
         const lang = document.getElementById('language-filter').value;
         const category = document.getElementById('category-filter').value;
 
-        let url = \`\${API_BASE}/api/travel-content/guides?limit=20\`;
         if (search) url += \`&query=\${encodeURIComponent(search)}\`;
         if (lang) url += \`&lang=\${lang}\`;
         else url += \`&lang=en\`;
@@ -2107,29 +1884,28 @@ const ApiDocumentation = () => {
   <title>YouGuide - HTML/JSON Prepaid API</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; }
-    .app-container { display: flex; height: 100vh; }
-    .sidebar { width: 400px; background: white; border-right: 1px solid #e0e0e0; display: flex; flex-direction: column; }
-    .sidebar-header { background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%); color: white; padding: 20px; }
-    .sidebar-header h2 { font-size: 20px; margin-bottom: 5px; }
-    .filters-panel { padding: 20px; border-bottom: 1px solid #e0e0e0; position: relative; z-index: 100; }
-    .filter-group { margin-bottom: 15px; position: relative; z-index: 100; }
-    .filter-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: #495057; }
-    .filter-group select, .filter-group input { width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; position: relative; z-index: 100; }
+    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%); min-height: 100vh; padding: 20px; }
+    .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow: hidden; }
+    .header { background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%); color: white; padding: 30px; text-align: center; }
+    .header h1 { font-size: 32px; margin-bottom: 10px; }
+    .filters { background: #f8f9fa; padding: 25px 30px; border-bottom: 2px solid #e9ecef; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; position: relative; z-index: 100; }
+    .filter-group { position: relative; z-index: 100; }
+    .filter-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #495057; font-size: 14px; }
+    .filter-group select, .filter-group input { width: 100%; padding: 10px 12px; border: 2px solid #dee2e6; border-radius: 6px; font-size: 14px; position: relative; z-index: 100; }
     .filter-group select:focus, .filter-group input:focus { z-index: 200; }
-    .guides-list { flex: 1; overflow-y: auto; padding: 10px; }
-    .guide-item { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #e0e0e0; transition: all 0.2s; }
-    .guide-item:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-color: #00b4db; }
-    .guide-item-title { font-weight: 600; color: #2c3e50; margin-bottom: 6px; font-size: 14px; }
-    .guide-item-meta { font-size: 12px; color: #6c757d; margin-bottom: 10px; }
-    .guide-item-price { font-size: 16px; font-weight: bold; color: #00b4db; margin-bottom: 10px; }
-    .open-guide-btn { width: 100%; padding: 8px; background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 13px; }
-    .open-guide-btn:hover { opacity: 0.9; }
-    .welcome-area { flex: 1; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
-    .welcome-content { text-align: center; padding: 40px; }
-    .welcome-content h1 { font-size: 36px; color: #2c3e50; margin-bottom: 10px; }
-    .welcome-content p { font-size: 18px; color: #6c757d; }
-    .loading { text-align: center; padding: 40px 20px; color: #6c757d; }
+    .guides-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; padding: 30px; }
+    @media (min-width: 1200px) { .guides-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (min-width: 768px) and (max-width: 1199px) { .guides-grid { grid-template-columns: repeat(3, 1fr); } }
+    .guide-card { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden; transition: all 0.3s; border: 2px solid transparent; }
+    .guide-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); border-color: #00b4db; }
+    .guide-image { width: 120px; height: 180px; object-fit: cover; background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%); margin: 0 auto; display: block; }
+    .guide-content { padding: 12px; }
+    .guide-title { font-size: 14px; font-weight: bold; color: #2c3e50; margin-bottom: 6px; line-height: 1.3; }
+    .guide-location { color: #6c757d; font-size: 11px; margin-bottom: 8px; }
+    .guide-price { font-size: 18px; font-weight: bold; color: #00b4db; margin: 10px 0; }
+    .view-btn { width: 100%; padding: 8px; background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%); color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+    .view-btn:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0, 180, 219, 0.4); }
+    .view-btn:disabled { background: #6c757d; cursor: not-allowed; }
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
     .modal.show { display: flex; }
     .modal-content { background: white; border-radius: 12px; padding: 30px; max-width: 700px; width: 90%; max-height: 90vh; overflow-y: auto; animation: slideDown 0.3s; }
@@ -2147,46 +1923,36 @@ const ApiDocumentation = () => {
     .btn-secondary { background: #e9ecef; color: #495057; }
     .btn-secondary:hover { background: #dee2e6; }
     .quota-info { background: #e7f3ff; padding: 10px; border-radius: 6px; margin-bottom: 15px; color: #0c5460; font-size: 13px; }
+    .loading { text-align: center; padding: 60px 20px; color: #6c757d; font-size: 18px; }
   </style>
 </head>
 <body>
-  <div class="app-container">
-    <!-- Sidebar -->
-    <div class="sidebar">
-      <div class="sidebar-header">
-        <h2>📚 Travel Guides</h2>
-        <p style="font-size: 13px; opacity: 0.9;">HTML/JSON Prepaid API</p>
-      </div>
-
-      <div class="filters-panel">
-        <div class="filter-group">
-          <label>🔍 Search</label>
-          <input type="text" id="search" placeholder="Search guides...">
-        </div>
-        <div class="filter-group">
-          <label>🌐 Language</label>
-          <select id="lang-filter"><option value="">All Languages</option></select>
-        </div>
-        <div class="filter-group">
-          <label>📂 Category</label>
-          <select id="cat-filter"><option value="">All Categories</option></select>
-        </div>
-      </div>
-
-      <div class="guides-list" id="guides-list"></div>
+  <div class="container">
+    <div class="header">
+      <h1>🌍 YouGuide Travel Guides</h1>
+      <p>HTML/JSON Prepaid API - View travel guide content</p>
     </div>
 
-    <!-- Welcome Area -->
-    <div class="welcome-area">
-      <div class="welcome-content">
-        <h1>👈 Select a Guide</h1>
-        <p>Browse guides from the sidebar and click "Open Guide" to view content</p>
+    <div class="filters">
+      <div class="filter-group">
+        <label>🔍 Search Guides</label>
+        <input type="text" id="search-input" placeholder="Search...">
+      </div>
+      <div class="filter-group">
+        <label>🌐 Language</label>
+        <select id="language-filter"><option value="">All Languages</option></select>
+      </div>
+      <div class="filter-group">
+        <label>📚 Category</label>
+        <select id="category-filter"><option value="">All Categories</option></select>
       </div>
     </div>
+
+    <div class="guides-grid" id="guides-grid"></div>
   </div>
 
-  <!-- Guide Content Modal -->
-  <div id="guide-modal" class="modal">
+  <!-- Content View Modal -->
+  <div id="content-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
         <span id="modal-guide-name">Guide Content</span>
@@ -2248,30 +2014,38 @@ const ApiDocumentation = () => {
     const YOUR_TOKEN = '468374ef8319516c3602f71da3196de3b57224ca06db6cf30751225a12688f0a'; // HTML/JSON Prepaid Token
     let currentGuideId = null;
     let currentGuideName = '';
-    let allGuides = [];
 
     async function init() {
       await loadLanguages();
       await loadCategories();
       await loadGuides();
-      setupEventListeners();
+      setupFilters();
     }
 
-    function setupEventListeners() {
-      document.getElementById('search').addEventListener('input', filterGuides);
-      document.getElementById('lang-filter').addEventListener('change', loadGuides);
-      document.getElementById('cat-filter').addEventListener('change', loadGuides);
+    function setupFilters() {
+      ['search-input', 'language-filter', 'category-filter'].forEach(id => {
+        document.getElementById(id).addEventListener('change', loadGuides);
+        document.getElementById(id).addEventListener('input', debounce(loadGuides, 500));
+      });
+    }
+
+    function debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func(...args), wait);
+      };
     }
 
     function openGuide(guideId, guideName) {
       currentGuideId = guideId;
       currentGuideName = guideName;
       document.getElementById('modal-guide-name').textContent = guideName;
-      document.getElementById('guide-modal').classList.add('show');
+      document.getElementById('content-modal').classList.add('show');
     }
 
     function closeModal() {
-      document.getElementById('guide-modal').classList.remove('show');
+      document.getElementById('content-modal').classList.remove('show');
       currentGuideId = null;
     }
 
@@ -2282,7 +2056,7 @@ const ApiDocumentation = () => {
         });
         const response_data = await response.json();
         const languages = Array.isArray(response_data) ? response_data : response_data.data;
-        const select = document.getElementById('lang-filter');
+        const select = document.getElementById('language-filter');
         if (Array.isArray(languages)) {
           languages.forEach(lang => {
             select.innerHTML += \`<option value="\${lang.code}">\${lang.name}</option>\`;
@@ -2300,7 +2074,7 @@ const ApiDocumentation = () => {
         });
         const response_data = await response.json();
         const categories = Array.isArray(response_data) ? response_data : response_data.data;
-        const select = document.getElementById('cat-filter');
+        const select = document.getElementById('category-filter');
         if (Array.isArray(categories)) {
           categories.forEach(cat => {
             select.innerHTML += \`<option value="\${cat._id}">\${cat.name}</option>\`;
@@ -2312,62 +2086,44 @@ const ApiDocumentation = () => {
     }
 
     async function loadGuides() {
-      const list = document.getElementById('guides-list');
-      list.innerHTML = '<div class="loading">Loading...</div>';
+      const container = document.getElementById('guides-grid');
+      container.innerHTML = '<div class="loading">Loading guides...</div>';
 
       try {
-        const lang = document.getElementById('lang-filter').value;
-        const cat = document.getElementById('cat-filter').value;
+        let url = \`\${API_BASE}/api/travel-content/guides?limit=20\`;
+        const search = document.getElementById('search-input').value;
+        const lang = document.getElementById('language-filter').value;
+        const category = document.getElementById('category-filter').value;
 
-        let url = \`\${API_BASE}/api/travel-content/guides?limit=100\`;
+        if (search) url += \`&query=\${encodeURIComponent(search)}\`;
         if (lang) url += \`&lang=\${lang}\`;
         else url += \`&lang=en\`;
-        if (cat) url += \`&category_id=\${cat}\`;
+        if (category) url += \`&category_id=\${category}\`;
 
         const response = await fetch(url, {
           headers: { 'Authorization': \`Bearer \${YOUR_TOKEN}\` }
         });
         const data = await response.json();
-        allGuides = data.books;
 
-        renderGuidesList(allGuides);
+        container.innerHTML = '';
+        data.books.forEach(guide => {
+          container.innerHTML += \`
+            <div class="guide-card">
+              <img class="guide-image" src="\${guide.imagePath || ''}" alt="\${guide.name}" onerror="this.style.display='none'">
+              <div class="guide-content">
+                <div class="guide-title">\${guide.name}</div>
+                <div class="guide-location">📍 \${guide.city}, \${guide.country}</div>
+                <div class="guide-price">€\${guide.price.toFixed(2)}</div>
+                <button class="view-btn" onclick="openGuide('\${guide._id}', '\${guide.name.replace(/'/g, "\\'")}')">
+                  View Content
+                </button>
+              </div>
+            </div>
+          \`;
+        });
       } catch (error) {
-        list.innerHTML = '<div class="loading">Error loading guides</div>';
+        container.innerHTML = '<div class="loading">❌ Error loading guides</div>';
       }
-    }
-
-    function filterGuides() {
-      const search = document.getElementById('search').value.toLowerCase();
-      const filtered = allGuides.filter(g =>
-        g.name.toLowerCase().includes(search) ||
-        g.city.toLowerCase().includes(search) ||
-        g.country.toLowerCase().includes(search)
-      );
-      renderGuidesList(filtered);
-    }
-
-    function renderGuidesList(guides) {
-      const list = document.getElementById('guides-list');
-
-      if (guides.length === 0) {
-        list.innerHTML = '<div class="loading">No guides found</div>';
-        return;
-      }
-
-      list.innerHTML = '';
-      guides.forEach(guide => {
-        const item = document.createElement('div');
-        item.className = 'guide-item';
-        item.innerHTML = \`
-          <div class="guide-item-title">\${guide.name}</div>
-          <div class="guide-item-meta">📍 \${guide.city}, \${guide.country} • \${guide.lang_short || 'EN'}</div>
-          <div class="guide-item-price">€\${guide.price ? guide.price.toFixed(2) : '0.00'}</div>
-          <button class="open-guide-btn" onclick="openGuide('\${guide._id}', '\${guide.name.replace(/'/g, "\\'")}')">
-            📖 Open Guide
-          </button>
-        \`;
-        list.appendChild(item);
-      });
     }
 
     async function viewJSON() {
@@ -2516,10 +2272,9 @@ const ApiDocumentation = () => {
   <meta charset="UTF-8">
   <title>YouGuide - HTML/JSON Paid API</title>
   <style>
-    /* Similar styling to previous examples */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-    .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow: hidden; }
+    .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow: hidden; }
     .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
     .header h1 { font-size: 32px; margin-bottom: 10px; }
     .filters { background: #f8f9fa; padding: 25px 30px; border-bottom: 2px solid #e9ecef; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; position: relative; z-index: 100; }
@@ -2554,13 +2309,13 @@ const ApiDocumentation = () => {
 </head>
 <body>
   <div class="container" id="app">
-    <!-- Browse Page -->
-    <div id="browse-page">
-      <div class="header">
-        <h1>🌍 YouGuide - Pay Per Guide</h1>
-        <p>HTML/JSON Paid API - Purchase and view travel guides</p>
-      </div>
+    <div class="header">
+      <h1>🌍 YouGuide - Pay Per Guide</h1>
+      <p>HTML/JSON Paid API - Purchase and view travel guides</p>
+    </div>
 
+    <!-- Main Page (Guide Listing) -->
+    <div id="main-page">
       <div class="filters">
         <div class="filter-group">
           <label>🔍 Search</label>
@@ -2581,7 +2336,7 @@ const ApiDocumentation = () => {
 
     <!-- Success Page (After Payment) -->
     <div id="success-page" style="display: none;">
-      <div class="header">
+      <div class="header" style="background: #28a745;">
         <h1>✅ Purchase Successful!</h1>
         <p>Your guide content is ready to view</p>
       </div>
@@ -2591,8 +2346,15 @@ const ApiDocumentation = () => {
 
         <div class="content-controls">
           <div class="control-group">
-            <label>📋 Filter Headings (comma-separated)</label>
+            <label>📋 Filter Headings</label>
             <input type="text" id="headings" placeholder="e.g., 2,3,4">
+          </div>
+          <div class="control-group">
+            <label>🔢 Heading Format</label>
+            <select id="heading-format">
+              <option value="normal">Normal</option>
+              <option value="sequential">Sequential</option>
+            </select>
           </div>
           <div class="control-group">
             <label>🎨 Mode</label>
@@ -2619,24 +2381,6 @@ const ApiDocumentation = () => {
 
         <div id="content-viewer" class="content-viewer" style="display: none;"></div>
       </div>
-    </div>
-  </div>
-
-  <!-- Purchase Modal -->
-  <div id="purchase-modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">💳 Select Content Type</div>
-      <p style="margin-bottom: 20px;"><strong id="modal-guide-name"></strong></p>
-      <p style="color: #6c757d; margin-bottom: 20px;">Choose the format you want to purchase:</p>
-      <div style="display: flex; gap: 10px;">
-        <button class="btn btn-primary" style="flex: 1;" onclick="purchase('json')">
-          📄 JSON Content
-        </button>
-        <button class="btn btn-primary" style="flex: 1;" onclick="purchase('html')">
-          🌐 HTML Content
-        </button>
-      </div>
-      <button class="btn btn-secondary" style="width: 100%; margin-top: 15px;" onclick="closeModal()">Cancel</button>
     </div>
   </div>
 
@@ -2737,8 +2481,8 @@ const ApiDocumentation = () => {
                 <div class="guide-title">\${guide.name}</div>
                 <div style="color: #6c757d; margin: 10px 0;">📍 \${guide.city}, \${guide.country}</div>
                 <div class="guide-price">€\${guide.price.toFixed(2)}</div>
-                <button class="purchase-btn" onclick='openPurchaseModal("\${guide._id}", "\${guide.name.replace(/'/g, "\\'")}",  \${guide.price})'>
-                  Buy HTML JSON
+                <button class="purchase-btn" onclick='purchase("\${guide._id}", "\${guide.name.replace(/'/g, "\\'")}",  \${guide.price})'>
+                  Buy Content
                 </button>
               </div>
             </div>
@@ -2749,18 +2493,10 @@ const ApiDocumentation = () => {
       }
     }
 
-    function openPurchaseModal(guideId, guideName, price) {
-      selectedGuide = { id: guideId, name: guideName, price };
-      document.getElementById('modal-guide-name').textContent = \`\${guideName} - €\${price}\`;
-      document.getElementById('purchase-modal').classList.add('show');
-    }
-
-    function closeModal() {
-      document.getElementById('purchase-modal').classList.remove('show');
-    }
-
-    async function purchase(contentType) {
-      if (!selectedGuide) return;
+    async function purchase(guideId, guideName, price) {
+      if (!confirm(\`Purchase "\${guideName}" for €\${price}?\\n\\nYou will be redirected to Stripe for secure payment.\`)) {
+        return;
+      }
 
       try {
         const response = await fetch(\`\${API_BASE}/api/travel-guides/digital/secure/checkout\`, {
@@ -2770,8 +2506,8 @@ const ApiDocumentation = () => {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            guide_id: selectedGuide.id,
-            content_type: contentType
+            guide_id: guideId,
+            content_type: 'digital'
           })
         });
 
@@ -2781,9 +2517,9 @@ const ApiDocumentation = () => {
 
         // Save for later
         localStorage.setItem('transaction_id', data.transaction_id);
-        localStorage.setItem('guide_id', selectedGuide.id);
-        localStorage.setItem('guide_name', selectedGuide.name);
-        localStorage.setItem('content_type', contentType);
+        localStorage.setItem('guide_id', guideId);
+        localStorage.setItem('guide_name', guideName);
+        localStorage.setItem('content_type', 'digital');
 
         // Open Stripe checkout in new tab
         window.open(data.checkout_url, '_blank');
@@ -2795,7 +2531,7 @@ const ApiDocumentation = () => {
     }
 
     function showSuccessPage() {
-      document.getElementById('browse-page').style.display = 'none';
+      document.getElementById('main-page').style.display = 'none';
       document.getElementById('success-page').style.display = 'block';
 
       document.getElementById('purchased-guide-name').textContent = localStorage.getItem('guide_name') || 'Your Guide';
@@ -2811,24 +2547,18 @@ const ApiDocumentation = () => {
         const transactionId = localStorage.getItem('transaction_id');
         const guideId = localStorage.getItem('guide_id');
         const headings = document.getElementById('headings').value.trim();
+        const headingFormat = document.getElementById('heading-format').value;
 
         let url = \`\${API_BASE}/api/travel-guides/digital/secure/data?transaction_id=\${transactionId}&guide_id=\${guideId}\`;
         if (headings) url += \`&headings=\${headings}\`;
+        if (headingFormat) url += \`&heading_format=\${headingFormat}\`;
 
         const response = await fetch(url, {
           headers: { 'Authorization': \`Bearer \${YOUR_TOKEN}\` }
         });
         const data = await response.json();
 
-        let html = '';
-        if (data.content.overview) {
-          html += \`<div style="margin-bottom: 20px;"><h3>Overview</h3><p>\${data.content.overview}</p></div>\`;
-        }
-
-        data.content.sections.forEach(section => {
-          html += \`<div style="margin-bottom: 20px;"><h3>\${section.heading}</h3><div>\${section.content}</div></div>\`;
-        });
-
+        let html = '<pre style="background: #f8f9fa; padding: 15px; border-radius: 6px; overflow: auto;">' + JSON.stringify(data, null, 2) + '</pre>';
         viewer.innerHTML = html;
       } catch (error) {
         viewer.innerHTML = '<div class="loading">Error loading content</div>';
@@ -2844,6 +2574,7 @@ const ApiDocumentation = () => {
         const transactionId = localStorage.getItem('transaction_id');
         const guideId = localStorage.getItem('guide_id');
         const headings = document.getElementById('headings').value.trim();
+        const headingFormat = document.getElementById('heading-format').value;
         const mode = document.getElementById('mode').value;
         const hSize = document.getElementById('h-size').value;
         const hColor = document.getElementById('h-color').value.replace('#', '');
@@ -2856,6 +2587,7 @@ const ApiDocumentation = () => {
           heading_color: hColor
         });
         if (headings) params.append('headings', headings);
+        if (headingFormat) params.append('heading_format', headingFormat);
 
         const url = \`\${API_BASE}/api/travel-guides/digital/secure/view?\` + params.toString();
 
@@ -2928,7 +2660,6 @@ const ApiDocumentation = () => {
     "_id": "cat1",
     "name": "City Trips",
     "slug": "city-trips",
-    "image": "https://presigned-url..."
   }
 ]`
       )}
@@ -2949,14 +2680,18 @@ const ApiDocumentation = () => {
   "totalBooks": 150,
   "books": [
     {
-      "_id": "guide123",
+      "_id": "672a73fc3ff8e4cf3ba9084a",
       "name": "Amsterdam Travel Guide",
+      "eng_name": "Amsterdam Travel Guide",
       "description": "Discover the vibrant capital of Netherlands with this comprehensive travel guide. Explore historic canals, world-class museums, charming neighborhoods, and the unique Dutch culture.",
-      "category": { "_id": "cat1", "name": "City Trips" },
+      "category": { "_id": "672a73fc3ff8e4cf3ba9084a", "name": "City Trips" },
       "city": "Amsterdam",
       "country": "Netherlands",
       "price": 9.99,
-      "imagePath": "https://presigned-url..."
+      "imagePath": "https://presigned-url...",
+      "fullCover": "https://presigned-url...",
+      "latitude": 52.3676,
+      "longitude": 4.9041
     }
   ]
 }`
@@ -3029,43 +2764,31 @@ const ApiDocumentation = () => {
     "category": "City Trips",
     "language": "en"
   },
-  "content": {
-    "overview": "Welcome to Amsterdam, the vibrant capital of the Netherlands! This guide will help you discover the city's historic canals, world-renowned museums, and unique Dutch culture.",
-    "sections": [
-      {
-        "heading": "1. Introduction",
-        "subheadings": [
-          {
-            "title": "Welcome to Amsterdam",
-            "content": "<p>Amsterdam is a city of contrasts where historic architecture meets modern innovation...</p>"
-          }
-        ]
-      },
-      {
-        "heading": "2. Navigation",
-        "subheadings": [
-          {
-            "title": "Getting Around",
-            "content": "<p>Amsterdam has an excellent public transport system...</p>"
-          }
-        ]
-      }
-    ],
-    "places": [
-      {
-        "name": "Van Gogh Museum",
-        "address": "Museumplein 6, 1071 DJ Amsterdam",
-        "coordinates": { "lat": 52.3584, "lng": 4.8811 },
-        "category": "Museum"
-      }
-    ]
-  },
+  "content": [
+    {
+      "heading": "1. Introduction",
+      "heading_number": 1,
+      "content": "<h2>1. Introduction</h2><p>Welcome to Amsterdam, the vibrant capital of the Netherlands...</p>"
+    },
+    {
+      "heading": "2. Navigation",
+      "heading_number": 2,
+      "content": "<h2>2. Navigation</h2><p>Amsterdam has an excellent public transport system...</p>"
+    }
+  ],
+  "headings": [
+    { "number": 1, "title": "Introduction" },
+    { "number": 2, "title": "Navigation" },
+    { "number": 3, "title": "Attractions & Activities" },
+    { "number": 4, "title": "Day Trips" },
+    { "number": 5, "title": "Practical Information" },
+    { "number": 6, "title": "About the Author" }
+  ],
   "transaction": {
     "transaction_id": "550e8400-e29b-41d4-a716-446655440000",
-    "amount": 12.99,
-    "currency": "eur",
-    "paid_at": "2025-01-07T10:30:00.000Z",
-    "status": "completed"
+    "paid_at": "2026-01-02T10:30:00Z",
+    "amount": 9.99,
+    "currency": "eur"
   }
 }`
       )}
