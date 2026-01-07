@@ -42,6 +42,11 @@ const ApiDocumentation = () => {
       label: 'Overview',
     },
     {
+      key: 'heading-reference',
+      icon: <FileTextOutlined />,
+      label: 'Heading Reference',
+    },
+    {
       key: 'pdf-free',
       icon: <FilePdfOutlined />,
       label: 'PDF Free API',
@@ -108,6 +113,128 @@ const ApiDocumentation = () => {
         )}
       </Space>
     </Card>
+  );
+
+  const renderHeadingReference = () => (
+    <div>
+      <Title level={2}>Category Heading Reference</Title>
+      <Paragraph>
+        Each category has a predefined set of main headings that can be used for filtering content using the <Text code>headings</Text> parameter.
+        Use comma-separated heading numbers (e.g., <Text code>headings=2,3,4</Text>) to filter content by specific sections.
+      </Paragraph>
+
+      <Card style={{ marginBottom: 24 }}>
+        <Title level={4}>City Guides (672a73fc3ff8e4cf3ba9084a)</Title>
+        <ol>
+          <li>Introduction</li>
+          <li>Navigation</li>
+          <li>Attractions & Activities</li>
+          <li>Day Trips</li>
+          <li>Practical Information</li>
+          <li>About the Author</li>
+        </ol>
+      </Card>
+
+      <Card style={{ marginBottom: 24 }}>
+        <Title level={4}>Country Guides (672a73fd3ff8e4cf3ba9084f)</Title>
+        <ol>
+          <li>Introduction</li>
+          <li>Exploring Regions</li>
+          <li>Culture and Traditions</li>
+          <li>Cities and Landmarks</li>
+          <li>Outdoor Adventures</li>
+          <li>Hidden Gems</li>
+          <li>Practical Travel Tips</li>
+          <li>Special Interests</li>
+          <li>About the Author</li>
+        </ol>
+      </Card>
+
+      <Card style={{ marginBottom: 24 }}>
+        <Title level={4}>Camper Guides (682f0cdcbbade38f87c5c1da)</Title>
+        <ol>
+          <li>Introduction</li>
+          <li>Preparing for Your Camper Adventure</li>
+          <li>Road Regulations and Driving Tips</li>
+          <li>Best Places for Camper Travel</li>
+          <li>Top Campsites and Camper Stops</li>
+          <li>Food and Culture for Campers</li>
+          <li>Activities and Adventures</li>
+          <li>Sustainability and Responsible Travel</li>
+          <li>Troubleshooting and Safety</li>
+          <li>Sample Itineraries</li>
+          <li>About the Author</li>
+        </ol>
+      </Card>
+
+      <Card style={{ marginBottom: 24 }}>
+        <Title level={4}>Island Guides (682f0ce0bbade38f87c5c1dc)</Title>
+        <ol>
+          <li>Introduction</li>
+          <li>Getting There</li>
+          <li>Accommodation Options</li>
+          <li>Transportation</li>
+          <li>Top Attractions</li>
+          <li>Outdoor Activities and Adventures</li>
+          <li>Dining and Cuisine</li>
+          <li>Shopping and Markets</li>
+          <li>Nightlife and Entertainment</li>
+          <li>Health and Safety Tips</li>
+          <li>Cultural Etiquette and Respect</li>
+          <li>Essential Packing List</li>
+          <li>Useful Contacts and Resources</li>
+          <li>About the Author</li>
+        </ol>
+      </Card>
+
+      <Card style={{ marginBottom: 24 }}>
+        <Title level={4}>Canal Guides (682f0ce4bbade38f87c5c1de)</Title>
+        <ol>
+          <li>Introduction</li>
+          <li>Understanding Canal Boating</li>
+          <li>Planning Your Canal Boat Adventure</li>
+          <li>Navigating Waterways</li>
+          <li>Exploring Iconic Canals</li>
+          <li>Canal-Side Activities</li>
+          <li>Practical Tips for Canal Boat Living</li>
+          <li>Seasonal Canal Boating</li>
+          <li>Troubleshooting and Maintenance</li>
+          <li>About the Author</li>
+        </ol>
+      </Card>
+
+      <Card style={{ marginBottom: 24 }}>
+        <Title level={4}>Cyclist Guides (682f0ce9bbade38f87c5c1e0)</Title>
+        <ol>
+          <li>Cycling Basics</li>
+          <li>Planning Your Cycling Tour</li>
+          <li>Top Cycling Routes</li>
+          <li>Cycling in Cities</li>
+          <li>Practical Information for Cyclists</li>
+          <li>Cycling Culture and Etiquette</li>
+          <li>Exploring Nature by Bike</li>
+          <li>Cycling Events and Festivals</li>
+          <li>Responsible Cycling and Sustainable Tourism</li>
+          <li>About the Author</li>
+        </ol>
+      </Card>
+
+      <Card style={{ marginBottom: 24 }}>
+        <Title level={4}>Regional Guides (682f0ceebbade38f87c5c1e2)</Title>
+        <ol>
+          <li>Introduction</li>
+          <li>Planning Your Trip</li>
+          <li>Major Destinations</li>
+          <li>Off-the-Beaten-Path</li>
+          <li>Outdoor Adventures</li>
+          <li>Food and Drink</li>
+          <li>Arts and Culture</li>
+          <li>Practical Tips for Travelers</li>
+          <li>Suggested Itineraries</li>
+          <li>About the Author</li>
+        </ol>
+      </Card>
+    </div>
   );
 
   const renderOverview = () => (
@@ -520,6 +647,7 @@ const ApiDocumentation = () => {
         'Get JSON data for the travel guide (deducts quota on first access)',
         [
           { name: 'guideId', description: 'Guide ID', required: true },
+          { name: 'headings', description: 'Filter content by heading numbers (comma-separated, e.g., headings=2,3,4). See Heading Reference section for category-specific heading numbers.', required: false },
         ],
         `{
   "success": true,
@@ -539,12 +667,23 @@ const ApiDocumentation = () => {
 }`
       )}
 
+      <Card style={{ marginBottom: 24, backgroundColor: '#f0f8ff', border: '1px solid #1890ff' }}>
+        <Text>
+          <strong>Note:</strong> To filter content by specific headings, refer to the{' '}
+          <Button type="link" onClick={() => setSelectedSection('heading-reference')} style={{ padding: 0, height: 'auto' }}>
+            Heading Reference
+          </Button>{' '}
+          section to see available headings for each category.
+        </Text>
+      </Card>
+
       {renderApiEndpoint(
         'GET',
         '/api/travel-guides/digital/content/view/:guideId',
         'Get rendered HTML version of the guide with customizable styling',
         [
           { name: 'guideId', description: 'Guide ID', required: true },
+          { name: 'headings', description: 'Filter content by heading numbers (comma-separated, e.g., headings=2,3,4). See Heading Reference section for category-specific heading numbers.', required: false },
           { name: 'heading_font_size', description: 'Font size for headings (default: 24)', required: false },
           { name: 'heading_color', description: 'Color for headings (default: #333333)', required: false },
           { name: 'sub_heading_font_size', description: 'Font size for sub-headings (default: 18)', required: false },
@@ -552,6 +691,16 @@ const ApiDocumentation = () => {
         ],
         `Returns full HTML page with applied styling`
       )}
+
+      <Card style={{ marginBottom: 24, backgroundColor: '#f0f8ff', border: '1px solid #1890ff' }}>
+        <Text>
+          <strong>Note:</strong> To filter content by specific headings, refer to the{' '}
+          <Button type="link" onClick={() => setSelectedSection('heading-reference')} style={{ padding: 0, height: 'auto' }}>
+            Heading Reference
+          </Button>{' '}
+          section to see available headings for each category.
+        </Text>
+      </Card>
 
       <Divider orientation="left">Usage Statistics</Divider>
 
@@ -637,6 +786,7 @@ const ApiDocumentation = () => {
         [
           { name: 'transaction_id', description: 'Transaction ID', required: true },
           { name: 'guide_id', description: 'Guide ID', required: true },
+          { name: 'headings', description: 'Filter content by heading numbers (comma-separated, e.g., headings=2,3,4). See Heading Reference section for category-specific heading numbers.', required: false },
         ],
         `{
   "success": true,
@@ -652,6 +802,16 @@ const ApiDocumentation = () => {
 }`
       )}
 
+      <Card style={{ marginBottom: 24, backgroundColor: '#f0f8ff', border: '1px solid #1890ff' }}>
+        <Text>
+          <strong>Note:</strong> To filter content by specific headings, refer to the{' '}
+          <Button type="link" onClick={() => setSelectedSection('heading-reference')} style={{ padding: 0, height: 'auto' }}>
+            Heading Reference
+          </Button>{' '}
+          section to see available headings for each category.
+        </Text>
+      </Card>
+
       {renderApiEndpoint(
         'GET',
         '/api/travel-guides/digital/secure/view',
@@ -659,12 +819,23 @@ const ApiDocumentation = () => {
         [
           { name: 'transaction_id', description: 'Transaction ID', required: true },
           { name: 'guide_id', description: 'Guide ID', required: true },
+          { name: 'headings', description: 'Filter content by heading numbers (comma-separated, e.g., headings=2,3,4). See Heading Reference section for category-specific heading numbers.', required: false },
           { name: 'heading_font_size', description: 'Heading font size (optional)', required: false },
           { name: 'heading_color', description: 'Heading color (optional)', required: false },
           { name: 'mode', description: 'light or dark (optional)', required: false },
         ],
         `Returns full HTML page with styling`
       )}
+
+      <Card style={{ marginBottom: 24, backgroundColor: '#f0f8ff', border: '1px solid #1890ff' }}>
+        <Text>
+          <strong>Note:</strong> To filter content by specific headings, refer to the{' '}
+          <Button type="link" onClick={() => setSelectedSection('heading-reference')} style={{ padding: 0, height: 'auto' }}>
+            Heading Reference
+          </Button>{' '}
+          section to see available headings for each category.
+        </Text>
+      </Card>
 
       <Divider orientation="left">Usage Statistics</Divider>
 
@@ -685,6 +856,8 @@ const ApiDocumentation = () => {
     switch (selectedSection) {
       case 'overview':
         return renderOverview();
+      case 'heading-reference':
+        return renderHeadingReference();
       case 'pdf-free':
         return renderPdfFreeApis();
       case 'pdf-paid':
