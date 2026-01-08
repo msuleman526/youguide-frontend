@@ -15,6 +15,7 @@ import PaymentSuccess from './pages/Payment/PaymentSuccess'
 import PaymentError from './pages/Payment/PaymentError'
 import PdfGuideSuccess from './pages/Payment/PdfGuideSuccess'
 import DigitalGuideSuccess from './pages/Payment/DigitalGuideSuccess'
+import HtmlViewer from './pages/Payment/HtmlViewer'
 import Transactions from './pages/Transactions/Transactions'
 import SubscriptionGuides from './pages/Vendors/SubscriptionGuides'
 import PdfViewer from './pages/Vendors/PdfViewer'
@@ -63,6 +64,7 @@ const App = () => {
         <Route path="/payment/cancel" element={<PaymentError />} />
         <Route path="/guide-success/pdf" element={<PdfGuideSuccess />} />
         <Route path="/guide-success/digital" element={<DigitalGuideSuccess />} />
+        <Route path="/html-viewer/:token" element={<HtmlViewer />} />
         <Route path="/account/remove" element={<DeleteAccount />} />
         <Route path="/subscription-expired" element={<ContractExpired />} />
         <Route path="/subscription-guides/:id" element={<SubscriptionGuides />} />

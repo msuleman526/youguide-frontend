@@ -1317,7 +1317,8 @@ class ApiService {
             const params = {
                 guide_id: guideId,
                 transaction_id: transactionId,
-                ...options // heading_font_size, heading_color, sub_heading_font_size, mode
+                ...options, // headings, heading_format, title_color, paragraph_color, paragraph_size, heading_size, sub_heading_size, sub_heading_color, title_size, mode
+                hosted_page: 0 // Always 0, cannot be overridden
             };
 
             const response = await axios.get(`${this.baseURL}/travel-guides/digital/secure/view`, {
@@ -1330,6 +1331,27 @@ class ApiService {
             return response.data;
         } catch (error) {
             console.error('Error view secure HTML:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async viewDigitalContentHtml(guideId, bearerToken, options = {}) {
+        try {
+            const params = {
+                ...options, // headings, heading_format, title_color, paragraph_color, paragraph_size, heading_size, sub_heading_size, sub_heading_color, title_size, mode
+                hosted_page: 0 // Always 0, cannot be overridden
+            };
+
+            const response = await axios.get(`${this.baseURL}/travel-guides/digital/content/view/${guideId}`, {
+                params,
+                headers: {
+                    'Authorization': `Bearer ${bearerToken}`
+                },
+                responseType: 'text' // Expecting HTML text
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error view digital content HTML:', error.response?.data || error.message);
             throw error;
         }
     }
