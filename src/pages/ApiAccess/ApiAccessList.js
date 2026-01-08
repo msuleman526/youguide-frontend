@@ -132,6 +132,11 @@ const ApiAccessList = () => {
                 payload.user_id = values.user_id;
             }
 
+            // Only add email if it's provided
+            if (values.email) {
+                payload.email = values.email;
+            }
+
             console.log('Submitting payload:', payload); // Debug log
 
             await ApiService.createApiAccessToken(payload);
@@ -377,25 +382,65 @@ const ApiAccessList = () => {
                         </Select>
                     </Form.Item>
 
-                    <Form.Item
-                        label="Affiliate User (Optional)"
-                        name="user_id"
-                    >
-                        <Select
-                            placeholder="Select an affiliate user"
-                            allowClear
-                            showSearch
-                            filterOption={(input, option) =>
-                                (option?.children?.toLowerCase() ?? '').includes(input.toLowerCase())
-                            }
-                        >
-                            {affiliates.map(affiliate => (
-                                <Option key={affiliate._id} value={affiliate._id}>
-                                    {affiliate.firstName} {affiliate.lastName} ({affiliate.email})
-                                </Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item
+                                label="Affiliate User"
+                                name="user_id"
+                                rules={[
+                                    ({ getFieldValue }) => ({
+                                        validator(_, value) {
+                                            if (value || getFieldValue('email')) {
+                                                return Promise.resolve();
+                                            }
+                                            return Promise.reject(new Error('Please select an affiliate user or enter an email'));
+                                        },
+                                    }),
+                                ]}
+                            >
+                                <Select
+                                    placeholder="Select an affiliate user"
+                                    allowClear
+                                    showSearch
+                                    filterOption={(input, option) =>
+                                        (option?.children?.toLowerCase() ?? '').includes(input.toLowerCase())
+                                    }
+                                    onChange={() => form.validateFields(['email'])}
+                                >
+                                    {affiliates.map(affiliate => (
+                                        <Option key={affiliate._id} value={affiliate._id}>
+                                            {affiliate.firstName} {affiliate.lastName} ({affiliate.email})
+                                        </Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                label="Email"
+                                name="email"
+                                rules={[
+                                    { type: 'email', message: 'Please enter a valid email' },
+                                    ({ getFieldValue }) => ({
+                                        validator(_, value) {
+                                            if (value || getFieldValue('user_id')) {
+                                                return Promise.resolve();
+                                            }
+                                            return Promise.reject(new Error('Please enter an email or select an affiliate user'));
+                                        },
+                                    }),
+                                ]}
+                            >
+                                <Input
+                                    placeholder="Enter email address"
+                                    onChange={() => form.validateFields(['user_id'])}
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Text type="secondary" style={{ display: 'block', marginTop: -16, marginBottom: 16 }}>
+                        * Either Affiliate User or Email is required
+                    </Text>
 
                     <Form.Item>
                         <Space>

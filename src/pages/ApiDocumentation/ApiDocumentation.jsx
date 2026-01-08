@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Layout, Menu, Typography, Card, Tag, Divider, Space, Button, Drawer, Modal, Dropdown } from 'antd';
+import { Layout, Menu, Typography, Card, Tag, Divider, Space, Button, Drawer, Modal, Dropdown, Input, message } from 'antd';
 import {
   ApiOutlined,
   FileTextOutlined,
@@ -33,6 +33,17 @@ const ApiDocumentation = () => {
   const [currentPreviewHtml, setCurrentPreviewHtml] = useState('');
   const [flowChartVisible, setFlowChartVisible] = useState(false);
   const [selectedFlowChart, setSelectedFlowChart] = useState(null);
+
+  // Token states for each API type
+  const [pdfPrepaidToken, setPdfPrepaidToken] = useState(localStorage.getItem('pdfPrepaidToken') || '');
+  const [pdfPaidToken, setPdfPaidToken] = useState(localStorage.getItem('pdfPaidToken') || '');
+  const [htmlPrepaidToken, setHtmlPrepaidToken] = useState(localStorage.getItem('htmlPrepaidToken') || '');
+  const [htmlPaidToken, setHtmlPaidToken] = useState(localStorage.getItem('htmlPaidToken') || '');
+
+  const saveToken = (type, value) => {
+    localStorage.setItem(type, value);
+    message.success('Token saved successfully!');
+  };
 
   const flowChartItems = [
     { key: 'pdf-prepaid', label: 'PDF Prepaid Flow' },
@@ -1239,14 +1250,24 @@ Returns full HTML page with applied styling`
         <Paragraph type="secondary">
           Features: Language & Category filters, Search, Guide grid with pagination, PDF download with quota tracking
         </Paragraph>
-        <div style={{ background: '#e6f7ff', padding: '12px', borderRadius: '4px', marginBottom: '15px', border: '1px solid #91d5ff' }}>
-          <Text strong style={{ color: '#0050b3' }}>✅ WORKING DEMO</Text>
-          <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#096dd9' }}>
-            This snippet contains a <strong>real, active API token</strong> with 50 remaining quota.
-            Copy this entire HTML file and open it in your browser to see it work immediately!
-            Token Owner: Muhammad Suleman (Fairfield) | Access: Camper Guides | 1836 guides available
+
+        <Card style={{ marginBottom: '15px', backgroundColor: '#fff7e6', border: '1px solid #ffd591' }}>
+          <Text strong style={{ color: '#d46b08' }}>🔑 Enter Your API Token to View Live Preview</Text>
+          <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+            <Input.Password
+              placeholder="Enter your PDF Prepaid API token"
+              value={pdfPrepaidToken}
+              onChange={(e) => setPdfPrepaidToken(e.target.value)}
+              style={{ flex: 1 }}
+            />
+            <Button type="primary" onClick={() => saveToken('pdfPrepaidToken', pdfPrepaidToken)}>
+              Save Token
+            </Button>
+          </div>
+          <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#8c8c8c' }}>
+            Your token will be saved locally and used for live preview.
           </p>
-        </div>
+        </Card>
 
         <Card style={{ marginBottom: '15px', backgroundColor: '#f0f5ff', border: '1px solid #adc6ff' }}>
           <Text strong>📡 APIs Used in this Snippet:</Text>
@@ -1262,7 +1283,7 @@ Returns full HTML page with applied styling`
           type="primary"
           icon={<ApiOutlined />}
           size="large"
-          onClick={() => openPreview(document.getElementById('pdf-prepaid-html').textContent)}
+          onClick={() => openPreview(document.getElementById('pdf-prepaid-html').textContent, pdfPrepaidToken)}
           style={{ marginBottom: '15px', width: '100%', height: '45px', fontSize: '16px' }}
         >
           🚀 View Live Design
@@ -1414,7 +1435,7 @@ Returns full HTML page with applied styling`
 
   <script>
     const API_BASE = 'https://appapi.youguide.com';
-    const YOUR_TOKEN = 'e94aa42004ab5c9977cd1390d589992628fb5f1da0e6646dcdce4bd00ca4820a'; // PDF Prepaid Token
+    const YOUR_TOKEN = 'YOUR_TOKEN_HERE'; // Enter your PDF Prepaid Token
 
     let currentFilters = {
       search: '',
@@ -1423,6 +1444,8 @@ Returns full HTML page with applied styling`
     };
     let selectedGuide = null;
     let remainingQuota = null;
+    let currentPage = 1;
+    let totalPages = 1;
 
     async function init() {
       await loadLanguages();
@@ -1536,12 +1559,12 @@ Returns full HTML page with applied styling`
       }
     }
 
-    async function loadGuides() {
+    async function loadGuides(page = 1) {
       const container = document.getElementById('guides-grid');
       container.innerHTML = '<div class="loading">Loading guides</div>';
 
       try {
-        let url = \`\${API_BASE}/api/travel-content/guides?limit=5\`;
+        let url = \`\${API_BASE}/api/travel-content/guides?limit=20&page=\${page}\`;
         if (currentFilters.search) url += \`&query=\${encodeURIComponent(currentFilters.search)}\`;
         if (currentFilters.language) url += \`&lang=\${currentFilters.language}\`;
         else url += \`&lang=en\`;
@@ -1553,12 +1576,44 @@ Returns full HTML page with applied styling`
         const data = await response.json();
 
         document.getElementById('total-guides').textContent = data.totalBooks;
+        currentPage = data.currentPage || page;
+        totalPages = Math.ceil(data.totalBooks / 20);
 
         renderGuides(data.books);
+        renderPagination();
       } catch (error) {
         container.innerHTML = '<div class="loading">❌ Error loading guides. Please check your token.</div>';
         console.error('Error:', error);
       }
+    }
+
+    function renderPagination() {
+      let paginationContainer = document.getElementById('pagination');
+      if (!paginationContainer) {
+        paginationContainer = document.createElement('div');
+        paginationContainer.id = 'pagination';
+        paginationContainer.style.cssText = 'display: flex; justify-content: center; gap: 8px; margin-top: 20px; flex-wrap: wrap;';
+        document.querySelector('.guides-container').appendChild(paginationContainer);
+      }
+
+      let html = '';
+      if (currentPage > 1) {
+        html += \`<button onclick="loadGuides(\${currentPage - 1})" style="padding: 8px 16px; border: 1px solid #667eea; background: white; color: #667eea; border-radius: 4px; cursor: pointer;">← Prev</button>\`;
+      }
+
+      const startPage = Math.max(1, currentPage - 2);
+      const endPage = Math.min(totalPages, currentPage + 2);
+
+      for (let i = startPage; i <= endPage; i++) {
+        const isActive = i === currentPage;
+        html += \`<button onclick="loadGuides(\${i})" style="padding: 8px 16px; border: 1px solid #667eea; background: \${isActive ? '#667eea' : 'white'}; color: \${isActive ? 'white' : '#667eea'}; border-radius: 4px; cursor: pointer;">\${i}</button>\`;
+      }
+
+      if (currentPage < totalPages) {
+        html += \`<button onclick="loadGuides(\${currentPage + 1})" style="padding: 8px 16px; border: 1px solid #667eea; background: white; color: #667eea; border-radius: 4px; cursor: pointer;">Next →</button>\`;
+      }
+
+      paginationContainer.innerHTML = html;
     }
 
     function renderGuides(guides) {
@@ -1674,13 +1729,24 @@ Returns full HTML page with applied styling`
         <Paragraph type="secondary">
           Features: Guide listing, Stripe payment flow, Transaction tracking, PDF download after payment
         </Paragraph>
-        <div style={{ background: '#fff7e6', padding: '12px', borderRadius: '4px', marginBottom: '15px', border: '1px solid #ffd591' }}>
-          <Text strong style={{ color: '#d46b08' }}>✅ WORKING DEMO - Payment Integration</Text>
-          <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#d48806' }}>
-            This snippet contains a <strong>real, active API token</strong> for pay-per-guide access.
-            Includes full Stripe checkout integration. Test in a development environment first!
+
+        <Card style={{ marginBottom: '15px', backgroundColor: '#fff7e6', border: '1px solid #ffd591' }}>
+          <Text strong style={{ color: '#d46b08' }}>🔑 Enter Your API Token to View Live Preview</Text>
+          <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+            <Input.Password
+              placeholder="Enter your PDF Paid API token"
+              value={pdfPaidToken}
+              onChange={(e) => setPdfPaidToken(e.target.value)}
+              style={{ flex: 1 }}
+            />
+            <Button type="primary" style={{ background: '#fa8c16', borderColor: '#fa8c16' }} onClick={() => saveToken('pdfPaidToken', pdfPaidToken)}>
+              Save Token
+            </Button>
+          </div>
+          <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#8c8c8c' }}>
+            Your token will be saved locally and used for live preview.
           </p>
-        </div>
+        </Card>
 
         <Card style={{ marginBottom: '15px', backgroundColor: '#fff7e6', border: '1px solid #ffd591' }}>
           <Text strong>📡 APIs Used in this Snippet:</Text>
@@ -1697,7 +1763,7 @@ Returns full HTML page with applied styling`
           type="primary"
           icon={<ApiOutlined />}
           size="large"
-          onClick={() => openPreview(document.getElementById('pdf-paid-html').textContent)}
+          onClick={() => openPreview(document.getElementById('pdf-paid-html').textContent, pdfPaidToken)}
           style={{ marginBottom: '15px', width: '100%', height: '45px', fontSize: '16px', background: '#fa8c16', borderColor: '#fa8c16' }}
         >
           🚀 View Live Design
@@ -1787,7 +1853,10 @@ Returns full HTML page with applied styling`
 
   <script>
     const API_BASE = 'https://appapi.youguide.com';
-    const YOUR_TOKEN = 'dfe40026e78100e04dfcaf5d7f2b79bd5a5f0901664b1d067e63435d07edd19a'; // PDF Paid Token
+    const YOUR_TOKEN = 'YOUR_TOKEN_HERE'; // Enter your PDF Paid Token
+
+    let currentPage = 1;
+    let totalPages = 1;
 
     // Check if returning from Stripe payment
     window.addEventListener('DOMContentLoaded', () => {
@@ -1895,12 +1964,12 @@ Returns full HTML page with applied styling`
       }
     }
 
-    async function loadGuides() {
+    async function loadGuides(page = 1) {
       const container = document.getElementById('guides-grid');
       container.innerHTML = '<div class="loading">Loading guides...</div>';
 
       try {
-        let url = \`\${API_BASE}/api/travel-content/guides?limit=5\`;
+        let url = \`\${API_BASE}/api/travel-content/guides?limit=20&page=\${page}\`;
         const search = document.getElementById('search-input').value;
         const lang = document.getElementById('language-filter').value;
         const category = document.getElementById('category-filter').value;
@@ -1914,6 +1983,9 @@ Returns full HTML page with applied styling`
           headers: { 'Authorization': \`Bearer \${YOUR_TOKEN}\` }
         });
         const data = await response.json();
+
+        currentPage = data.currentPage || page;
+        totalPages = Math.ceil(data.totalBooks / 20);
 
         container.innerHTML = '';
         data.books.forEach(guide => {
@@ -1931,9 +2003,40 @@ Returns full HTML page with applied styling`
             </div>
           \`;
         });
+
+        renderPagination();
       } catch (error) {
         container.innerHTML = '<div class="loading">❌ Error loading guides</div>';
       }
+    }
+
+    function renderPagination() {
+      let paginationContainer = document.getElementById('pagination');
+      if (!paginationContainer) {
+        paginationContainer = document.createElement('div');
+        paginationContainer.id = 'pagination';
+        paginationContainer.style.cssText = 'display: flex; justify-content: center; gap: 8px; margin: 20px 30px; flex-wrap: wrap;';
+        document.getElementById('main-page').appendChild(paginationContainer);
+      }
+
+      let html = '';
+      if (currentPage > 1) {
+        html += \`<button onclick="loadGuides(\${currentPage - 1})" style="padding: 8px 16px; border: 1px solid #f5576c; background: white; color: #f5576c; border-radius: 4px; cursor: pointer;">← Prev</button>\`;
+      }
+
+      const startPage = Math.max(1, currentPage - 2);
+      const endPage = Math.min(totalPages, currentPage + 2);
+
+      for (let i = startPage; i <= endPage; i++) {
+        const isActive = i === currentPage;
+        html += \`<button onclick="loadGuides(\${i})" style="padding: 8px 16px; border: 1px solid #f5576c; background: \${isActive ? '#f5576c' : 'white'}; color: \${isActive ? 'white' : '#f5576c'}; border-radius: 4px; cursor: pointer;">\${i}</button>\`;
+      }
+
+      if (currentPage < totalPages) {
+        html += \`<button onclick="loadGuides(\${currentPage + 1})" style="padding: 8px 16px; border: 1px solid #f5576c; background: white; color: #f5576c; border-radius: 4px; cursor: pointer;">Next →</button>\`;
+      }
+
+      paginationContainer.innerHTML = html;
     }
 
     async function initiatePayment(guideId, guideName, price) {
@@ -2032,13 +2135,24 @@ Returns full HTML page with applied styling`
         <Paragraph type="secondary">
           Features: Guide browser with sidebar, Heading filters, Heading format (normal/sequential), Mode selector (light/dark), Custom styling options, JSON and HTML view modes in popup
         </Paragraph>
-        <div style={{ background: '#f6ffed', padding: '12px', borderRadius: '4px', marginBottom: '15px', border: '1px solid #b7eb8f' }}>
-          <Text strong style={{ color: '#389e0d' }}>✅ WORKING DEMO - Content Viewer</Text>
-          <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#52c41a' }}>
-            This snippet contains a <strong>real, active API token</strong> for HTML/JSON content access.
-            View travel guide content in JSON or styled HTML format with customizable heading filters!
+
+        <Card style={{ marginBottom: '15px', backgroundColor: '#f6ffed', border: '1px solid #b7eb8f' }}>
+          <Text strong style={{ color: '#389e0d' }}>🔑 Enter Your API Token to View Live Preview</Text>
+          <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+            <Input.Password
+              placeholder="Enter your HTML/JSON Prepaid API token"
+              value={htmlPrepaidToken}
+              onChange={(e) => setHtmlPrepaidToken(e.target.value)}
+              style={{ flex: 1 }}
+            />
+            <Button type="primary" style={{ background: '#52c41a', borderColor: '#52c41a' }} onClick={() => saveToken('htmlPrepaidToken', htmlPrepaidToken)}>
+              Save Token
+            </Button>
+          </div>
+          <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#8c8c8c' }}>
+            Your token will be saved locally and used for live preview.
           </p>
-        </div>
+        </Card>
 
         <Card style={{ marginBottom: '15px', backgroundColor: '#f6ffed', border: '1px solid #b7eb8f' }}>
           <Text strong>📡 APIs Used in this Snippet:</Text>
@@ -2055,7 +2169,7 @@ Returns full HTML page with applied styling`
           type="primary"
           icon={<ApiOutlined />}
           size="large"
-          onClick={() => openPreview(document.getElementById('html-prepaid-html').textContent)}
+          onClick={() => openPreview(document.getElementById('html-prepaid-html').textContent, htmlPrepaidToken)}
           style={{ marginBottom: '15px', width: '100%', height: '45px', fontSize: '16px', background: '#52c41a', borderColor: '#52c41a' }}
         >
           🚀 View Live Design
@@ -2242,7 +2356,10 @@ Returns full HTML page with applied styling`
 
   <script>
     const API_BASE = 'https://appapi.youguide.com';
-    const YOUR_TOKEN = '468374ef8319516c3602f71da3196de3b57224ca06db6cf30751225a12688f0a'; // HTML/JSON Prepaid Token
+    const YOUR_TOKEN = 'YOUR_TOKEN_HERE'; // Enter your HTML/JSON Prepaid Token
+
+    let currentPage = 1;
+    let totalPages = 1;
     let currentGuideId = null;
     let currentGuideName = '';
 
@@ -2316,12 +2433,12 @@ Returns full HTML page with applied styling`
       }
     }
 
-    async function loadGuides() {
+    async function loadGuides(page = 1) {
       const container = document.getElementById('guides-grid');
       container.innerHTML = '<div class="loading">Loading guides...</div>';
 
       try {
-        let url = \`\${API_BASE}/api/travel-content/guides?limit=5\`;
+        let url = \`\${API_BASE}/api/travel-content/guides?limit=20&page=\${page}\`;
         const search = document.getElementById('search-input').value;
         const lang = document.getElementById('language-filter').value;
         const category = document.getElementById('category-filter').value;
@@ -2335,6 +2452,9 @@ Returns full HTML page with applied styling`
           headers: { 'Authorization': \`Bearer \${YOUR_TOKEN}\` }
         });
         const data = await response.json();
+
+        currentPage = data.currentPage || page;
+        totalPages = Math.ceil(data.totalBooks / 20);
 
         container.innerHTML = '';
         data.books.forEach(guide => {
@@ -2352,9 +2472,40 @@ Returns full HTML page with applied styling`
             </div>
           \`;
         });
+
+        renderPagination();
       } catch (error) {
         container.innerHTML = '<div class="loading">❌ Error loading guides</div>';
       }
+    }
+
+    function renderPagination() {
+      let paginationContainer = document.getElementById('pagination');
+      if (!paginationContainer) {
+        paginationContainer = document.createElement('div');
+        paginationContainer.id = 'pagination';
+        paginationContainer.style.cssText = 'display: flex; justify-content: center; gap: 8px; margin: 20px 30px; flex-wrap: wrap;';
+        document.querySelector('.container').appendChild(paginationContainer);
+      }
+
+      let html = '';
+      if (currentPage > 1) {
+        html += \`<button onclick="loadGuides(\${currentPage - 1})" style="padding: 8px 16px; border: 1px solid #00b4db; background: white; color: #00b4db; border-radius: 4px; cursor: pointer;">← Prev</button>\`;
+      }
+
+      const startPage = Math.max(1, currentPage - 2);
+      const endPage = Math.min(totalPages, currentPage + 2);
+
+      for (let i = startPage; i <= endPage; i++) {
+        const isActive = i === currentPage;
+        html += \`<button onclick="loadGuides(\${i})" style="padding: 8px 16px; border: 1px solid #00b4db; background: \${isActive ? '#00b4db' : 'white'}; color: \${isActive ? 'white' : '#00b4db'}; border-radius: 4px; cursor: pointer;">\${i}</button>\`;
+      }
+
+      if (currentPage < totalPages) {
+        html += \`<button onclick="loadGuides(\${currentPage + 1})" style="padding: 8px 16px; border: 1px solid #00b4db; background: white; color: #00b4db; border-radius: 4px; cursor: pointer;">Next →</button>\`;
+      }
+
+      paginationContainer.innerHTML = html;
     }
 
     async function viewJSON() {
@@ -2482,13 +2633,24 @@ Returns full HTML page with applied styling`
         <Paragraph type="secondary">
           Features: Guide listing with filters, Payment via Stripe, Content viewing with heading filters and styling options, Transaction tracking
         </Paragraph>
-        <div style={{ background: '#fff0f6', padding: '12px', borderRadius: '4px', marginBottom: '15px', border: '1px solid #ffadd2' }}>
-          <Text strong style={{ color: '#c41d7f' }}>✅ WORKING DEMO - Full Featured</Text>
-          <p style={{ margin: '8px 0 0 0', fontSize: '13px', color: '#eb2f96' }}>
-            This snippet contains a <strong>real, active API token</strong> for paid HTML/JSON content.
-            Complete solution: Browse guides, pay via Stripe, view content with customizable styling and filters!
+
+        <Card style={{ marginBottom: '15px', backgroundColor: '#fff0f6', border: '1px solid #ffadd2' }}>
+          <Text strong style={{ color: '#c41d7f' }}>🔑 Enter Your API Token to View Live Preview</Text>
+          <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+            <Input.Password
+              placeholder="Enter your HTML/JSON Paid API token"
+              value={htmlPaidToken}
+              onChange={(e) => setHtmlPaidToken(e.target.value)}
+              style={{ flex: 1 }}
+            />
+            <Button type="primary" style={{ background: '#eb2f96', borderColor: '#eb2f96' }} onClick={() => saveToken('htmlPaidToken', htmlPaidToken)}>
+              Save Token
+            </Button>
+          </div>
+          <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#8c8c8c' }}>
+            Your token will be saved locally and used for live preview.
           </p>
-        </div>
+        </Card>
 
         <Card style={{ marginBottom: '15px', backgroundColor: '#fff0f6', border: '1px solid #ffadd2' }}>
           <Text strong>📡 APIs Used in this Snippet:</Text>
@@ -2506,7 +2668,7 @@ Returns full HTML page with applied styling`
           type="primary"
           icon={<ApiOutlined />}
           size="large"
-          onClick={() => openPreview(document.getElementById('html-paid-html').textContent)}
+          onClick={() => openPreview(document.getElementById('html-paid-html').textContent, htmlPaidToken)}
           style={{ marginBottom: '15px', width: '100%', height: '45px', fontSize: '16px', background: '#eb2f96', borderColor: '#eb2f96' }}
         >
           🚀 View Live Design
@@ -2675,7 +2837,10 @@ Returns full HTML page with applied styling`
 
   <script>
     const API_BASE = 'https://appapi.youguide.com';
-    const YOUR_TOKEN = 'b63117ef75835ba756fccfbe12ba7c3d0a813743a1fc0ab96eb1cce90f1769de'; // HTML/JSON Paid Token
+    const YOUR_TOKEN = 'YOUR_TOKEN_HERE'; // Enter your HTML/JSON Paid Token
+
+    let currentPage = 1;
+    let totalPages = 1;
     let selectedGuide = null;
 
     // Check if returning from payment
@@ -2741,7 +2906,7 @@ Returns full HTML page with applied styling`
       };
     }
 
-    async function loadGuides() {
+    async function loadGuides(page = 1) {
       const grid = document.getElementById('guides-grid');
       grid.innerHTML = '<div class="loading">Loading guides...</div>';
 
@@ -2750,7 +2915,7 @@ Returns full HTML page with applied styling`
         const lang = document.getElementById('lang-filter').value;
         const cat = document.getElementById('cat-filter').value;
 
-        let url = \`\${API_BASE}/api/travel-content/guides?limit=5\`;
+        let url = \`\${API_BASE}/api/travel-content/guides?limit=20&page=\${page}\`;
         if (search) url += \`&query=\${encodeURIComponent(search)}\`;
         if (lang) url += \`&lang=\${lang}\`;
         else url += \`&lang=en\`;
@@ -2760,6 +2925,9 @@ Returns full HTML page with applied styling`
           headers: { 'Authorization': \`Bearer \${YOUR_TOKEN}\` }
         });
         const data = await response.json();
+
+        currentPage = data.currentPage || page;
+        totalPages = Math.ceil(data.totalBooks / 20);
 
         grid.innerHTML = '';
         data.books.forEach(guide => {
@@ -2777,9 +2945,40 @@ Returns full HTML page with applied styling`
             </div>
           \`;
         });
+
+        renderPagination();
       } catch (error) {
         grid.innerHTML = '<div class="loading">Error loading guides</div>';
       }
+    }
+
+    function renderPagination() {
+      let paginationContainer = document.getElementById('pagination');
+      if (!paginationContainer) {
+        paginationContainer = document.createElement('div');
+        paginationContainer.id = 'pagination';
+        paginationContainer.style.cssText = 'display: flex; justify-content: center; gap: 8px; margin: 20px 30px; flex-wrap: wrap;';
+        document.getElementById('main-page').appendChild(paginationContainer);
+      }
+
+      let html = '';
+      if (currentPage > 1) {
+        html += \`<button onclick="loadGuides(\${currentPage - 1})" style="padding: 8px 16px; border: 1px solid #eb2f96; background: white; color: #eb2f96; border-radius: 4px; cursor: pointer;">← Prev</button>\`;
+      }
+
+      const startPage = Math.max(1, currentPage - 2);
+      const endPage = Math.min(totalPages, currentPage + 2);
+
+      for (let i = startPage; i <= endPage; i++) {
+        const isActive = i === currentPage;
+        html += \`<button onclick="loadGuides(\${i})" style="padding: 8px 16px; border: 1px solid #eb2f96; background: \${isActive ? '#eb2f96' : 'white'}; color: \${isActive ? 'white' : '#eb2f96'}; border-radius: 4px; cursor: pointer;">\${i}</button>\`;
+      }
+
+      if (currentPage < totalPages) {
+        html += \`<button onclick="loadGuides(\${currentPage + 1})" style="padding: 8px 16px; border: 1px solid #eb2f96; background: white; color: #eb2f96; border-radius: 4px; cursor: pointer;">Next →</button>\`;
+      }
+
+      paginationContainer.innerHTML = html;
     }
 
     async function purchase(guideId, guideName, price) {
@@ -3236,8 +3435,13 @@ Returns full HTML page with applied styling`
     }
   };
 
-  const openPreview = (htmlContent) => {
-    setCurrentPreviewHtml(htmlContent);
+  const openPreview = (htmlContent, token) => {
+    if (!token) {
+      message.error('Please enter and save your API token first!');
+      return;
+    }
+    const contentWithToken = htmlContent.replace(/YOUR_TOKEN_HERE/g, token);
+    setCurrentPreviewHtml(contentWithToken);
     setPreviewDrawerVisible(true);
   };
 
