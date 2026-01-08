@@ -927,15 +927,25 @@ const ApiDocumentation = () => {
         '/api/travel-guides/digital/content/view/:guideId',
         'Get rendered HTML version of the guide with customizable styling',
         [
-          { name: 'guideId', description: 'Guide ID', required: true },
+          { name: 'guideId', description: 'Guide ID (in URL path)', required: true },
           { name: 'headings', description: 'Filter content by heading numbers (comma-separated, e.g., headings=2,3,4). See Heading Reference section for category-specific heading numbers.', required: false },
-          { name: 'heading_format', description: 'Format for headings: "normal" (default) or "sequential" (numbered)', required: false },
-          { name: 'heading_font_size', description: 'Font size for headings (default: 24)', required: false },
-          { name: 'heading_color', description: 'Color for headings (default: #333333)', required: false },
-          { name: 'sub_heading_font_size', description: 'Font size for sub-headings (default: 18)', required: false },
-          { name: 'mode', description: 'Theme mode: light or dark (default: light)', required: false },
+          { name: 'heading_format', description: 'Format for headings: "normal" (default) or "sequential" (renumbered starting from 1)', required: false },
+          { name: 'title_color', description: 'Color for title (e.g., orange, #ff5500)', required: false },
+          { name: 'title_size', description: 'Font size for title in pixels (e.g., 50)', required: false },
+          { name: 'heading_color', description: 'Color for headings (e.g., red, #333333)', required: false },
+          { name: 'heading_size', description: 'Font size for headings in pixels (e.g., 40)', required: false },
+          { name: 'sub_heading_color', description: 'Color for sub-headings (e.g., blue, #666666)', required: false },
+          { name: 'sub_heading_size', description: 'Font size for sub-headings in pixels (e.g., 30)', required: false },
+          { name: 'paragraph_color', description: 'Color for paragraph text (e.g., yellow, #333333)', required: false },
+          { name: 'paragraph_size', description: 'Font size for paragraphs in pixels (e.g., 16)', required: false },
+          { name: 'mode', description: 'Theme mode: "light" or "dark" (default: light)', required: false },
+          { name: 'heading_visible', description: 'Show/hide heading numbers: 1 (show) or 0 (hide)', required: false },
+          { name: 'table_of_content_color', description: 'Color for table of contents (e.g., orange, #1890ff)', required: false },
+          { name: 'hosted_page', description: 'Hosted page mode: 1 (enabled) or 0 (disabled)', required: false },
         ],
-        `Returns full HTML page with applied styling`
+        `Example: /api/travel-guides/digital/content/view/123?title_color=orange&title_size=50&heading_color=red&heading_size=40&sub_heading_color=blue&sub_heading_size=30&paragraph_color=yellow&paragraph_size=16&mode=dark&headings=3,4&heading_format=normal&heading_visible=0&table_of_content_color=orange&hosted_page=1
+
+Returns full HTML page with applied styling`
       )}
 
       <Card style={{ marginBottom: 24, backgroundColor: '#f0f8ff', border: '1px solid #1890ff' }}>
@@ -1113,11 +1123,6 @@ const ApiDocumentation = () => {
     .loading { text-align: center; padding: 60px 20px; color: #6c757d; font-size: 18px; }
     .loading::after { content: '...'; animation: dots 1.5s steps(4, end) infinite; }
     @keyframes dots { 0%, 20% { content: '.'; } 40% { content: '..'; } 60%, 100% { content: '...'; } }
-    .pagination { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e9ecef; }
-    .page-btn { padding: 8px 16px; background: white; border: 2px solid #667eea; color: #667eea; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
-    .page-btn:hover:not(:disabled) { background: #667eea; color: white; }
-    .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .page-info { padding: 8px 16px; font-weight: 600; color: #495057; }
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
     .modal.show { display: flex; }
     .modal-content { background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto; animation: slideDown 0.3s; }
@@ -1165,10 +1170,6 @@ const ApiDocumentation = () => {
         <span class="stat-value" id="total-guides">0</span>
       </div>
       <div class="stat-item">
-        <span class="stat-label">Current Page:</span>
-        <span class="stat-value" id="current-page">1</span>
-      </div>
-      <div class="stat-item">
         <span class="stat-label">Remaining Quota:</span>
         <span class="stat-value" id="quota">--</span>
       </div>
@@ -1176,7 +1177,6 @@ const ApiDocumentation = () => {
 
     <div class="guides-container">
       <div id="guides-grid" class="guides-grid"></div>
-      <div id="pagination" class="pagination"></div>
     </div>
   </div>
 
@@ -1203,8 +1203,6 @@ const ApiDocumentation = () => {
     const API_BASE = 'https://appapi.youguide.com';
     const YOUR_TOKEN = 'e94aa42004ab5c9977cd1390d589992628fb5f1da0e6646dcdce4bd00ca4820a'; // PDF Prepaid Token
 
-    let currentPage = 1;
-    let totalPages = 1;
     let currentFilters = {
       search: '',
       language: '',
@@ -1223,19 +1221,16 @@ const ApiDocumentation = () => {
     function setupEventListeners() {
       document.getElementById('search-input').addEventListener('input', debounce((e) => {
         currentFilters.search = e.target.value;
-        currentPage = 1;
         loadGuides();
       }, 500));
 
       document.getElementById('language-filter').addEventListener('change', (e) => {
         currentFilters.language = e.target.value;
-        currentPage = 1;
         loadGuides();
       });
 
       document.getElementById('category-filter').addEventListener('change', (e) => {
         currentFilters.category = e.target.value;
-        currentPage = 1;
         loadGuides();
       });
     }
@@ -1333,7 +1328,7 @@ const ApiDocumentation = () => {
       container.innerHTML = '<div class="loading">Loading guides</div>';
 
       try {
-        let url = \`\${API_BASE}/api/travel-content/guides?page=\${currentPage}&limit=12\`;
+        let url = \`\${API_BASE}/api/travel-content/guides?limit=5\`;
         if (currentFilters.search) url += \`&query=\${encodeURIComponent(currentFilters.search)}\`;
         if (currentFilters.language) url += \`&lang=\${currentFilters.language}\`;
         else url += \`&lang=en\`;
@@ -1344,12 +1339,9 @@ const ApiDocumentation = () => {
         });
         const data = await response.json();
 
-        totalPages = data.totalPages;
         document.getElementById('total-guides').textContent = data.totalBooks;
-        document.getElementById('current-page').textContent = currentPage;
 
         renderGuides(data.books);
-        renderPagination();
       } catch (error) {
         container.innerHTML = '<div class="loading">❌ Error loading guides. Please check your token.</div>';
         console.error('Error:', error);
@@ -1386,26 +1378,6 @@ const ApiDocumentation = () => {
         \`;
         container.appendChild(card);
       });
-    }
-
-    function renderPagination() {
-      const container = document.getElementById('pagination');
-      container.innerHTML = \`
-        <button class="page-btn" onclick="goToPage(\${currentPage - 1})" \${currentPage === 1 ? 'disabled' : ''}>
-          ← Previous
-        </button>
-        <span class="page-info">Page \${currentPage} of \${totalPages}</span>
-        <button class="page-btn" onclick="goToPage(\${currentPage + 1})" \${currentPage === totalPages ? 'disabled' : ''}>
-          Next →
-        </button>
-      \`;
-    }
-
-    function goToPage(page) {
-      if (page < 1 || page > totalPages) return;
-      currentPage = page;
-      loadGuides();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function openDownloadModal(guideId, guideName) {
@@ -1986,8 +1958,13 @@ const ApiDocumentation = () => {
         </div>
 
         <div class="control-group">
-          <label>📏 Heading Font Size</label>
-          <input type="number" id="heading-size" value="24" min="16" max="40">
+          <label>🎨 Title Color</label>
+          <input type="color" id="title-color" value="#333333">
+        </div>
+
+        <div class="control-group">
+          <label>📏 Title Size</label>
+          <input type="number" id="title-size" value="50" min="20" max="80">
         </div>
 
         <div class="control-group">
@@ -1996,8 +1973,49 @@ const ApiDocumentation = () => {
         </div>
 
         <div class="control-group">
-          <label>📏 Sub-heading Font Size</label>
-          <input type="number" id="subheading-size" value="18" min="14" max="30">
+          <label>📏 Heading Size</label>
+          <input type="number" id="heading-size" value="40" min="16" max="60">
+        </div>
+
+        <div class="control-group">
+          <label>🎨 Sub-heading Color</label>
+          <input type="color" id="subheading-color" value="#666666">
+        </div>
+
+        <div class="control-group">
+          <label>📏 Sub-heading Size</label>
+          <input type="number" id="subheading-size" value="30" min="14" max="50">
+        </div>
+
+        <div class="control-group">
+          <label>🎨 Paragraph Color</label>
+          <input type="color" id="paragraph-color" value="#333333">
+        </div>
+
+        <div class="control-group">
+          <label>📏 Paragraph Size</label>
+          <input type="number" id="paragraph-size" value="16" min="10" max="30">
+        </div>
+
+        <div class="control-group">
+          <label>👁️ Heading Visible</label>
+          <select id="heading-visible">
+            <option value="1">Show Numbers</option>
+            <option value="0">Hide Numbers</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label>🎨 TOC Color</label>
+          <input type="color" id="toc-color" value="#1890ff">
+        </div>
+
+        <div class="control-group">
+          <label>📄 Hosted Page</label>
+          <select id="hosted-page">
+            <option value="0">Disabled</option>
+            <option value="1">Enabled</option>
+          </select>
         </div>
       </div>
 
@@ -2090,7 +2108,7 @@ const ApiDocumentation = () => {
       container.innerHTML = '<div class="loading">Loading guides...</div>';
 
       try {
-        let url = \`\${API_BASE}/api/travel-content/guides?limit=20\`;
+        let url = \`\${API_BASE}/api/travel-content/guides?limit=5\`;
         const search = document.getElementById('search-input').value;
         const lang = document.getElementById('language-filter').value;
         const category = document.getElementById('category-filter').value;
@@ -2183,16 +2201,32 @@ const ApiDocumentation = () => {
         const headings = document.getElementById('headings-filter').value.trim();
         const headingFormat = document.getElementById('heading-format').value;
         const mode = document.getElementById('mode-select').value;
-        const headingSize = document.getElementById('heading-size').value;
+        const titleColor = document.getElementById('title-color').value;
+        const titleSize = document.getElementById('title-size').value;
         const headingColor = document.getElementById('heading-color').value;
+        const headingSize = document.getElementById('heading-size').value;
+        const subheadingColor = document.getElementById('subheading-color').value;
         const subheadingSize = document.getElementById('subheading-size').value;
+        const paragraphColor = document.getElementById('paragraph-color').value;
+        const paragraphSize = document.getElementById('paragraph-size').value;
+        const headingVisible = document.getElementById('heading-visible').value;
+        const tocColor = document.getElementById('toc-color').value;
+        const hostedPage = document.getElementById('hosted-page').value;
 
         if (headings) params.append('headings', headings);
         if (headingFormat) params.append('heading_format', headingFormat);
         params.append('mode', mode);
-        params.append('heading_font_size', headingSize);
+        params.append('title_color', titleColor.replace('#', ''));
+        params.append('title_size', titleSize);
         params.append('heading_color', headingColor.replace('#', ''));
-        params.append('sub_heading_font_size', subheadingSize);
+        params.append('heading_size', headingSize);
+        params.append('sub_heading_color', subheadingColor.replace('#', ''));
+        params.append('sub_heading_size', subheadingSize);
+        params.append('paragraph_color', paragraphColor.replace('#', ''));
+        params.append('paragraph_size', paragraphSize);
+        params.append('heading_visible', headingVisible);
+        params.append('table_of_content_color', tocColor.replace('#', ''));
+        params.append('hosted_page', hostedPage);
 
         const url = \`\${API_BASE}/api/travel-guides/digital/content/view/\${currentGuideId}?\` + params.toString();
 
@@ -2364,12 +2398,54 @@ const ApiDocumentation = () => {
             </select>
           </div>
           <div class="control-group">
-            <label>📏 Heading Size</label>
-            <input type="number" id="h-size" value="26" min="16" max="40">
+            <label>🎨 Title Color</label>
+            <input type="color" id="title-color" value="#333333">
+          </div>
+          <div class="control-group">
+            <label>📏 Title Size</label>
+            <input type="number" id="title-size" value="50" min="20" max="80">
           </div>
           <div class="control-group">
             <label>🎨 Heading Color</label>
             <input type="color" id="h-color" value="#667eea">
+          </div>
+          <div class="control-group">
+            <label>📏 Heading Size</label>
+            <input type="number" id="h-size" value="40" min="16" max="60">
+          </div>
+          <div class="control-group">
+            <label>🎨 Sub-heading Color</label>
+            <input type="color" id="sh-color" value="#666666">
+          </div>
+          <div class="control-group">
+            <label>📏 Sub-heading Size</label>
+            <input type="number" id="sh-size" value="30" min="14" max="50">
+          </div>
+          <div class="control-group">
+            <label>🎨 Paragraph Color</label>
+            <input type="color" id="p-color" value="#333333">
+          </div>
+          <div class="control-group">
+            <label>📏 Paragraph Size</label>
+            <input type="number" id="p-size" value="16" min="10" max="30">
+          </div>
+          <div class="control-group">
+            <label>👁️ Heading Visible</label>
+            <select id="h-visible">
+              <option value="1">Show Numbers</option>
+              <option value="0">Hide Numbers</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label>🎨 TOC Color</label>
+            <input type="color" id="toc-color" value="#1890ff">
+          </div>
+          <div class="control-group">
+            <label>📄 Hosted Page</label>
+            <select id="hosted-page">
+              <option value="0">Disabled</option>
+              <option value="1">Enabled</option>
+            </select>
           </div>
         </div>
 
@@ -2461,7 +2537,7 @@ const ApiDocumentation = () => {
         const lang = document.getElementById('lang-filter').value;
         const cat = document.getElementById('cat-filter').value;
 
-        let url = \`\${API_BASE}/api/travel-content/guides?limit=20\`;
+        let url = \`\${API_BASE}/api/travel-content/guides?limit=5\`;
         if (search) url += \`&query=\${encodeURIComponent(search)}\`;
         if (lang) url += \`&lang=\${lang}\`;
         else url += \`&lang=en\`;
@@ -2576,15 +2652,33 @@ const ApiDocumentation = () => {
         const headings = document.getElementById('headings').value.trim();
         const headingFormat = document.getElementById('heading-format').value;
         const mode = document.getElementById('mode').value;
-        const hSize = document.getElementById('h-size').value;
+        const titleColor = document.getElementById('title-color').value.replace('#', '');
+        const titleSize = document.getElementById('title-size').value;
         const hColor = document.getElementById('h-color').value.replace('#', '');
+        const hSize = document.getElementById('h-size').value;
+        const shColor = document.getElementById('sh-color').value.replace('#', '');
+        const shSize = document.getElementById('sh-size').value;
+        const pColor = document.getElementById('p-color').value.replace('#', '');
+        const pSize = document.getElementById('p-size').value;
+        const hVisible = document.getElementById('h-visible').value;
+        const tocColor = document.getElementById('toc-color').value.replace('#', '');
+        const hostedPage = document.getElementById('hosted-page').value;
 
         const params = new URLSearchParams({
           transaction_id: transactionId,
           guide_id: guideId,
           mode,
-          heading_font_size: hSize,
-          heading_color: hColor
+          title_color: titleColor,
+          title_size: titleSize,
+          heading_color: hColor,
+          heading_size: hSize,
+          sub_heading_color: shColor,
+          sub_heading_size: shSize,
+          paragraph_color: pColor,
+          paragraph_size: pSize,
+          heading_visible: hVisible,
+          table_of_content_color: tocColor,
+          hosted_page: hostedPage
         });
         if (headings) params.append('headings', headings);
         if (headingFormat) params.append('heading_format', headingFormat);
@@ -2836,15 +2930,26 @@ const ApiDocumentation = () => {
         '/api/travel-guides/digital/secure/view',
         'Get HTML version using transaction ID after payment',
         [
-          { name: 'transaction_id', description: 'Transaction ID', required: true },
+          { name: 'transaction_id', description: 'Transaction ID from payment', required: true },
           { name: 'guide_id', description: 'Guide ID', required: true },
           { name: 'headings', description: 'Filter content by heading numbers (comma-separated, e.g., headings=2,3,4). See Heading Reference section for category-specific heading numbers.', required: false },
-          { name: 'heading_format', description: 'Format for headings: "normal" (default) or "sequential" (numbered)', required: false },
-          { name: 'heading_font_size', description: 'Heading font size (optional)', required: false },
-          { name: 'heading_color', description: 'Heading color (optional)', required: false },
-          { name: 'mode', description: 'light or dark (optional)', required: false },
+          { name: 'heading_format', description: 'Format for headings: "normal" (default) or "sequential" (renumbered starting from 1)', required: false },
+          { name: 'title_color', description: 'Color for title (e.g., orange, #ff5500)', required: false },
+          { name: 'title_size', description: 'Font size for title in pixels (e.g., 50)', required: false },
+          { name: 'heading_color', description: 'Color for headings (e.g., red, #333333)', required: false },
+          { name: 'heading_size', description: 'Font size for headings in pixels (e.g., 40)', required: false },
+          { name: 'sub_heading_color', description: 'Color for sub-headings (e.g., blue, #666666)', required: false },
+          { name: 'sub_heading_size', description: 'Font size for sub-headings in pixels (e.g., 30)', required: false },
+          { name: 'paragraph_color', description: 'Color for paragraph text (e.g., yellow, #333333)', required: false },
+          { name: 'paragraph_size', description: 'Font size for paragraphs in pixels (e.g., 16)', required: false },
+          { name: 'mode', description: 'Theme mode: "light" or "dark" (default: light)', required: false },
+          { name: 'heading_visible', description: 'Show/hide heading numbers: 1 (show) or 0 (hide)', required: false },
+          { name: 'table_of_content_color', description: 'Color for table of contents (e.g., orange, #1890ff)', required: false },
+          { name: 'hosted_page', description: 'Hosted page mode: 1 (enabled) or 0 (disabled)', required: false },
         ],
-        `Returns full HTML page with styling`
+        `Example: /api/travel-guides/digital/secure/view?transaction_id=txn_123&guide_id=456&title_color=orange&title_size=50&heading_color=red&heading_size=40&sub_heading_color=blue&sub_heading_size=30&paragraph_color=yellow&paragraph_size=16&mode=dark&headings=3,4&heading_format=normal&heading_visible=0&table_of_content_color=orange&hosted_page=1
+
+Returns full HTML page with applied styling`
       )}
 
       <Card style={{ marginBottom: 24, backgroundColor: '#f0f8ff', border: '1px solid #1890ff' }}>
