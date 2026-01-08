@@ -33,10 +33,14 @@ const HtmlViewer = () => {
                     'paragraph_color',
                     'paragraph_size',
                     'heading_size',
+                    'heading_color',
                     'sub_heading_size',
+                    'table_of_content_color',
                     'sub_heading_color',
                     'title_size',
-                    'mode'
+                    'mode',
+                    'heading_visible',
+                    'hosted_page'
                 ];
 
                 optionKeys.forEach(key => {
@@ -49,10 +53,8 @@ const HtmlViewer = () => {
                 let html;
 
                 if (transactionId) {
-                    // With transaction_id - call secure view API
                     html = await ApiService.viewSecureHtml(guideId, transactionId, token, stylingOptions);
                 } else {
-                    // Without transaction_id - call content view API
                     html = await ApiService.viewDigitalContentHtml(guideId, token, stylingOptions);
                 }
 
