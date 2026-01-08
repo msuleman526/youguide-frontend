@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Layout, Menu, Typography, Card, Tag, Divider, Space, Button, Drawer, Modal, Dropdown } from 'antd';
 import {
   ApiOutlined,
@@ -11,6 +11,14 @@ import {
   PartitionOutlined,
   DownOutlined,
 } from '@ant-design/icons';
+import ReactFlow, {
+  Controls,
+  Background,
+  useNodesState,
+  useEdgesState,
+  MarkerType
+} from 'reactflow';
+import 'reactflow/dist/style.css';
 import './ApiDocumentation.css';
 
 const { Sider, Content } = Layout;
@@ -38,386 +46,183 @@ const ApiDocumentation = () => {
     setFlowChartVisible(true);
   };
 
-  const renderFlowChartContent = () => {
+  // Flow chart configurations for React Flow
+  const getFlowChartData = (type) => {
+    const nodeStyle = {
+      padding: 10,
+      borderRadius: 8,
+      fontSize: 11,
+      textAlign: 'center',
+      width: 200,
+    };
+
     const flowCharts = {
       'pdf-prepaid': {
         title: 'PDF Prepaid API Flow',
-        content: (
-          <div style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 1.8 }}>
-            <div style={{ background: '#e6f7ff', padding: 16, borderRadius: 8, marginBottom: 16 }}>
-              <strong>Token Type:</strong> PDF | <strong>Payment Type:</strong> Prepaid (Free)
-            </div>
-            <pre style={{ background: '#f5f5f5', padding: 16, borderRadius: 8, overflow: 'auto' }}>{`
-┌─────────────────────────────────────────────────────────────┐
-│                    START: Client Request                     │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  1. GET /api/travel-content/languages                        │
-│     Header: Authorization: Bearer YOUR_TOKEN                 │
-│     Response: List of available languages                    │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  2. GET /api/travel-content/categories                       │
-│     Response: Categories allowed for your token              │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  3. GET /api/travel-content/guides?lang=en&category_id=xxx   │
-│     Response: List of guides with pagination                 │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  4. User selects a guide to download                         │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  5. GET /api/travel-guides/pdf/content/:guideId              │
-│     ┌─────────────────────────────────────────────────────┐ │
-│     │                 VALIDATION CHECKS                    │ │
-│     ├─────────────────────────────────────────────────────┤ │
-│     │ ✓ Token type = "pdf"?                               │ │
-│     │ ✓ Payment type = "free"?                            │ │
-│     │ ✓ Guide category in allowed categories?             │ │
-│     │ ✓ Quota remaining > 0 OR already accessed?          │ │
-│     └─────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-                              │
-              ┌───────────────┴───────────────┐
-              ▼                               ▼
-┌──────────────────────┐         ┌──────────────────────────┐
-│   VALIDATION FAILED  │         │   VALIDATION PASSED      │
-│   Return 403 Error   │         │                          │
-└──────────────────────┘         └──────────────────────────┘
-                                              │
-                          ┌───────────────────┴───────────────────┐
-                          ▼                                       ▼
-              ┌─────────────────────┐               ┌─────────────────────┐
-              │ First time access?  │               │ Already accessed?   │
-              │ Deduct 1 from quota │               │ No quota deduction  │
-              └─────────────────────┘               └─────────────────────┘
-                          │                                       │
-                          └───────────────────┬───────────────────┘
-                                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  6. Response: PDF file download                              │
-│     Content-Type: application/pdf                            │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                         END                                  │
-└─────────────────────────────────────────────────────────────┘
-`}</pre>
-          </div>
-        )
+        nodes: [
+          { id: '1', position: { x: 250, y: 0 }, data: { label: 'START' }, style: { ...nodeStyle, background: '#d9f7be', border: '2px solid #52c41a' } },
+          { id: '2', position: { x: 250, y: 80 }, data: { label: 'GET /api/travel-content/languages' }, style: { ...nodeStyle, background: '#e6f7ff', border: '1px solid #1890ff' } },
+          { id: '3', position: { x: 250, y: 160 }, data: { label: 'GET /api/travel-content/categories' }, style: { ...nodeStyle, background: '#e6f7ff', border: '1px solid #1890ff' } },
+          { id: '4', position: { x: 250, y: 240 }, data: { label: 'GET /api/travel-content/guides' }, style: { ...nodeStyle, background: '#e6f7ff', border: '1px solid #1890ff' } },
+          { id: '5', position: { x: 250, y: 320 }, data: { label: 'User selects guide' }, style: { ...nodeStyle, background: '#fff7e6', border: '1px solid #ffa940' } },
+          { id: '6', position: { x: 250, y: 400 }, data: { label: 'GET /api/travel-guides/pdf/content/:guideId' }, style: { ...nodeStyle, background: '#f0f5ff', border: '1px solid #2f54eb' } },
+          { id: '7', position: { x: 250, y: 480 }, data: { label: 'VALIDATION\n✓ Token type = pdf?\n✓ Payment = free?\n✓ Category allowed?\n✓ Quota > 0?' }, style: { ...nodeStyle, background: '#fff1f0', border: '2px solid #ff4d4f', width: 220, height: 100 } },
+          { id: '8', position: { x: 80, y: 620 }, data: { label: '❌ FAILED\nReturn 403 Error' }, style: { ...nodeStyle, background: '#fff1f0', border: '1px solid #ff4d4f' } },
+          { id: '9', position: { x: 420, y: 620 }, data: { label: '✅ PASSED' }, style: { ...nodeStyle, background: '#f6ffed', border: '1px solid #52c41a' } },
+          { id: '10', position: { x: 320, y: 720 }, data: { label: 'First access?\nDeduct quota' }, style: { ...nodeStyle, background: '#fffbe6', border: '1px solid #faad14' } },
+          { id: '11', position: { x: 520, y: 720 }, data: { label: 'Already accessed?\nNo deduction' }, style: { ...nodeStyle, background: '#f6ffed', border: '1px solid #52c41a' } },
+          { id: '12', position: { x: 420, y: 820 }, data: { label: 'Response: PDF Download' }, style: { ...nodeStyle, background: '#d9f7be', border: '1px solid #52c41a' } },
+          { id: '13', position: { x: 420, y: 900 }, data: { label: 'END' }, style: { ...nodeStyle, background: '#d9f7be', border: '2px solid #52c41a' } },
+        ],
+        edges: [
+          { id: 'e1-2', source: '1', target: '2', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e2-3', source: '2', target: '3', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e3-4', source: '3', target: '4', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e4-5', source: '4', target: '5', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e5-6', source: '5', target: '6', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e6-7', source: '6', target: '7', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e7-8', source: '7', target: '8', label: 'No', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: '#ff4d4f' } },
+          { id: 'e7-9', source: '7', target: '9', label: 'Yes', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: '#52c41a' } },
+          { id: 'e9-10', source: '9', target: '10', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e9-11', source: '9', target: '11', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e10-12', source: '10', target: '12', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e11-12', source: '11', target: '12', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e12-13', source: '12', target: '13', markerEnd: { type: MarkerType.ArrowClosed } },
+        ]
       },
       'pdf-paid': {
         title: 'PDF Paid API Flow',
-        content: (
-          <div style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 1.8 }}>
-            <div style={{ background: '#fff7e6', padding: 16, borderRadius: 8, marginBottom: 16 }}>
-              <strong>Token Type:</strong> PDF | <strong>Payment Type:</strong> Paid (Stripe)
-            </div>
-            <pre style={{ background: '#f5f5f5', padding: 16, borderRadius: 8, overflow: 'auto' }}>{`
-┌─────────────────────────────────────────────────────────────┐
-│                    START: Client Request                     │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  1. GET /api/travel-content/languages                        │
-│  2. GET /api/travel-content/categories                       │
-│  3. GET /api/travel-content/guides                           │
-│     (Same as Prepaid - browse available guides)              │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  4. User selects a guide to PURCHASE                         │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  5. POST /api/travel-guides/pdf/secure/checkout              │
-│     Body: { guide_id: "xxx", content_type: "pdf" }           │
-│     ┌─────────────────────────────────────────────────────┐ │
-│     │                 VALIDATION CHECKS                    │ │
-│     ├─────────────────────────────────────────────────────┤ │
-│     │ ✓ Token type = "pdf"?                               │ │
-│     │ ✓ Payment type = "paid"?                            │ │
-│     │ ✓ Guide category in allowed categories?             │ │
-│     └─────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  6. Response: Stripe checkout URL + transaction_id           │
-│     { checkout_url: "https://checkout.stripe.com/...",       │
-│       transaction_id: "txn_abc123" }                         │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  7. Redirect user to Stripe checkout                         │
-│     User completes payment on Stripe                         │
-└─────────────────────────────────────────────────────────────┘
-                              │
-              ┌───────────────┴───────────────┐
-              ▼                               ▼
-┌──────────────────────┐         ┌──────────────────────────┐
-│   PAYMENT FAILED     │         │   PAYMENT SUCCESS        │
-│   Redirect to cancel │         │   Redirect to success    │
-│   URL                │         │   URL with params        │
-└──────────────────────┘         └──────────────────────────┘
-                                              │
-                                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  8. GET /api/travel-guides/pdf/secure/download               │
-│     Params: transaction_id=xxx&guide_id=xxx                  │
-│     ┌─────────────────────────────────────────────────────┐ │
-│     │                 VALIDATION CHECKS                    │ │
-│     ├─────────────────────────────────────────────────────┤ │
-│     │ ✓ Transaction exists?                               │ │
-│     │ ✓ Payment status = "completed"?                     │ │
-│     │ ✓ Guide matches transaction?                        │ │
-│     └─────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  9. Response: PDF file download                              │
-│     Content-Type: application/pdf                            │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                         END                                  │
-└─────────────────────────────────────────────────────────────┘
-`}</pre>
-          </div>
-        )
+        nodes: [
+          { id: '1', position: { x: 300, y: 0 }, data: { label: 'START' }, style: { ...nodeStyle, background: '#d9f7be', border: '2px solid #52c41a' } },
+          { id: '2', position: { x: 300, y: 80 }, data: { label: 'Browse Guides\n(languages, categories, guides)' }, style: { ...nodeStyle, background: '#e6f7ff', border: '1px solid #1890ff' } },
+          { id: '3', position: { x: 300, y: 170 }, data: { label: 'User selects guide to PURCHASE' }, style: { ...nodeStyle, background: '#fff7e6', border: '1px solid #ffa940' } },
+          { id: '4', position: { x: 300, y: 260 }, data: { label: 'POST /api/travel-guides/pdf/secure/checkout\n{ guide_id, content_type: "pdf" }' }, style: { ...nodeStyle, background: '#f0f5ff', border: '1px solid #2f54eb', width: 250 } },
+          { id: '5', position: { x: 300, y: 360 }, data: { label: 'VALIDATION\n✓ Token type = pdf?\n✓ Payment = paid?\n✓ Category allowed?' }, style: { ...nodeStyle, background: '#fff1f0', border: '2px solid #ff4d4f', width: 200, height: 90 } },
+          { id: '6', position: { x: 300, y: 490 }, data: { label: 'Response:\n{ checkout_url, transaction_id }' }, style: { ...nodeStyle, background: '#f9f0ff', border: '1px solid #722ed1' } },
+          { id: '7', position: { x: 300, y: 580 }, data: { label: 'Redirect to Stripe Checkout' }, style: { ...nodeStyle, background: '#e6fffb', border: '1px solid #13c2c2' } },
+          { id: '8', position: { x: 120, y: 680 }, data: { label: '❌ Payment Failed\nRedirect to cancel URL' }, style: { ...nodeStyle, background: '#fff1f0', border: '1px solid #ff4d4f' } },
+          { id: '9', position: { x: 480, y: 680 }, data: { label: '✅ Payment Success\nRedirect to success URL' }, style: { ...nodeStyle, background: '#f6ffed', border: '1px solid #52c41a' } },
+          { id: '10', position: { x: 480, y: 780 }, data: { label: 'GET /api/travel-guides/pdf/secure/download\n?transaction_id=xxx&guide_id=xxx' }, style: { ...nodeStyle, background: '#f0f5ff', border: '1px solid #2f54eb', width: 280 } },
+          { id: '11', position: { x: 480, y: 880 }, data: { label: 'VALIDATION\n✓ Transaction exists?\n✓ Payment completed?\n✓ Guide matches?' }, style: { ...nodeStyle, background: '#fff1f0', border: '2px solid #ff4d4f', height: 90 } },
+          { id: '12', position: { x: 480, y: 1010 }, data: { label: 'Response: PDF Download' }, style: { ...nodeStyle, background: '#d9f7be', border: '1px solid #52c41a' } },
+          { id: '13', position: { x: 480, y: 1090 }, data: { label: 'END' }, style: { ...nodeStyle, background: '#d9f7be', border: '2px solid #52c41a' } },
+        ],
+        edges: [
+          { id: 'e1-2', source: '1', target: '2', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e2-3', source: '2', target: '3', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e3-4', source: '3', target: '4', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e4-5', source: '4', target: '5', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e5-6', source: '5', target: '6', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e6-7', source: '6', target: '7', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e7-8', source: '7', target: '8', label: 'Failed', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: '#ff4d4f' } },
+          { id: 'e7-9', source: '7', target: '9', label: 'Success', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: '#52c41a' } },
+          { id: 'e9-10', source: '9', target: '10', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e10-11', source: '10', target: '11', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e11-12', source: '11', target: '12', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e12-13', source: '12', target: '13', markerEnd: { type: MarkerType.ArrowClosed } },
+        ]
       },
       'html-json-prepaid': {
         title: 'HTML/JSON Prepaid API Flow',
-        content: (
-          <div style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 1.8 }}>
-            <div style={{ background: '#f6ffed', padding: 16, borderRadius: 8, marginBottom: 16 }}>
-              <strong>Token Type:</strong> HTML/JSON | <strong>Payment Type:</strong> Prepaid (Free)
-            </div>
-            <pre style={{ background: '#f5f5f5', padding: 16, borderRadius: 8, overflow: 'auto' }}>{`
-┌─────────────────────────────────────────────────────────────┐
-│                    START: Client Request                     │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  1. GET /api/travel-content/languages                        │
-│  2. GET /api/travel-content/categories                       │
-│  3. GET /api/travel-content/guides                           │
-│     (Browse available guides)                                │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  4. User selects a guide - Choose output format:             │
-│     ┌─────────────┐          ┌─────────────┐                │
-│     │    JSON     │    OR    │    HTML     │                │
-│     └─────────────┘          └─────────────┘                │
-└─────────────────────────────────────────────────────────────┘
-                              │
-          ┌───────────────────┴───────────────────┐
-          ▼                                       ▼
-┌─────────────────────┐               ┌─────────────────────────┐
-│ JSON FORMAT         │               │ HTML FORMAT             │
-│                     │               │                         │
-│ GET /api/travel-    │               │ GET /api/travel-        │
-│ guides/digital/     │               │ guides/digital/         │
-│ content/data/:id    │               │ content/view/:id        │
-│                     │               │                         │
-│ Params:             │               │ Params:                 │
-│ • headings=2,3,4    │               │ • headings=2,3,4        │
-│ • heading_format    │               │ • heading_format        │
-│                     │               │ • title_color           │
-│                     │               │ • title_size            │
-│                     │               │ • heading_color         │
-│                     │               │ • heading_size          │
-│                     │               │ • sub_heading_color     │
-│                     │               │ • sub_heading_size      │
-│                     │               │ • paragraph_color       │
-│                     │               │ • paragraph_size        │
-│                     │               │ • mode (light/dark)     │
-│                     │               │ • heading_visible       │
-│                     │               │ • table_of_content_color│
-│                     │               │ • hosted_page           │
-└─────────────────────┘               └─────────────────────────┘
-          │                                       │
-          └───────────────────┬───────────────────┘
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    VALIDATION CHECKS                         │
-│  ┌─────────────────────────────────────────────────────────┐│
-│  │ ✓ Token type = "html_json"?                             ││
-│  │ ✓ Payment type = "free"?                                ││
-│  │ ✓ Guide category in allowed categories?                 ││
-│  │ ✓ Quota remaining > 0 OR already accessed?              ││
-│  └─────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────┘
-                              │
-              ┌───────────────┴───────────────┐
-              ▼                               ▼
-┌──────────────────────┐         ┌──────────────────────────┐
-│ First time access?   │         │ Already accessed?        │
-│ Deduct 1 from quota  │         │ No quota deduction       │
-└──────────────────────┘         └──────────────────────────┘
-                              │
-          ┌───────────────────┴───────────────────┐
-          ▼                                       ▼
-┌─────────────────────┐               ┌─────────────────────┐
-│ JSON Response       │               │ HTML Response       │
-│ {                   │               │ Full HTML page      │
-│   guide: {...},     │               │ with styling        │
-│   content: [...],   │               │ applied             │
-│   access_info: {    │               │                     │
-│     remaining_quota │               │                     │
-│   }                 │               │                     │
-│ }                   │               │                     │
-└─────────────────────┘               └─────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                         END                                  │
-└─────────────────────────────────────────────────────────────┘
-`}</pre>
-          </div>
-        )
+        nodes: [
+          { id: '1', position: { x: 300, y: 0 }, data: { label: 'START' }, style: { ...nodeStyle, background: '#d9f7be', border: '2px solid #52c41a' } },
+          { id: '2', position: { x: 300, y: 80 }, data: { label: 'Browse Guides\n(languages, categories, guides)' }, style: { ...nodeStyle, background: '#e6f7ff', border: '1px solid #1890ff' } },
+          { id: '3', position: { x: 300, y: 170 }, data: { label: 'User selects guide\nChoose format: JSON or HTML' }, style: { ...nodeStyle, background: '#fff7e6', border: '1px solid #ffa940' } },
+          { id: '4', position: { x: 120, y: 280 }, data: { label: 'JSON Format\nGET /digital/content/data/:id\n\nParams:\n• headings\n• heading_format' }, style: { ...nodeStyle, background: '#f0f5ff', border: '1px solid #2f54eb', width: 180, height: 120 } },
+          { id: '5', position: { x: 480, y: 280 }, data: { label: 'HTML Format\nGET /digital/content/view/:id\n\nParams: headings, heading_format,\ntitle_color, title_size, heading_color,\nheading_size, paragraph_color, mode...' }, style: { ...nodeStyle, background: '#f9f0ff', border: '1px solid #722ed1', width: 220, height: 130 } },
+          { id: '6', position: { x: 300, y: 450 }, data: { label: 'VALIDATION\n✓ Token type = html_json?\n✓ Payment = free?\n✓ Category allowed?\n✓ Quota > 0?' }, style: { ...nodeStyle, background: '#fff1f0', border: '2px solid #ff4d4f', width: 220, height: 100 } },
+          { id: '7', position: { x: 100, y: 600 }, data: { label: '❌ FAILED\nReturn 403 Error' }, style: { ...nodeStyle, background: '#fff1f0', border: '1px solid #ff4d4f' } },
+          { id: '8', position: { x: 500, y: 600 }, data: { label: '✅ PASSED' }, style: { ...nodeStyle, background: '#f6ffed', border: '1px solid #52c41a' } },
+          { id: '9', position: { x: 380, y: 700 }, data: { label: 'First access?\nDeduct quota' }, style: { ...nodeStyle, background: '#fffbe6', border: '1px solid #faad14' } },
+          { id: '10', position: { x: 600, y: 700 }, data: { label: 'Already accessed?\nNo deduction' }, style: { ...nodeStyle, background: '#f6ffed', border: '1px solid #52c41a' } },
+          { id: '11', position: { x: 200, y: 820 }, data: { label: 'JSON Response\n{ guide, content, access_info }' }, style: { ...nodeStyle, background: '#f0f5ff', border: '1px solid #2f54eb' } },
+          { id: '12', position: { x: 500, y: 820 }, data: { label: 'HTML Response\nFull styled HTML page' }, style: { ...nodeStyle, background: '#f9f0ff', border: '1px solid #722ed1' } },
+          { id: '13', position: { x: 350, y: 920 }, data: { label: 'END' }, style: { ...nodeStyle, background: '#d9f7be', border: '2px solid #52c41a' } },
+        ],
+        edges: [
+          { id: 'e1-2', source: '1', target: '2', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e2-3', source: '2', target: '3', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e3-4', source: '3', target: '4', label: 'JSON', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e3-5', source: '3', target: '5', label: 'HTML', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e4-6', source: '4', target: '6', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e5-6', source: '5', target: '6', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e6-7', source: '6', target: '7', label: 'No', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: '#ff4d4f' } },
+          { id: 'e6-8', source: '6', target: '8', label: 'Yes', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: '#52c41a' } },
+          { id: 'e8-9', source: '8', target: '9', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e8-10', source: '8', target: '10', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e9-11', source: '9', target: '11', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e9-12', source: '9', target: '12', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e10-11', source: '10', target: '11', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e10-12', source: '10', target: '12', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e11-13', source: '11', target: '13', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e12-13', source: '12', target: '13', markerEnd: { type: MarkerType.ArrowClosed } },
+        ]
       },
       'html-json-paid': {
         title: 'HTML/JSON Paid API Flow',
-        content: (
-          <div style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 1.8 }}>
-            <div style={{ background: '#fff0f6', padding: 16, borderRadius: 8, marginBottom: 16 }}>
-              <strong>Token Type:</strong> HTML/JSON | <strong>Payment Type:</strong> Paid (Stripe)
-            </div>
-            <pre style={{ background: '#f5f5f5', padding: 16, borderRadius: 8, overflow: 'auto' }}>{`
-┌─────────────────────────────────────────────────────────────┐
-│                    START: Client Request                     │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  1. GET /api/travel-content/languages                        │
-│  2. GET /api/travel-content/categories                       │
-│  3. GET /api/travel-content/guides                           │
-│     (Browse available guides)                                │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  4. User selects a guide to PURCHASE                         │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  5. POST /api/travel-guides/digital/secure/checkout          │
-│     Body: { guide_id: "xxx", content_type: "digital" }       │
-│     ┌─────────────────────────────────────────────────────┐ │
-│     │ ✓ Token type = "html_json"?                         │ │
-│     │ ✓ Payment type = "paid"?                            │ │
-│     │ ✓ Guide category in allowed categories?             │ │
-│     └─────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  6. Response: Stripe checkout URL + transaction_id           │
-│     { checkout_url: "...", transaction_id: "txn_abc123" }    │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  7. User completes payment on Stripe                         │
-│     Redirected to success URL with transaction_id            │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│  8. Access content - Choose output format:                   │
-│     ┌─────────────┐          ┌─────────────┐                │
-│     │    JSON     │    OR    │    HTML     │                │
-│     └─────────────┘          └─────────────┘                │
-└─────────────────────────────────────────────────────────────┘
-                              │
-          ┌───────────────────┴───────────────────┐
-          ▼                                       ▼
-┌─────────────────────┐               ┌─────────────────────────┐
-│ JSON FORMAT         │               │ HTML FORMAT             │
-│                     │               │                         │
-│ GET /api/travel-    │               │ GET /api/travel-        │
-│ guides/digital/     │               │ guides/digital/         │
-│ secure/data         │               │ secure/view             │
-│                     │               │                         │
-│ Params:             │               │ Params:                 │
-│ • transaction_id    │               │ • transaction_id        │
-│ • guide_id          │               │ • guide_id              │
-│ • headings=2,3,4    │               │ • headings=2,3,4        │
-│ • heading_format    │               │ • heading_format        │
-│                     │               │ • title_color           │
-│                     │               │ • title_size            │
-│                     │               │ • heading_color         │
-│                     │               │ • heading_size          │
-│                     │               │ • sub_heading_color     │
-│                     │               │ • sub_heading_size      │
-│                     │               │ • paragraph_color       │
-│                     │               │ • paragraph_size        │
-│                     │               │ • mode (light/dark)     │
-│                     │               │ • heading_visible       │
-│                     │               │ • table_of_content_color│
-│                     │               │ • hosted_page           │
-└─────────────────────┘               └─────────────────────────┘
-          │                                       │
-          └───────────────────┬───────────────────┘
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    VALIDATION CHECKS                         │
-│  ┌─────────────────────────────────────────────────────────┐│
-│  │ ✓ Transaction exists?                                   ││
-│  │ ✓ Payment status = "completed"?                         ││
-│  │ ✓ Guide matches transaction?                            ││
-│  │ ✓ Token owns this transaction?                          ││
-│  └─────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────┘
-                              │
-          ┌───────────────────┴───────────────────┐
-          ▼                                       ▼
-┌─────────────────────┐               ┌─────────────────────┐
-│ JSON Response       │               │ HTML Response       │
-│ {                   │               │ Full HTML page      │
-│   guide: {...},     │               │ with styling        │
-│   content: [...],   │               │ applied             │
-│   transaction: {    │               │                     │
-│     ...             │               │                     │
-│   }                 │               │                     │
-│ }                   │               │                     │
-└─────────────────────┘               └─────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                         END                                  │
-└─────────────────────────────────────────────────────────────┘
-`}</pre>
-          </div>
-        )
+        nodes: [
+          { id: '1', position: { x: 300, y: 0 }, data: { label: 'START' }, style: { ...nodeStyle, background: '#d9f7be', border: '2px solid #52c41a' } },
+          { id: '2', position: { x: 300, y: 80 }, data: { label: 'Browse Guides\n(languages, categories, guides)' }, style: { ...nodeStyle, background: '#e6f7ff', border: '1px solid #1890ff' } },
+          { id: '3', position: { x: 300, y: 170 }, data: { label: 'User selects guide to PURCHASE' }, style: { ...nodeStyle, background: '#fff7e6', border: '1px solid #ffa940' } },
+          { id: '4', position: { x: 300, y: 260 }, data: { label: 'POST /digital/secure/checkout\n{ guide_id, content_type: "digital" }' }, style: { ...nodeStyle, background: '#f0f5ff', border: '1px solid #2f54eb', width: 250 } },
+          { id: '5', position: { x: 300, y: 360 }, data: { label: 'Response:\n{ checkout_url, transaction_id }' }, style: { ...nodeStyle, background: '#f9f0ff', border: '1px solid #722ed1' } },
+          { id: '6', position: { x: 300, y: 450 }, data: { label: 'Redirect to Stripe Checkout' }, style: { ...nodeStyle, background: '#e6fffb', border: '1px solid #13c2c2' } },
+          { id: '7', position: { x: 100, y: 550 }, data: { label: '❌ Payment Failed' }, style: { ...nodeStyle, background: '#fff1f0', border: '1px solid #ff4d4f' } },
+          { id: '8', position: { x: 500, y: 550 }, data: { label: '✅ Payment Success' }, style: { ...nodeStyle, background: '#f6ffed', border: '1px solid #52c41a' } },
+          { id: '9', position: { x: 500, y: 650 }, data: { label: 'Choose format: JSON or HTML' }, style: { ...nodeStyle, background: '#fff7e6', border: '1px solid #ffa940' } },
+          { id: '10', position: { x: 300, y: 760 }, data: { label: 'JSON Format\nGET /digital/secure/data\n?transaction_id&guide_id\n&headings&heading_format' }, style: { ...nodeStyle, background: '#f0f5ff', border: '1px solid #2f54eb', width: 200, height: 100 } },
+          { id: '11', position: { x: 550, y: 760 }, data: { label: 'HTML Format\nGET /digital/secure/view\n?transaction_id&guide_id\n+ all styling params' }, style: { ...nodeStyle, background: '#f9f0ff', border: '1px solid #722ed1', width: 200, height: 100 } },
+          { id: '12', position: { x: 420, y: 900 }, data: { label: 'VALIDATION\n✓ Transaction exists?\n✓ Payment completed?\n✓ Guide matches?' }, style: { ...nodeStyle, background: '#fff1f0', border: '2px solid #ff4d4f', height: 90 } },
+          { id: '13', position: { x: 300, y: 1030 }, data: { label: 'JSON Response' }, style: { ...nodeStyle, background: '#f0f5ff', border: '1px solid #2f54eb' } },
+          { id: '14', position: { x: 550, y: 1030 }, data: { label: 'HTML Response' }, style: { ...nodeStyle, background: '#f9f0ff', border: '1px solid #722ed1' } },
+          { id: '15', position: { x: 420, y: 1120 }, data: { label: 'END' }, style: { ...nodeStyle, background: '#d9f7be', border: '2px solid #52c41a' } },
+        ],
+        edges: [
+          { id: 'e1-2', source: '1', target: '2', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e2-3', source: '2', target: '3', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e3-4', source: '3', target: '4', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e4-5', source: '4', target: '5', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e5-6', source: '5', target: '6', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e6-7', source: '6', target: '7', label: 'Failed', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: '#ff4d4f' } },
+          { id: 'e6-8', source: '6', target: '8', label: 'Success', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: '#52c41a' } },
+          { id: 'e8-9', source: '8', target: '9', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e9-10', source: '9', target: '10', label: 'JSON', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e9-11', source: '9', target: '11', label: 'HTML', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e10-12', source: '10', target: '12', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e11-12', source: '11', target: '12', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e12-13', source: '12', target: '13', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e12-14', source: '12', target: '14', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e13-15', source: '13', target: '15', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e14-15', source: '14', target: '15', markerEnd: { type: MarkerType.ArrowClosed } },
+        ]
       }
     };
 
-    return flowCharts[selectedFlowChart] || null;
+    return flowCharts[type] || null;
+  };
+
+  const FlowChartComponent = ({ type }) => {
+    const flowData = getFlowChartData(type);
+    const [nodes, setNodes, onNodesChange] = useNodesState(flowData?.nodes || []);
+    const [edges, setEdges, onEdgesChange] = useEdgesState(flowData?.edges || []);
+
+    if (!flowData) return null;
+
+    return (
+      <div style={{ height: 600, border: '1px solid #d9d9d9', borderRadius: 8 }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          fitView
+          attributionPosition="bottom-left"
+        >
+          <Controls />
+          <Background color="#aaa" gap={16} />
+        </ReactFlow>
+      </div>
+    );
   };
 
   useEffect(() => {
@@ -3551,7 +3356,7 @@ Returns full HTML page with applied styling`
 
       {/* Flow Chart Modal */}
       <Modal
-        title={renderFlowChartContent()?.title || 'API Flow Chart'}
+        title={getFlowChartData(selectedFlowChart)?.title || 'API Flow Chart'}
         open={flowChartVisible}
         onCancel={() => setFlowChartVisible(false)}
         footer={[
@@ -3559,12 +3364,12 @@ Returns full HTML page with applied styling`
             Close
           </Button>
         ]}
-        width={900}
+        width={1000}
         styles={{
-          body: { maxHeight: '70vh', overflow: 'auto' }
+          body: { padding: '16px' }
         }}
       >
-        {renderFlowChartContent()?.content}
+        <FlowChartComponent type={selectedFlowChart} />
       </Modal>
     </Layout>
   );
