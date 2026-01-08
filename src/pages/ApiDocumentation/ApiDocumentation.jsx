@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Typography, Card, Tag, Divider, Space, Button, Drawer } from 'antd';
+import { Layout, Menu, Typography, Card, Tag, Divider, Space, Button, Drawer, Modal, Dropdown } from 'antd';
 import {
   ApiOutlined,
   FileTextOutlined,
@@ -8,6 +8,8 @@ import {
   DollarOutlined,
   FreeOutlined,
   MenuOutlined,
+  PartitionOutlined,
+  DownOutlined,
 } from '@ant-design/icons';
 import './ApiDocumentation.css';
 
@@ -21,6 +23,402 @@ const ApiDocumentation = () => {
   const [mobileDrawerVisible, setMobileDrawerVisible] = useState(false);
   const [previewDrawerVisible, setPreviewDrawerVisible] = useState(false);
   const [currentPreviewHtml, setCurrentPreviewHtml] = useState('');
+  const [flowChartVisible, setFlowChartVisible] = useState(false);
+  const [selectedFlowChart, setSelectedFlowChart] = useState(null);
+
+  const flowChartItems = [
+    { key: 'pdf-prepaid', label: 'PDF Prepaid Flow' },
+    { key: 'pdf-paid', label: 'PDF Paid Flow' },
+    { key: 'html-json-prepaid', label: 'HTML/JSON Prepaid Flow' },
+    { key: 'html-json-paid', label: 'HTML/JSON Paid Flow' },
+  ];
+
+  const handleFlowChartSelect = ({ key }) => {
+    setSelectedFlowChart(key);
+    setFlowChartVisible(true);
+  };
+
+  const renderFlowChartContent = () => {
+    const flowCharts = {
+      'pdf-prepaid': {
+        title: 'PDF Prepaid API Flow',
+        content: (
+          <div style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 1.8 }}>
+            <div style={{ background: '#e6f7ff', padding: 16, borderRadius: 8, marginBottom: 16 }}>
+              <strong>Token Type:</strong> PDF | <strong>Payment Type:</strong> Prepaid (Free)
+            </div>
+            <pre style={{ background: '#f5f5f5', padding: 16, borderRadius: 8, overflow: 'auto' }}>{`
+┌─────────────────────────────────────────────────────────────┐
+│                    START: Client Request                     │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  1. GET /api/travel-content/languages                        │
+│     Header: Authorization: Bearer YOUR_TOKEN                 │
+│     Response: List of available languages                    │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  2. GET /api/travel-content/categories                       │
+│     Response: Categories allowed for your token              │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  3. GET /api/travel-content/guides?lang=en&category_id=xxx   │
+│     Response: List of guides with pagination                 │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  4. User selects a guide to download                         │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  5. GET /api/travel-guides/pdf/content/:guideId              │
+│     ┌─────────────────────────────────────────────────────┐ │
+│     │                 VALIDATION CHECKS                    │ │
+│     ├─────────────────────────────────────────────────────┤ │
+│     │ ✓ Token type = "pdf"?                               │ │
+│     │ ✓ Payment type = "free"?                            │ │
+│     │ ✓ Guide category in allowed categories?             │ │
+│     │ ✓ Quota remaining > 0 OR already accessed?          │ │
+│     └─────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+                              │
+              ┌───────────────┴───────────────┐
+              ▼                               ▼
+┌──────────────────────┐         ┌──────────────────────────┐
+│   VALIDATION FAILED  │         │   VALIDATION PASSED      │
+│   Return 403 Error   │         │                          │
+└──────────────────────┘         └──────────────────────────┘
+                                              │
+                          ┌───────────────────┴───────────────────┐
+                          ▼                                       ▼
+              ┌─────────────────────┐               ┌─────────────────────┐
+              │ First time access?  │               │ Already accessed?   │
+              │ Deduct 1 from quota │               │ No quota deduction  │
+              └─────────────────────┘               └─────────────────────┘
+                          │                                       │
+                          └───────────────────┬───────────────────┘
+                                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  6. Response: PDF file download                              │
+│     Content-Type: application/pdf                            │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                         END                                  │
+└─────────────────────────────────────────────────────────────┘
+`}</pre>
+          </div>
+        )
+      },
+      'pdf-paid': {
+        title: 'PDF Paid API Flow',
+        content: (
+          <div style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 1.8 }}>
+            <div style={{ background: '#fff7e6', padding: 16, borderRadius: 8, marginBottom: 16 }}>
+              <strong>Token Type:</strong> PDF | <strong>Payment Type:</strong> Paid (Stripe)
+            </div>
+            <pre style={{ background: '#f5f5f5', padding: 16, borderRadius: 8, overflow: 'auto' }}>{`
+┌─────────────────────────────────────────────────────────────┐
+│                    START: Client Request                     │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  1. GET /api/travel-content/languages                        │
+│  2. GET /api/travel-content/categories                       │
+│  3. GET /api/travel-content/guides                           │
+│     (Same as Prepaid - browse available guides)              │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  4. User selects a guide to PURCHASE                         │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  5. POST /api/travel-guides/pdf/secure/checkout              │
+│     Body: { guide_id: "xxx", content_type: "pdf" }           │
+│     ┌─────────────────────────────────────────────────────┐ │
+│     │                 VALIDATION CHECKS                    │ │
+│     ├─────────────────────────────────────────────────────┤ │
+│     │ ✓ Token type = "pdf"?                               │ │
+│     │ ✓ Payment type = "paid"?                            │ │
+│     │ ✓ Guide category in allowed categories?             │ │
+│     └─────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  6. Response: Stripe checkout URL + transaction_id           │
+│     { checkout_url: "https://checkout.stripe.com/...",       │
+│       transaction_id: "txn_abc123" }                         │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  7. Redirect user to Stripe checkout                         │
+│     User completes payment on Stripe                         │
+└─────────────────────────────────────────────────────────────┘
+                              │
+              ┌───────────────┴───────────────┐
+              ▼                               ▼
+┌──────────────────────┐         ┌──────────────────────────┐
+│   PAYMENT FAILED     │         │   PAYMENT SUCCESS        │
+│   Redirect to cancel │         │   Redirect to success    │
+│   URL                │         │   URL with params        │
+└──────────────────────┘         └──────────────────────────┘
+                                              │
+                                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  8. GET /api/travel-guides/pdf/secure/download               │
+│     Params: transaction_id=xxx&guide_id=xxx                  │
+│     ┌─────────────────────────────────────────────────────┐ │
+│     │                 VALIDATION CHECKS                    │ │
+│     ├─────────────────────────────────────────────────────┤ │
+│     │ ✓ Transaction exists?                               │ │
+│     │ ✓ Payment status = "completed"?                     │ │
+│     │ ✓ Guide matches transaction?                        │ │
+│     └─────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  9. Response: PDF file download                              │
+│     Content-Type: application/pdf                            │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                         END                                  │
+└─────────────────────────────────────────────────────────────┘
+`}</pre>
+          </div>
+        )
+      },
+      'html-json-prepaid': {
+        title: 'HTML/JSON Prepaid API Flow',
+        content: (
+          <div style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 1.8 }}>
+            <div style={{ background: '#f6ffed', padding: 16, borderRadius: 8, marginBottom: 16 }}>
+              <strong>Token Type:</strong> HTML/JSON | <strong>Payment Type:</strong> Prepaid (Free)
+            </div>
+            <pre style={{ background: '#f5f5f5', padding: 16, borderRadius: 8, overflow: 'auto' }}>{`
+┌─────────────────────────────────────────────────────────────┐
+│                    START: Client Request                     │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  1. GET /api/travel-content/languages                        │
+│  2. GET /api/travel-content/categories                       │
+│  3. GET /api/travel-content/guides                           │
+│     (Browse available guides)                                │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  4. User selects a guide - Choose output format:             │
+│     ┌─────────────┐          ┌─────────────┐                │
+│     │    JSON     │    OR    │    HTML     │                │
+│     └─────────────┘          └─────────────┘                │
+└─────────────────────────────────────────────────────────────┘
+                              │
+          ┌───────────────────┴───────────────────┐
+          ▼                                       ▼
+┌─────────────────────┐               ┌─────────────────────────┐
+│ JSON FORMAT         │               │ HTML FORMAT             │
+│                     │               │                         │
+│ GET /api/travel-    │               │ GET /api/travel-        │
+│ guides/digital/     │               │ guides/digital/         │
+│ content/data/:id    │               │ content/view/:id        │
+│                     │               │                         │
+│ Params:             │               │ Params:                 │
+│ • headings=2,3,4    │               │ • headings=2,3,4        │
+│ • heading_format    │               │ • heading_format        │
+│                     │               │ • title_color           │
+│                     │               │ • title_size            │
+│                     │               │ • heading_color         │
+│                     │               │ • heading_size          │
+│                     │               │ • sub_heading_color     │
+│                     │               │ • sub_heading_size      │
+│                     │               │ • paragraph_color       │
+│                     │               │ • paragraph_size        │
+│                     │               │ • mode (light/dark)     │
+│                     │               │ • heading_visible       │
+│                     │               │ • table_of_content_color│
+│                     │               │ • hosted_page           │
+└─────────────────────┘               └─────────────────────────┘
+          │                                       │
+          └───────────────────┬───────────────────┘
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    VALIDATION CHECKS                         │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │ ✓ Token type = "html_json"?                             ││
+│  │ ✓ Payment type = "free"?                                ││
+│  │ ✓ Guide category in allowed categories?                 ││
+│  │ ✓ Quota remaining > 0 OR already accessed?              ││
+│  └─────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────┘
+                              │
+              ┌───────────────┴───────────────┐
+              ▼                               ▼
+┌──────────────────────┐         ┌──────────────────────────┐
+│ First time access?   │         │ Already accessed?        │
+│ Deduct 1 from quota  │         │ No quota deduction       │
+└──────────────────────┘         └──────────────────────────┘
+                              │
+          ┌───────────────────┴───────────────────┐
+          ▼                                       ▼
+┌─────────────────────┐               ┌─────────────────────┐
+│ JSON Response       │               │ HTML Response       │
+│ {                   │               │ Full HTML page      │
+│   guide: {...},     │               │ with styling        │
+│   content: [...],   │               │ applied             │
+│   access_info: {    │               │                     │
+│     remaining_quota │               │                     │
+│   }                 │               │                     │
+│ }                   │               │                     │
+└─────────────────────┘               └─────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                         END                                  │
+└─────────────────────────────────────────────────────────────┘
+`}</pre>
+          </div>
+        )
+      },
+      'html-json-paid': {
+        title: 'HTML/JSON Paid API Flow',
+        content: (
+          <div style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 1.8 }}>
+            <div style={{ background: '#fff0f6', padding: 16, borderRadius: 8, marginBottom: 16 }}>
+              <strong>Token Type:</strong> HTML/JSON | <strong>Payment Type:</strong> Paid (Stripe)
+            </div>
+            <pre style={{ background: '#f5f5f5', padding: 16, borderRadius: 8, overflow: 'auto' }}>{`
+┌─────────────────────────────────────────────────────────────┐
+│                    START: Client Request                     │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  1. GET /api/travel-content/languages                        │
+│  2. GET /api/travel-content/categories                       │
+│  3. GET /api/travel-content/guides                           │
+│     (Browse available guides)                                │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  4. User selects a guide to PURCHASE                         │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  5. POST /api/travel-guides/digital/secure/checkout          │
+│     Body: { guide_id: "xxx", content_type: "digital" }       │
+│     ┌─────────────────────────────────────────────────────┐ │
+│     │ ✓ Token type = "html_json"?                         │ │
+│     │ ✓ Payment type = "paid"?                            │ │
+│     │ ✓ Guide category in allowed categories?             │ │
+│     └─────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  6. Response: Stripe checkout URL + transaction_id           │
+│     { checkout_url: "...", transaction_id: "txn_abc123" }    │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  7. User completes payment on Stripe                         │
+│     Redirected to success URL with transaction_id            │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  8. Access content - Choose output format:                   │
+│     ┌─────────────┐          ┌─────────────┐                │
+│     │    JSON     │    OR    │    HTML     │                │
+│     └─────────────┘          └─────────────┘                │
+└─────────────────────────────────────────────────────────────┘
+                              │
+          ┌───────────────────┴───────────────────┐
+          ▼                                       ▼
+┌─────────────────────┐               ┌─────────────────────────┐
+│ JSON FORMAT         │               │ HTML FORMAT             │
+│                     │               │                         │
+│ GET /api/travel-    │               │ GET /api/travel-        │
+│ guides/digital/     │               │ guides/digital/         │
+│ secure/data         │               │ secure/view             │
+│                     │               │                         │
+│ Params:             │               │ Params:                 │
+│ • transaction_id    │               │ • transaction_id        │
+│ • guide_id          │               │ • guide_id              │
+│ • headings=2,3,4    │               │ • headings=2,3,4        │
+│ • heading_format    │               │ • heading_format        │
+│                     │               │ • title_color           │
+│                     │               │ • title_size            │
+│                     │               │ • heading_color         │
+│                     │               │ • heading_size          │
+│                     │               │ • sub_heading_color     │
+│                     │               │ • sub_heading_size      │
+│                     │               │ • paragraph_color       │
+│                     │               │ • paragraph_size        │
+│                     │               │ • mode (light/dark)     │
+│                     │               │ • heading_visible       │
+│                     │               │ • table_of_content_color│
+│                     │               │ • hosted_page           │
+└─────────────────────┘               └─────────────────────────┘
+          │                                       │
+          └───────────────────┬───────────────────┘
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    VALIDATION CHECKS                         │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │ ✓ Transaction exists?                                   ││
+│  │ ✓ Payment status = "completed"?                         ││
+│  │ ✓ Guide matches transaction?                            ││
+│  │ ✓ Token owns this transaction?                          ││
+│  └─────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────┘
+                              │
+          ┌───────────────────┴───────────────────┐
+          ▼                                       ▼
+┌─────────────────────┐               ┌─────────────────────┐
+│ JSON Response       │               │ HTML Response       │
+│ {                   │               │ Full HTML page      │
+│   guide: {...},     │               │ with styling        │
+│   content: [...],   │               │ applied             │
+│   transaction: {    │               │                     │
+│     ...             │               │                     │
+│   }                 │               │                     │
+│ }                   │               │                     │
+└─────────────────────┘               └─────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                         END                                  │
+└─────────────────────────────────────────────────────────────┘
+`}</pre>
+          </div>
+        )
+      }
+    };
+
+    return flowCharts[selectedFlowChart] || null;
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -268,7 +666,17 @@ const ApiDocumentation = () => {
 
   const renderOverview = () => (
     <div>
-      <Title level={2}>API Overview</Title>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <Title level={2} style={{ margin: 0 }}>API Overview</Title>
+        <Dropdown
+          menu={{ items: flowChartItems, onClick: handleFlowChartSelect }}
+          trigger={['click']}
+        >
+          <Button type="primary" icon={<PartitionOutlined />}>
+            Flow Charts <DownOutlined />
+          </Button>
+        </Dropdown>
+      </div>
       <Paragraph>
         Welcome to the YouGuide B2B API documentation. This API system allows external clients
         to access YouGuide's travel guides programmatically with strict type and payment enforcement.
@@ -3140,6 +3548,24 @@ Returns full HTML page with applied styling`
           title="Code Preview"
         />
       </Drawer>
+
+      {/* Flow Chart Modal */}
+      <Modal
+        title={renderFlowChartContent()?.title || 'API Flow Chart'}
+        open={flowChartVisible}
+        onCancel={() => setFlowChartVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setFlowChartVisible(false)}>
+            Close
+          </Button>
+        ]}
+        width={900}
+        styles={{
+          body: { maxHeight: '70vh', overflow: 'auto' }
+        }}
+      >
+        {renderFlowChartContent()?.content}
+      </Modal>
     </Layout>
   );
 };
