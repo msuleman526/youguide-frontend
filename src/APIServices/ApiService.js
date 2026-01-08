@@ -1489,6 +1489,66 @@ class ApiService {
         }
     }
 
+    static async createAffiliateApiAccessToken(data) {
+        try {
+            const response = await axios.post(`${this.baseURL}/api-access`, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('affiliateToken')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error creating affiliate API access token:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async updateAffiliateApiAccessToken(id, data) {
+        try {
+            const response = await axios.put(`${this.baseURL}/api-access/${id}`, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('affiliateToken')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error updating affiliate API access token:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async deleteAffiliateApiAccessToken(id) {
+        try {
+            const response = await axios.delete(`${this.baseURL}/api-access/${id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('affiliateToken')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error deleting affiliate API access token:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getAffiliateApiAccessTokenStatsById(id) {
+        try {
+            const response = await axios.get(`${this.baseURL}/api-access/${id}/stats`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('affiliateToken')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching affiliate API access token stats:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
     static async createApiAccessToken(data) {
         try {
             const response = await axios.post(`${this.baseURL}/api-access`, data, {

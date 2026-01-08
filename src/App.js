@@ -31,6 +31,7 @@ import PdfHotelViewer from './pages/Affiliate/PdfHotelViewer'
 import AffiliateDashboard from './pages/Affiliate/AffiliateDashboard'
 import AffiliateHotelManagement from './pages/Affiliate/AffiliateHotelManagement'
 import AffiliateApiAccessDashboard from './pages/Affiliate/AffiliateApiAccessDashboard'
+import AffiliateApiAccessList from './pages/Affiliate/AffiliateApiAccessList'
 import FeatureTestPage from './pages/FeatureTestPage'
 import AffiliateLayout from './layouts/AffiliateLayout'
 import AdminDashboard from './pages/AdminDashboard'
@@ -104,6 +105,7 @@ const App = () => {
           <Route path="/affiliate-dashboard/:affiliateId" element={<AffiliateDashboard />} />
           <Route path="/affiliate-hotels/:affiliateId" element={<AffiliateHotelManagement />} />
           <Route path="/affiliate-api-access/:affiliateId" element={<AffiliateApiAccessDashboard />} />
+          <Route path="/affiliate-api-access-list/:affiliateId" element={<AffiliateApiAccessList />} />
         </Route>
       </Routes>
     </HashRouter>
