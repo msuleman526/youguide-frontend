@@ -1900,7 +1900,7 @@ Returns full HTML page with applied styling`
       container.innerHTML = '<div class="loading">Loading guides...</div>';
 
       try {
-        let url = \`\${API_BASE}/api/travel-content/guides?limit=20\`;
+        let url = \`\${API_BASE}/api/travel-content/guides?limit=5\`;
         const search = document.getElementById('search-input').value;
         const lang = document.getElementById('language-filter').value;
         const category = document.getElementById('category-filter').value;
