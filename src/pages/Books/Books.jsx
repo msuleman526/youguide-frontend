@@ -9,6 +9,7 @@ import UploadFormPopup from './UploadFormPopup';
 import ApiService from '../../APIServices/ApiService';
 import { Link } from 'react-router-dom';
 import UploadPDF from './UploadPDF';
+import EditBookDrawer from './EditBookDrawer';
 import PageTourWrapper from '../../components/PageTourWrapper';
 import { TOUR_PAGES } from '../../Utils/TourConfig';
 
@@ -37,11 +38,13 @@ const Books = () => {
   const [form] = Form.useForm();
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 8,
+    pageSize: 100,
     total: 3,
   });
   const [selectedBook, setSelectedBook] = useState(null)
   const [uploadPopupVisible, setUploadPopUpVisible] = useState(false)
+  const [editDrawerVisible, setEditDrawerVisible] = useState(false)
+  const [editingBook, setEditingBook] = useState(null)
   const [language, setLanguage] = useState("en");
   const [query, setQuery] = useState('');
   const user = JSON.parse(localStorage.getItem("user"));
@@ -60,7 +63,7 @@ const Books = () => {
   useEffect(() => {
       setPagination({
         current: 1,
-        pageSize: 8,
+        pageSize: 100,
         total: 1,
       })
       fetchAllBooks(1, query);
@@ -124,12 +127,28 @@ const Books = () => {
       setUploadPopUpVisible(true);
   }
 
+  const handleEdit = (record) => {
+      setEditingBook(record);
+      setEditDrawerVisible(true);
+  }
+
+  const onEditBook = (bookId, responseData) => {
+      // Update the book's imagePath in the local state using the thumbnail presignedUrl
+      setBooks((prevBooks) =>
+          prevBooks.map((book) =>
+              book._id === bookId
+                  ? { ...book, imagePath: responseData.thumbnail?.presignedUrl || responseData.fullCover?.presignedUrl || book.imagePath }
+                  : book
+          )
+      );
+  }
+
   const columns = [
     {
       title: '#',
       dataIndex: 'imagePath',
       key: 'imagePath',
-      render: (imagePath) => <Image src={imagePath} style={{width: '80px', borderRadius: '10px'}}/>,
+      render: (imagePath) => <Image src={imagePath} style={{width: '120px', borderRadius: '10px'}}/>,
     },
     {
       title: 'Name',
@@ -184,12 +203,12 @@ const Books = () => {
       key: 'action',
       render: (_, record) => (
         <Flex>
-          {/* <Button type="link" onClick={() => console.log('Edit functionality here')}>
+          <Button type="link" onClick={() => handleEdit(record)}>
             <FaEdit />
-          </Button> */}
-          <Button type="link" className="upload-pdf-button" onClick={() => handleUpload(record)}>
-            <FaUpload />
           </Button>
+          {/* <Button type="link" className="upload-pdf-button" onClick={() => handleUpload(record)}>
+            <FaUpload />
+          </Button> */}
           <Button type="link" danger onClick={() => confirmDelete(record._id)}>
             <FaTrashAlt />
           </Button>
@@ -199,9 +218,9 @@ const Books = () => {
   ];
 
 
-  const fetchAllBooks = (page, q) => {
+  const fetchAllBooks = (page, q, limit = 100) => {
     setTableLoading(true);
-    ApiService.getAllBooks(page, language, q)
+    ApiService.getAllBooks(page, language, q, limit)
       .then((response) => {
         let obj = {
           ...pagination,
@@ -297,6 +316,12 @@ const Books = () => {
       <UploadFormPopup visible={uploadVisible} setVisible={() => setUploadVisible(false)} fetchAllBooks={() => fetchAllBooks(pagination.current, query)} />
       <BookPopup visible={isModalVisible} onClose={handleCancel} onAddBook={onAddBook} />
       <UploadPDF visible={uploadPopupVisible} onClose={() => setUploadPopUpVisible(false)} bookID={selectedBook} onUploadPDF={onUploadPDF} />
+      <EditBookDrawer
+        visible={editDrawerVisible}
+        onClose={() => setEditDrawerVisible(false)}
+        book={editingBook}
+        onEditBook={onEditBook}
+      />
     </PageTourWrapper>
   );
 };

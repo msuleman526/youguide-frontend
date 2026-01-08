@@ -711,9 +711,9 @@ class ApiService {
     }
 
     // Fetch all books with their categories
-    static async getAllBooks(page = 1, language = "en", query = "") {
+    static async getAllBooks(page = 1, language = "en", query = "", limit = 8) {
         try {
-            const response = await axios.get(`${this.baseURL}/books?page=${page}&language=${language}&query=${query}`, {
+            const response = await axios.get(`${this.baseURL}/books?page=${page}&language=${language}&query=${query}&limit=${limit}&pageSize=${limit}`, {
                 headers: {
                     'Content-Type': 'application/json',
                     "Authorization": "Bearer " + localStorage.getItem("token")
@@ -1149,6 +1149,22 @@ class ApiService {
             return response.data;
         } catch (error) {
             console.error(`Error updating book with ID ${id}:`, error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    // Update book cover image only
+    static async updateBookCover(bookId, data) {
+        try {
+            const response = await axios.put(`${this.baseURL}/books/${bookId}/updateCover`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error(`Error updating book cover:`, error.response?.data || error.message);
             throw error;
         }
     }
