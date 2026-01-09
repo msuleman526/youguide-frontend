@@ -46,7 +46,12 @@ const HtmlViewer = () => {
                 optionKeys.forEach(key => {
                     const value = searchParams.get(key);
                     if (value !== null) {
-                        stylingOptions[key] = value;
+                        // Add # prefix to color values
+                        if (key.includes('_color') && value && !value.startsWith('#')) {
+                            stylingOptions[key] = '#' + value;
+                        } else {
+                            stylingOptions[key] = value;
+                        }
                     }
                 });
 
