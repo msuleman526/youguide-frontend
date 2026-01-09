@@ -2580,16 +2580,16 @@ Returns full HTML page with applied styling`
         if (headings) params.append('headings', headings);
         if (headingFormat) params.append('heading_format', headingFormat);
         params.append('mode', mode);
-        params.append('title_color', titleColor.replace('#', ''));
+        params.append('title_color', titleColor);
         params.append('title_size', titleSize);
-        params.append('heading_color', headingColor.replace('#', ''));
+        params.append('heading_color', headingColor);
         params.append('heading_size', headingSize);
-        params.append('sub_heading_color', subheadingColor.replace('#', ''));
+        params.append('sub_heading_color', subheadingColor);
         params.append('sub_heading_size', subheadingSize);
-        params.append('paragraph_color', paragraphColor.replace('#', ''));
+        params.append('paragraph_color', paragraphColor);
         params.append('paragraph_size', paragraphSize);
         params.append('heading_visible', headingVisible);
-        params.append('table_of_content_color', tocColor.replace('#', ''));
+        params.append('table_of_content_color', tocColor);
         params.append('hosted_page', hostedPage);
 
         const url = \`\${API_BASE}/api/travel-guides/digital/content/view/\${currentGuideId}?\` + params.toString();

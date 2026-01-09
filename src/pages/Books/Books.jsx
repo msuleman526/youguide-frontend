@@ -38,7 +38,7 @@ const Books = () => {
   const [form] = Form.useForm();
   const [pagination, setPagination] = useState({
     current: 1,
-    pageSize: 100,
+    pageSize: 200,
     total: 3,
   });
   const [selectedBook, setSelectedBook] = useState(null)
@@ -63,7 +63,7 @@ const Books = () => {
   useEffect(() => {
       setPagination({
         current: 1,
-        pageSize: 100,
+        pageSize: 200,
         total: 1,
       })
       fetchAllBooks(1, query);
@@ -218,7 +218,7 @@ const Books = () => {
   ];
 
 
-  const fetchAllBooks = (page, q, limit = 100) => {
+  const fetchAllBooks = (page, q, limit = 200) => {
     setTableLoading(true);
     ApiService.getAllBooks(page, language, q, limit)
       .then((response) => {

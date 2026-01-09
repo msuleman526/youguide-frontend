@@ -713,7 +713,7 @@ class ApiService {
     // Fetch all books with their categories
     static async getAllBooks(page = 1, language = "en", query = "", limit = 8) {
         try {
-            const response = await axios.get(`${this.baseURL}/books?page=${page}&language=${language}&query=${query}&limit=${limit}&pageSize=${limit}`, {
+            const response = await axios.get(`${this.baseURL}/books?page=${page}&language=${language}&query=${query}&limit=200&pageSize=200`, {
                 headers: {
                     'Content-Type': 'application/json',
                     "Authorization": "Bearer " + localStorage.getItem("token")
