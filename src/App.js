@@ -48,6 +48,7 @@ import AllContacts from './pages/Contact/AllContacts'
 import ApiAccessDashboard from './pages/ApiAccess/ApiAccessDashboard'
 import ApiAccessList from './pages/ApiAccess/ApiAccessList'
 import ApiDocumentation from './pages/ApiDocumentation/ApiDocumentation'
+import Unauthorized from './pages/Unauthorized/Unauthorized'
 
 const App = () => {
   return (
@@ -56,6 +57,7 @@ const App = () => {
         <Route path="/" element={<AuthRedirect />} />
         <Route path="/login" element={<Login />} />
         <Route path="/affiliate-login" element={<Login />} /> {/* Unified login for affiliates too */}
+        <Route path="/unauthorized" element={<Unauthorized />} />
         <Route path="/travel-guides/:id" element={<GuidePreview />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/request-form" element={<RequestForm />} />
