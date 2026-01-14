@@ -13,7 +13,7 @@ const Unauthorized = () => {
     if (affiliateToken && affiliateData) {
       try {
         const affiliate = JSON.parse(affiliateData);
-        navigate(`/affiliate-dashboard/${affiliate._id}`);
+        navigate(`/affiliate-dashboard/${affiliate.id}`);
         return;
       } catch (error) {
         console.error('Error parsing affiliate data:', error);

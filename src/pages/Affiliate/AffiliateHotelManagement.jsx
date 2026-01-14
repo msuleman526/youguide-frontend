@@ -38,7 +38,7 @@ const AffiliateHotelManagement = () => {
         }
 
         const parsedAffiliate = JSON.parse(affiliateData);
-        if (parsedAffiliate.id !== affiliateId) {
+        if (String(parsedAffiliate.id) !== affiliateId) {
             message.error('Access denied');
             navigate('/login');
             return;
