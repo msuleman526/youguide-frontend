@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Space, Tag, message, Popconfirm, Drawer, Modal, Form, Input, Select, DatePicker, InputNumber, Row, Col, Card, Statistic, Typography } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, BarChartOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, BarChartOutlined, CopyOutlined } from '@ant-design/icons';
 import { PieChart } from '@mui/x-charts';
 import ApiService from '../../APIServices/ApiService';
 import moment from 'moment';
@@ -122,6 +122,7 @@ const AffiliateApiAccessList = () => {
                 end_date: values.end_date.format('YYYY-MM-DD'),
                 categories: values.categories,
                 user_id: affiliateUser.id, // Always use affiliate's user_id
+                is_active: false, // Default to inactive, admin will activate
             };
 
             await ApiService.createAffiliateApiAccessToken(payload);
@@ -172,7 +173,18 @@ const AffiliateApiAccessList = () => {
             key: 'token',
             width: 200,
             ellipsis: true,
-            render: (text) => <Text copyable>{text}</Text>,
+            render: (text) => (
+                <Space>
+                    <Text ellipsis style={{ maxWidth: 150 }}>{text}</Text>
+                    <CopyOutlined
+                        style={{ cursor: 'pointer', color: '#1890ff' }}
+                        onClick={() => {
+                            navigator.clipboard.writeText(text);
+                            message.success('Token copied to clipboard!');
+                        }}
+                    />
+                </Space>
+            ),
         },
         {
             title: 'Type',

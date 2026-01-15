@@ -1,10 +1,10 @@
 import axios from 'axios';
 
 class ApiService {
-    static URLL = "https://appapi.youguide.com"
+    static URLL = "http://localhost:5001"
     static baseURL = ApiService.URLL + '/api'; // Set your base URL here
     documentURL = "https://appapi.youguide.com" + '/';
-
+    N
     //static URLL = "http://localhost:5001"
     //static baseURL = ApiService.URLL + '/api'; // Set your base URL here
     //static documentURL = "http://localhost:5001" + '/';
@@ -261,6 +261,25 @@ class ApiService {
         }
     }
 
+    static async getAffiliateByUserId(userId) {
+        try {
+            const response = await axios.get(`${this.baseURL}/affiliates/by-user/${userId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            // Return null if not found (404)
+            if (error.response?.status === 404) {
+                return null;
+            }
+            console.error('Error getting affiliate by user:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
     static async getAffiliateByID(id) {
         try {
             const response = await axios.get(`${this.baseURL}/affiliates/book/${id}`, {
@@ -301,6 +320,21 @@ class ApiService {
             return response.data;
         } catch (error) {
             console.error('Error get vendorSubscription:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async updateAffiliateSubscription(id, data) {
+        try {
+            const response = await axios.put(`${this.baseURL}/affiliates/${id}`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error updating affiliate subscription:', error.response?.data || error.message);
             throw error;
         }
     }
@@ -1525,7 +1559,7 @@ class ApiService {
             const response = await axios.put(`${this.baseURL}/api-access/${id}`, data, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('affiliateToken')}`
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
             });
             return response.data;
