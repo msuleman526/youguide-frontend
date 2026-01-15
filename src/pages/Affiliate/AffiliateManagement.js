@@ -93,7 +93,7 @@ const AffiliateManagement = () => {
 
     const onExtendSuccess = (updatedAffiliate) => {
         // Update the affiliate in the list
-        setAffiliates(prev => prev.map(aff => 
+        setAffiliates(prev => prev.map(aff =>
             aff._id === updatedAffiliate._id ? { ...aff, ...updatedAffiliate } : aff
         ));
         setExtendModalVisible(false);
@@ -101,20 +101,24 @@ const AffiliateManagement = () => {
 
     const columns = [
         {
-            title: 'Logo',
-            dataIndex: 'logo',
-            key: 'logo',
-            render: (logo) => logo ? <Avatar style={{ width: '150px', height: 'fit-content' }} src={logo} shape="square" /> : 'N/A',
-        },
-        {
-            title: 'Affiliate Name',
-            dataIndex: 'affiliateName',
-            key: 'affiliateName',
+            title: 'Affiliate',
+            key: 'affiliate',
+            width: 150,
+            render: (_, record) => (
+                <Flex vertical align="center" gap={8}>
+                    {record.logo ? (
+                        <Avatar style={{ width: 140, height: 40 }} src={record.logo} shape="square" />
+                    ) : (
+                        <Avatar style={{ width: 80, height: 80 }} shape="square">N/A</Avatar>
+                    )}
+                    <Typography.Text strong style={{ textAlign: 'center', color: 'black', marginTop: '-5px' }}>{record.affiliateName}</Typography.Text>
+                </Flex>
+            ),
         },
         {
             title: 'QR Code',
             key: 'qrCode',
-            width: 120,
+            width: 80,
             className: 'affiliate-qr-column',
             render: (_, record) => {
                 const affiliateUrl = `${window.location.origin}/#/affiliate-guides/${record._id}`;
@@ -135,25 +139,29 @@ const AffiliateManagement = () => {
             }
         },
         {
-            title: 'Primary Color',
+            title: 'Color',
             dataIndex: 'primaryColor',
             key: 'primaryColor',
+            width: 40,
             render: (color) => <Tag color={color}>{color}</Tag>
         },
         {
-            title: 'Subscription End Date',
+            title: 'End Date',
             dataIndex: 'subscriptionEndDate',
+            width: 100,
             key: 'subscriptionEndDate',
             render: (val) => moment(val).format('YYYY-MM-DD')
         },
         {
-            title: 'Number of Clicks',
+            title: 'No of Clicks',
             dataIndex: 'numberOfClicks',
+            width: 120,
             key: 'numberOfClicks'
         },
         {
             title: 'Pending Clicks',
             dataIndex: 'pendingClicks',
+            width: 140,
             key: 'pendingClicks'
         },
         {
@@ -166,7 +174,24 @@ const AffiliateManagement = () => {
             title: 'Categories',
             dataIndex: 'categories',
             key: 'categories',
-            render: (cats) => (cats || []).map((cat) => <Tag key={cat._id}>{cat.name}</Tag>)
+            width: 200,
+            render: (cats) => {
+                const categories = cats || [];
+                const displayCount = 3;
+                const visibleCats = categories.slice(0, displayCount);
+                const remainingCount = categories.length - displayCount;
+
+                return (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, maxWidth: 180 }}>
+                        {visibleCats.map((cat) => (
+                            <Tag key={cat._id} style={{ margin: 0 }}>{cat.name}</Tag>
+                        ))}
+                        {remainingCount > 0 && (
+                            <Tag style={{ margin: 0 }} color="blue">+{remainingCount} more</Tag>
+                        )}
+                    </div>
+                );
+            }
         },
         {
             title: 'Created At',
@@ -181,6 +206,9 @@ const AffiliateManagement = () => {
                 <Flex>
                     <Button type="link" onClick={() => handleView(record)}>
                         <FaEye />
+                    </Button>
+                    <Button type="link" onClick={() => handleEdit(record)} title="Edit Affiliate">
+                        <FaEdit />
                     </Button>
                     <Button type="link" onClick={() => handleExtendSubscription(record)} title="Extend Subscription">
                         <FaClock />
@@ -259,7 +287,7 @@ const AffiliateManagement = () => {
                 affiliate={selectedAffiliate}
                 type={popupType}
             />
-            
+
             {/* QR Code Modal */}
             <Modal
                 title="QR Code - Affiliate Guide Link"
@@ -274,7 +302,7 @@ const AffiliateManagement = () => {
                 centered
             >
                 <div style={{ textAlign: 'center', padding: '20px' }}>
-                    <QRCode 
+                    <QRCode
                         value={selectedQrUrl}
                         size={300}
                         level="M"
@@ -287,7 +315,7 @@ const AffiliateManagement = () => {
                     </div>
                 </div>
             </Modal>
-            
+
             {/* Extend Subscription Modal */}
             <ExtendSubscriptionModal
                 open={extendModalVisible}

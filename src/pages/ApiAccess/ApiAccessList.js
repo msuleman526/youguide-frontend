@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Tag, message, Popconfirm, Drawer, Modal, Form, Input, Select, DatePicker, InputNumber, Row, Col, Card, Statistic, Typography } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, BarChartOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Tag, message, Popconfirm, Popover, Drawer, Modal, Form, Input, Select, DatePicker, InputNumber, Row, Col, Card, Statistic, Typography } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, BarChartOutlined, CopyOutlined, UserOutlined } from '@ant-design/icons';
 import { PieChart } from '@mui/x-charts';
 import ApiService from '../../APIServices/ApiService';
 import moment from 'moment';
@@ -115,6 +115,18 @@ const ApiAccessList = () => {
         }
     };
 
+    const handleStatusChange = async (record, newStatus) => {
+        try {
+            let data = { is_active: newStatus };
+            await ApiService.updateAffiliateApiAccessToken(record._id, data);
+            message.success(`Token ${newStatus ? 'activated' : 'deactivated'} successfully`);
+            fetchTokens(pagination.current, pagination.pageSize);
+        } catch (error) {
+            console.error(error);
+            message.error('Failed to update status');
+        }
+    };
+
     const handleAddSubmit = async (values) => {
         try {
             const payload = {
@@ -125,6 +137,7 @@ const ApiAccessList = () => {
                 allowed_travel_guides: values.allowed_travel_guides,
                 end_date: values.end_date.format('YYYY-MM-DD'),
                 categories: values.categories,
+                is_active: true,
             };
 
             // Only add user_id if it's selected
@@ -176,10 +189,17 @@ const ApiAccessList = () => {
             width: 150,
         },
         {
-            title: 'Company',
-            dataIndex: 'company_name',
-            key: 'company_name',
+            title: 'Affiliate',
+            dataIndex: 'user_id',
+            key: 'user_id',
             width: 150,
+            render: (user) => (
+                <Space>
+                    {(user == null) ? "" : <UserOutlined style={{ color: '#1890ff' }} />}
+                    {(user == null) ? <Text style={{ color: "red" }}>N/A</Text> : <Text ellipsis>{user.firstName} {user.lastName}</Text>}
+                </Space>
+            ),
+
         },
         {
             title: 'Token',
@@ -187,7 +207,18 @@ const ApiAccessList = () => {
             key: 'token',
             width: 200,
             ellipsis: true,
-            render: (text) => <Text copyable>{text}</Text>,
+            render: (text) => (
+                <Space>
+                    <Text ellipsis style={{ maxWidth: 150 }}>{text}</Text>
+                    <CopyOutlined
+                        style={{ cursor: 'pointer', color: '#1890ff' }}
+                        onClick={() => {
+                            navigator.clipboard.writeText(text);
+                            message.success('Token copied to clipboard!');
+                        }}
+                    />
+                </Space>
+            ),
         },
         {
             title: 'Type',
@@ -221,8 +252,35 @@ const ApiAccessList = () => {
             key: 'status',
             width: 100,
             render: (_, record) => {
-                const isActive = moment(record.end_date).isAfter(moment());
-                return <Tag color={isActive ? 'green' : 'red'}>{isActive ? 'Active' : 'Expired'}</Tag>;
+                const isActive = record.is_active !== false;
+                const statusContent = (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <Button
+                            type={isActive ? 'primary' : 'default'}
+                            size="small"
+                            onClick={() => handleStatusChange(record, true)}
+                            style={{ width: '100%' }}
+                        >
+                            Active
+                        </Button>
+                        <Button
+                            type={!isActive ? 'primary' : 'default'}
+                            danger={!isActive}
+                            size="small"
+                            onClick={() => handleStatusChange(record, false)}
+                            style={{ width: '100%' }}
+                        >
+                            Inactive
+                        </Button>
+                    </div>
+                );
+                return (
+                    <Popover content={statusContent} title="Change Status" trigger="click">
+                        <Tag color={isActive ? 'green' : 'red'} style={{ cursor: 'pointer' }}>
+                            {isActive ? 'Active' : 'Inactive'}
+                        </Tag>
+                    </Popover>
+                );
             },
         },
         {
