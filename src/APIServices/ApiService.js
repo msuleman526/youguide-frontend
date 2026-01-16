@@ -1,10 +1,10 @@
 import axios from 'axios';
 
 class ApiService {
-    static URLL = "http://localhost:5001"
+    static URLL = "https://appapi.youguide.com"
     static baseURL = ApiService.URLL + '/api'; // Set your base URL here
     documentURL = "https://appapi.youguide.com" + '/';
-    N
+    
     //static URLL = "http://localhost:5001"
     //static baseURL = ApiService.URLL + '/api'; // Set your base URL here
     //static documentURL = "http://localhost:5001" + '/';
