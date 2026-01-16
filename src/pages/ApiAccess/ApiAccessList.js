@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Tag, message, Popconfirm, Popover, Drawer, Modal, Form, Input, Select, DatePicker, InputNumber, Row, Col, Card, Statistic, Typography } from 'antd';
+import { Table, Button, Space, Tag, message, Popconfirm, Popover, Row, Col, Typography } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, BarChartOutlined, CopyOutlined, UserOutlined } from '@ant-design/icons';
-import { PieChart } from '@mui/x-charts';
 import ApiService from '../../APIServices/ApiService';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useRecoilValue } from 'recoil';
 import { themeState } from '../../atom';
 import CustomCard from '../../components/Card';
+import AddTokenModal from './AddTokenModal';
+import EditTokenModal from './EditTokenModal';
+import StatsDrawer from './StatsDrawer';
+import PageTourWrapper from '../../components/PageTourWrapper';
+import { TOUR_PAGES } from '../../Utils/TourConfig';
 
-const { Option } = Select;
 const { Title, Text } = Typography;
 
 const ApiAccessList = () => {
@@ -23,8 +26,6 @@ const ApiAccessList = () => {
     const [statsData, setStatsData] = useState(null);
     const [categories, setCategories] = useState([]);
     const [affiliates, setAffiliates] = useState([]);
-    const [form] = Form.useForm();
-    const [editForm] = Form.useForm();
 
     useEffect(() => {
         fetchTokens();
@@ -63,7 +64,6 @@ const ApiAccessList = () => {
     const fetchAffiliates = async () => {
         try {
             const response = await ApiService.getAllUsers();
-            // Filter users to only show affiliates (where role.slug === 'affiliate')
             const affiliateUsers = (response || []).filter(user =>
                 user.role?.slug === 'affiliate'
             );
@@ -78,18 +78,24 @@ const ApiAccessList = () => {
     };
 
     const handleAdd = () => {
-        form.resetFields();
         setAddModalVisible(true);
+    };
+
+    const handleAddSuccess = () => {
+        message.success('Token created successfully');
+        setAddModalVisible(false);
+        fetchTokens(pagination.current, pagination.pageSize);
     };
 
     const handleEdit = (record) => {
         setSelectedToken(record);
-        editForm.setFieldsValue({
-            ...record,
-            end_date: moment(record.end_date),
-            categories: record.categories?.map(cat => cat._id || cat),
-        });
         setEditModalVisible(true);
+    };
+
+    const handleEditSuccess = () => {
+        message.success('Token updated successfully');
+        setEditModalVisible(false);
+        fetchTokens(pagination.current, pagination.pageSize);
     };
 
     const handleDelete = async (id) => {
@@ -127,60 +133,6 @@ const ApiAccessList = () => {
         }
     };
 
-    const handleAddSubmit = async (values) => {
-        try {
-            const payload = {
-                name: values.name,
-                company_name: values.company_name,
-                type: values.type,
-                payment_type: values.payment_type,
-                allowed_travel_guides: values.allowed_travel_guides,
-                end_date: values.end_date.format('YYYY-MM-DD'),
-                categories: values.categories,
-                is_active: true,
-            };
-
-            // Only add user_id if it's selected
-            if (values.user_id) {
-                payload.user_id = values.user_id;
-            }
-
-            // Only add email if it's provided
-            if (values.email) {
-                payload.email = values.email;
-            }
-
-            console.log('Submitting payload:', payload); // Debug log
-
-            await ApiService.createApiAccessToken(payload);
-            message.success('Token created successfully');
-            setAddModalVisible(false);
-            form.resetFields();
-            fetchTokens(pagination.current, pagination.pageSize);
-        } catch (error) {
-            message.error(error.response?.data?.message || 'Failed to create token');
-        }
-    };
-
-    const handleEditSubmit = async (values) => {
-        try {
-            const payload = {
-                name: values.name,
-                company_name: values.company_name,
-                end_date: values.end_date.format('YYYY-MM-DD'),
-                allowed_travel_guides: values.allowed_travel_guides,
-                categories: values.categories,
-            };
-            await ApiService.updateApiAccessToken(selectedToken._id, payload);
-            message.success('Token updated successfully');
-            setEditModalVisible(false);
-            editForm.resetFields();
-            fetchTokens(pagination.current, pagination.pageSize);
-        } catch (error) {
-            message.error(error.response?.data?.message || 'Failed to update token');
-        }
-    };
-
     const columns = [
         {
             title: 'Name',
@@ -199,7 +151,6 @@ const ApiAccessList = () => {
                     {(user == null) ? <Text style={{ color: "red" }}>N/A</Text> : <Text ellipsis>{user.firstName} {user.lastName}</Text>}
                 </Space>
             ),
-
         },
         {
             title: 'Token',
@@ -241,11 +192,17 @@ const ApiAccessList = () => {
             width: 80,
         },
         {
+            title: 'Remaining',
+            dataIndex: 'remaining_allowed',
+            key: 'remaining_allowed',
+            width: 100
+        },
+        {
             title: 'End Date',
             dataIndex: 'end_date',
             key: 'end_date',
             width: 120,
-            render: (date) => moment(date).format('MMM DD, YYYY'),
+            render: (date) => dayjs(date).format('MMM DD, YYYY'),
         },
         {
             title: 'Status',
@@ -322,13 +279,14 @@ const ApiAccessList = () => {
     ];
 
     return (
+        <PageTourWrapper pageName={TOUR_PAGES.API_ACCESS_LIST}>
         <div>
             <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
                 <Col>
                     <Title level={2}>API Access Tokens</Title>
                 </Col>
                 <Col>
-                    <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+                    <Button className="api-access-add-button" type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
                         Add New API Access
                     </Button>
                 </Col>
@@ -346,305 +304,35 @@ const ApiAccessList = () => {
                         showSizeChanger: true,
                     }}
                     onChange={handleTableChange}
-                    scroll={{ x: 1400 }}
+                    scroll={{ x: 1500 }}
+                    className="api-access-table"
                 />
             </CustomCard>
 
-            {/* Add Modal */}
-            <Modal
-                title="Create New API Access Token"
-                open={addModalVisible}
+            <AddTokenModal
+                visible={addModalVisible}
                 onCancel={() => setAddModalVisible(false)}
-                footer={null}
-                width={700}
-            >
-                <Form form={form} layout="vertical" onFinish={handleAddSubmit}>
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Name"
-                                name="name"
-                                rules={[{ required: true, message: 'Please enter name' }]}
-                            >
-                                <Input placeholder="Client contact name" />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Company Name"
-                                name="company_name"
-                                rules={[{ required: true, message: 'Please enter company name' }]}
-                            >
-                                <Input placeholder="Company name" />
-                            </Form.Item>
-                        </Col>
-                    </Row>
+                onSuccess={handleAddSuccess}
+                categories={categories}
+                affiliates={affiliates}
+            />
 
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Type"
-                                name="type"
-                                rules={[{ required: true, message: 'Please select type' }]}
-                            >
-                                <Select placeholder="Select type">
-                                    <Option value="pdf">PDF</Option>
-                                    <Option value="html_json">HTML/JSON</Option>
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Payment Type"
-                                name="payment_type"
-                                rules={[{ required: true, message: 'Please select payment type' }]}
-                            >
-                                <Select placeholder="Select payment type">
-                                    <Option value="free">Free</Option>
-                                    <Option value="paid">Paid</Option>
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                    </Row>
-
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Allowed Travel Guides"
-                                name="allowed_travel_guides"
-                                rules={[{ required: true, message: 'Please enter quota' }]}
-                            >
-                                <InputNumber min={1} style={{ width: '100%' }} placeholder="Quota" />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                label="End Date"
-                                name="end_date"
-                                rules={[{ required: true, message: 'Please select end date' }]}
-                            >
-                                <DatePicker style={{ width: '100%' }} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-
-                    <Form.Item
-                        label="Categories"
-                        name="categories"
-                        rules={[{ required: true, message: 'Please select at least one category' }]}
-                    >
-                        <Select mode="multiple" placeholder="Select categories">
-                            {categories.map(cat => (
-                                <Option key={cat._id} value={cat._id}>{cat.name}</Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
-
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Affiliate User"
-                                name="user_id"
-                                rules={[
-                                    ({ getFieldValue }) => ({
-                                        validator(_, value) {
-                                            if (value || getFieldValue('email')) {
-                                                return Promise.resolve();
-                                            }
-                                            return Promise.reject(new Error('Please select an affiliate user or enter an email'));
-                                        },
-                                    }),
-                                ]}
-                            >
-                                <Select
-                                    placeholder="Select an affiliate user"
-                                    allowClear
-                                    showSearch
-                                    filterOption={(input, option) =>
-                                        (option?.children?.toLowerCase() ?? '').includes(input.toLowerCase())
-                                    }
-                                    onChange={() => form.validateFields(['email'])}
-                                >
-                                    {affiliates.map(affiliate => (
-                                        <Option key={affiliate._id} value={affiliate._id}>
-                                            {affiliate.firstName} {affiliate.lastName} ({affiliate.email})
-                                        </Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Email"
-                                name="email"
-                                rules={[
-                                    { type: 'email', message: 'Please enter a valid email' },
-                                    ({ getFieldValue }) => ({
-                                        validator(_, value) {
-                                            if (value || getFieldValue('user_id')) {
-                                                return Promise.resolve();
-                                            }
-                                            return Promise.reject(new Error('Please enter an email or select an affiliate user'));
-                                        },
-                                    }),
-                                ]}
-                            >
-                                <Input
-                                    placeholder="Enter email address"
-                                    onChange={() => form.validateFields(['user_id'])}
-                                />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Text type="secondary" style={{ display: 'block', marginTop: -16, marginBottom: 16 }}>
-                        * Either Affiliate User or Email is required
-                    </Text>
-
-                    <Form.Item>
-                        <Space>
-                            <Button type="primary" htmlType="submit">
-                                Create Token
-                            </Button>
-                            <Button onClick={() => setAddModalVisible(false)}>
-                                Cancel
-                            </Button>
-                        </Space>
-                    </Form.Item>
-                </Form>
-            </Modal>
-
-            {/* Edit Modal */}
-            <Modal
-                title="Edit API Access Token"
-                open={editModalVisible}
+            <EditTokenModal
+                visible={editModalVisible}
                 onCancel={() => setEditModalVisible(false)}
-                footer={null}
-                width={700}
-            >
-                <Form form={editForm} layout="vertical" onFinish={handleEditSubmit}>
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Name"
-                                name="name"
-                                rules={[{ required: true, message: 'Please enter name' }]}
-                            >
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Company Name"
-                                name="company_name"
-                                rules={[{ required: true, message: 'Please enter company name' }]}
-                            >
-                                <Input />
-                            </Form.Item>
-                        </Col>
-                    </Row>
+                onSuccess={handleEditSuccess}
+                token={selectedToken}
+                categories={categories}
+            />
 
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                label="Allowed Travel Guides"
-                                name="allowed_travel_guides"
-                                rules={[{ required: true, message: 'Please enter quota' }]}
-                            >
-                                <InputNumber min={0} style={{ width: '100%' }} />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                label="End Date"
-                                name="end_date"
-                                rules={[{ required: true, message: 'Please select end date' }]}
-                            >
-                                <DatePicker style={{ width: '100%' }} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-
-                    <Form.Item
-                        label="Categories"
-                        name="categories"
-                        rules={[{ required: true, message: 'Please select at least one category' }]}
-                    >
-                        <Select mode="multiple" placeholder="Select categories">
-                            {categories.map(cat => (
-                                <Option key={cat._id} value={cat._id}>{cat.name}</Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
-
-                    <Form.Item>
-                        <Space>
-                            <Button type="primary" htmlType="submit">
-                                Update Token
-                            </Button>
-                            <Button onClick={() => setEditModalVisible(false)}>
-                                Cancel
-                            </Button>
-                        </Space>
-                    </Form.Item>
-                </Form>
-            </Modal>
-
-            {/* Stats Drawer */}
-            <Drawer
-                title={`Statistics - ${selectedToken?.name}`}
-                placement="right"
-                width={600}
+            <StatsDrawer
+                visible={statsDrawerVisible}
                 onClose={() => setStatsDrawerVisible(false)}
-                open={statsDrawerVisible}
-            >
-                {statsData && (
-                    <div>
-                        <Row gutter={[16, 16]}>
-                            <Col span={12}>
-                                <Card>
-                                    <Statistic
-                                        title="Total Accesses"
-                                        value={statsData.usage?.total_accesses || 0}
-                                        valueStyle={{ color: '#3f8600' }}
-                                    />
-                                </Card>
-                            </Col>
-                            <Col span={12}>
-                                <Card>
-                                    <Statistic
-                                        title="Unique Guides"
-                                        value={statsData.usage?.unique_guides_accessed || 0}
-                                        valueStyle={{ color: '#1890ff' }}
-                                    />
-                                </Card>
-                            </Col>
-                            <Col span={12}>
-                                <Card>
-                                    <Statistic
-                                        title="Remaining Quota"
-                                        value={statsData.usage?.remaining_quota || 0}
-                                        valueStyle={{ color: '#cf1322' }}
-                                    />
-                                </Card>
-                            </Col>
-                        </Row>
-
-                        <Card title="Access Type Breakdown" style={{ marginTop: 16 }}>
-                            <PieChart
-                                series={[{
-                                    data: (statsData.graphs?.access_type_breakdown || []).map((item, index) => ({
-                                        id: index,
-                                        value: item.count,
-                                        label: item.type
-                                    })),
-                                }]}
-                                height={250}
-                            />
-                        </Card>
-                    </div>
-                )}
-            </Drawer>
+                token={selectedToken}
+                statsData={statsData}
+            />
         </div>
+        </PageTourWrapper>
     );
 };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Select, Button, Row, Col, Statistic, Drawer, Table, message, Typography, Tag, Spin, Flex } from 'antd';
+import { Card, Select, Button, Row, Col, Statistic, message, Typography, Tag, Spin, Flex } from 'antd';
 import { LineChart, BarChart, PieChart } from '@mui/x-charts';
 import {
     EyeOutlined,
@@ -13,8 +13,11 @@ import {
     CalendarOutlined
 } from '@ant-design/icons';
 import ApiService from '../../APIServices/ApiService';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useParams } from 'react-router-dom';
+import StatsDrawer from '../ApiAccess/StatsDrawer';
+import PageTourWrapper from '../../components/PageTourWrapper';
+import { TOUR_PAGES } from '../../Utils/TourConfig';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -25,10 +28,7 @@ const AffiliateApiAccessDashboard = () => {
     const [selectedTokenId, setSelectedTokenId] = useState(null);
     const [statsData, setStatsData] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [logsDrawerVisible, setLogsDrawerVisible] = useState(false);
-    const [logs, setLogs] = useState([]);
-    const [logsPagination, setLogsPagination] = useState({ current: 1, pageSize: 20, total: 0 });
-    const [logsLoading, setLogsLoading] = useState(false);
+    const [statsDrawerVisible, setStatsDrawerVisible] = useState(false);
 
     // Fetch tokens for this affiliate
     useEffect(() => {
@@ -75,67 +75,9 @@ const AffiliateApiAccessDashboard = () => {
         }
     };
 
-    const fetchLogs = async (page = 1, pageSize = 20) => {
-        try {
-            setLogsLoading(true);
-            const response = await ApiService.getAffiliateApiAccessTokenLogs(selectedTokenId, page, pageSize);
-            if (response.success) {
-                setLogs(response.data || []);
-                setLogsPagination({
-                    current: response.pagination?.page || 1,
-                    pageSize: response.pagination?.limit || 20,
-                    total: response.pagination?.total || 0,
-                });
-            }
-            setLogsLoading(false);
-        } catch (error) {
-            setLogsLoading(false);
-            message.error('Failed to fetch logs');
-        }
-    };
-
     const handleViewLogs = () => {
-        setLogsDrawerVisible(true);
-        fetchLogs();
+        setStatsDrawerVisible(true);
     };
-
-    const handleLogsTableChange = (pagination) => {
-        fetchLogs(pagination.current, pagination.pageSize);
-    };
-
-    const logsColumns = [
-        {
-            title: 'Guide',
-            dataIndex: ['travel_guide_id', 'name'],
-            key: 'guide',
-            render: (text, record) => record.travel_guide_id?.name || 'N/A',
-        },
-        {
-            title: 'Access Type',
-            dataIndex: 'access_type',
-            width: 100,
-            key: 'access_type',
-            render: (type) => (
-                <Tag color={type === 'pdf' ? 'blue' : type === 'html' ? 'green' : 'orange'}>
-                    {type?.toUpperCase()}
-                </Tag>
-            ),
-        },
-        {
-            title: 'Transaction ID',
-            width: 350,
-            dataIndex: 'transaction_id',
-            key: 'transaction_id',
-            render: (text) => text || 'N/A',
-            ellipsis: true,
-        },
-        {
-            title: 'Date',
-            dataIndex: 'created_at',
-            key: 'created_at',
-            render: (date) => moment(date).format('MMM DD, YYYY HH:mm'),
-        },
-    ];
 
     if (loading && !statsData) {
         return (
@@ -166,8 +108,9 @@ const AffiliateApiAccessDashboard = () => {
     const { token_info, usage, graphs } = statsData;
 
     return (
+        <PageTourWrapper pageName={TOUR_PAGES.AFFILIATE_API_ACCESS_DASHBOARD}>
         <div>
-            <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+            <Row justify="space-between" align="middle" style={{ marginBottom: 24 }} className="affiliate-api-dashboard-header">
                 <Col>
                     <Title level={2}>API Access Dashboard</Title>
                 </Col>
@@ -190,7 +133,7 @@ const AffiliateApiAccessDashboard = () => {
                             ))}
                         </Select>
                     )}
-                    <Button type="primary" icon={<EyeOutlined />} onClick={handleViewLogs}>
+                    <Button className="affiliate-api-view-logs-button" type="primary" icon={<EyeOutlined />} onClick={handleViewLogs}>
                         View Logs
                     </Button>
                 </Col>
@@ -293,7 +236,7 @@ const AffiliateApiAccessDashboard = () => {
                                 <Text type="secondary">End Date</Text>
                                 <div>
                                     <Statistic
-                                        value={moment(token_info?.end_date).format('MMM DD, YYYY')}
+                                        value={dayjs(token_info?.end_date).format('MMM DD, YYYY')}
                                         valueStyle={{ fontSize: '14px', color: '#eb2f96' }}
                                     />
                                 </div>
@@ -305,7 +248,7 @@ const AffiliateApiAccessDashboard = () => {
             </Row>
 
             {/* Usage Summary Cards */}
-            <Row gutter={16} style={{ marginBottom: 24 }}>
+            <Row gutter={16} style={{ marginBottom: 24 }} className="affiliate-api-stats-cards">
                 <Col xs={24} sm={12} md={6}>
                     <Card>
                         <Statistic
@@ -389,27 +332,15 @@ const AffiliateApiAccessDashboard = () => {
                 </Col>
             </Row>
 
-            {/* Logs Drawer */}
-            <Drawer
-                title="Access Logs"
-                placement="right"
-                width={800}
-                onClose={() => setLogsDrawerVisible(false)}
-                open={logsDrawerVisible}
-            >
-                <Table
-                    columns={logsColumns}
-                    dataSource={logs}
-                    rowKey="_id"
-                    loading={logsLoading}
-                    pagination={{
-                        ...logsPagination,
-                        showTotal: (total) => `Total ${total} logs`,
-                    }}
-                    onChange={handleLogsTableChange}
-                />
-            </Drawer>
+            <StatsDrawer
+                visible={statsDrawerVisible}
+                onClose={() => setStatsDrawerVisible(false)}
+                token={tokens.find(t => t._id === selectedTokenId)}
+                statsData={statsData}
+                isAffiliate={true}
+            />
         </div>
+        </PageTourWrapper>
     );
 };
 

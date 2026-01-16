@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Tag, message, Popconfirm, Drawer, Modal, Form, Input, Select, DatePicker, InputNumber, Row, Col, Card, Statistic, Typography } from 'antd';
+import { Table, Button, Space, Tag, message, Popconfirm, Modal, Form, Input, Select, DatePicker, InputNumber, Row, Col, Typography, Divider, Tooltip } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, BarChartOutlined, CopyOutlined } from '@ant-design/icons';
-import { PieChart } from '@mui/x-charts';
 import ApiService from '../../APIServices/ApiService';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useRecoilValue } from 'recoil';
 import { themeState } from '../../atom';
 import CustomCard from '../../components/Card';
 import { useParams } from 'react-router-dom';
+import StatsDrawer from '../ApiAccess/StatsDrawer';
+import PageTourWrapper from '../../components/PageTourWrapper';
+import { TOUR_PAGES } from '../../Utils/TourConfig';
 
 const { Option } = Select;
 const { Title, Text } = Typography;
@@ -28,6 +30,14 @@ const AffiliateApiAccessList = () => {
     const [form] = Form.useForm();
     const [editForm] = Form.useForm();
 
+    // Quota and Token states
+    const [quotaDetails, setQuotaDetails] = useState(null);
+    const [tokenSummary, setTokenSummary] = useState(null);
+    const [affiliateDetails, setAffiliateDetails] = useState(null);
+    const [quotaLoading, setQuotaLoading] = useState(false);
+    const [createQuotaValue, setCreateQuotaValue] = useState(null);
+    const [editAllowedValue, setEditAllowedValue] = useState(null);
+
     useEffect(() => {
         // Get affiliate user data from localStorage
         const userData = localStorage.getItem('affiliateUser');
@@ -41,14 +51,39 @@ const AffiliateApiAccessList = () => {
         if (affiliateData) {
             const parsedAffiliate = JSON.parse(affiliateData);
             setCategories(parsedAffiliate.categories || []);
+            setAffiliateDetails(parsedAffiliate);
         }
     }, []);
 
     useEffect(() => {
         if (affiliateUser?.id) {
             fetchTokens();
+            fetchQuotaAndTokenSummary();
         }
     }, [affiliateUser]);
+
+    const fetchQuotaAndTokenSummary = async () => {
+        if (!affiliateUser?.id) return;
+        setQuotaLoading(true);
+        try {
+            const [quotaRes, tokenRes, affRes] = await Promise.all([
+                ApiService.getAffiliateQuotaDetails(affiliateUser.id),
+                ApiService.getAffiliateTokenSummary(affiliateUser.id),
+                ApiService.getAffiliateByUserId(affiliateUser.id)
+            ]);
+            setQuotaDetails(quotaRes);
+            setTokenSummary(tokenRes);
+            if (affRes) {
+                setAffiliateDetails(affRes);
+            }
+            // Dispatch event to refresh header quota
+            window.dispatchEvent(new CustomEvent('refreshAffiliateQuota'));
+        } catch (error) {
+            console.error('Failed to fetch quota details');
+        } finally {
+            setQuotaLoading(false);
+        }
+    };
 
     const fetchTokens = async (page = 1, pageSize = 20) => {
         try {
@@ -75,14 +110,16 @@ const AffiliateApiAccessList = () => {
 
     const handleAdd = () => {
         form.resetFields();
+        setCreateQuotaValue(null);
         setAddModalVisible(true);
     };
 
     const handleEdit = (record) => {
         setSelectedToken(record);
+        setEditAllowedValue(record.allowed_travel_guides);
         editForm.setFieldsValue({
             ...record,
-            end_date: moment(record.end_date),
+            end_date: dayjs(record.end_date),
             categories: record.categories?.map(cat => cat._id || cat),
         });
         setEditModalVisible(true);
@@ -93,6 +130,7 @@ const AffiliateApiAccessList = () => {
             await ApiService.deleteAffiliateApiAccessToken(id);
             message.success('Token deleted successfully');
             fetchTokens(pagination.current, pagination.pageSize);
+            fetchQuotaAndTokenSummary();
         } catch (error) {
             message.error('Failed to delete token');
         }
@@ -121,15 +159,17 @@ const AffiliateApiAccessList = () => {
                 allowed_travel_guides: values.allowed_travel_guides,
                 end_date: values.end_date.format('YYYY-MM-DD'),
                 categories: values.categories,
-                user_id: affiliateUser.id, // Always use affiliate's user_id
-                is_active: false, // Default to inactive, admin will activate
+                user_id: affiliateUser.id,
+                is_active: false,
             };
 
             await ApiService.createAffiliateApiAccessToken(payload);
             message.success('Token created successfully');
             setAddModalVisible(false);
             form.resetFields();
+            setCreateQuotaValue(null);
             fetchTokens(pagination.current, pagination.pageSize);
+            fetchQuotaAndTokenSummary();
         } catch (error) {
             message.error(error.response?.data?.message || 'Failed to create token');
         }
@@ -148,7 +188,9 @@ const AffiliateApiAccessList = () => {
             message.success('Token updated successfully');
             setEditModalVisible(false);
             editForm.resetFields();
+            setEditAllowedValue(null);
             fetchTokens(pagination.current, pagination.pageSize);
+            fetchQuotaAndTokenSummary();
         } catch (error) {
             message.error(error.response?.data?.message || 'Failed to update token');
         }
@@ -159,12 +201,6 @@ const AffiliateApiAccessList = () => {
             title: 'Name',
             dataIndex: 'name',
             key: 'name',
-            width: 150,
-        },
-        {
-            title: 'Company',
-            dataIndex: 'company_name',
-            key: 'company_name',
             width: 150,
         },
         {
@@ -207,18 +243,24 @@ const AffiliateApiAccessList = () => {
             width: 80,
         },
         {
+            title: 'Remaining Qouta',
+            dataIndex: 'remaining_allowed',
+            key: 'remaining_allowed',
+            width: 120,
+        },
+        {
             title: 'End Date',
             dataIndex: 'end_date',
             key: 'end_date',
             width: 120,
-            render: (date) => moment(date).format('MMM DD, YYYY'),
+            render: (date) => dayjs(date).format('MMM DD, YYYY'),
         },
         {
             title: 'Status',
             key: 'status',
             width: 100,
             render: (_, record) => {
-                const isActive = moment(record.end_date).isAfter(moment());
+                const isActive = dayjs(record.end_date).isAfter(dayjs());
                 return <Tag color={isActive ? 'green' : 'red'}>{isActive ? 'Active' : 'Expired'}</Tag>;
             },
         },
@@ -260,16 +302,44 @@ const AffiliateApiAccessList = () => {
         },
     ];
 
+    // Calculate if Add button should be disabled
+    const canAddToken = tokenSummary?.remaining_tokens > 0 && quotaDetails?.remaining_quota > 0;
+    const addButtonDisabled = !canAddToken;
+
+    // Calculate max available for edit
+    const maxAvailableForEdit = quotaDetails
+        ? (quotaDetails.remaining_quota || 0) + (selectedToken?.allowed_travel_guides || 0)
+        : undefined;
+
     return (
+        <PageTourWrapper pageName={TOUR_PAGES.AFFILIATE_API_ACCESS_LIST}>
         <div>
-            <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+            <Row justify="space-between" align="middle" style={{ marginBottom: 24 }} className="affiliate-api-list-header">
                 <Col>
                     <Title level={2}>API Access Tokens</Title>
                 </Col>
                 <Col>
-                    <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-                        Add New API Access
-                    </Button>
+                    <Space>
+                        {tokenSummary && (
+                            <Text type="secondary">
+                                Tokens: <Tag color={tokenSummary.remaining_tokens > 0 ? 'green' : 'red'}>
+                                    {tokenSummary.total_allowed_tokens - tokenSummary.remaining_tokens}/{tokenSummary.total_allowed_tokens}
+                                </Tag>
+                            </Text>
+                        )}
+                        <Tooltip title={addButtonDisabled ?
+                            (tokenSummary?.remaining_tokens <= 0 ? 'Token limit reached' : 'No remaining quota') : ''}>
+                            <Button
+                                className="affiliate-api-add-button"
+                                type="primary"
+                                icon={<PlusOutlined />}
+                                onClick={handleAdd}
+                                disabled={addButtonDisabled}
+                            >
+                                Add New API Access
+                            </Button>
+                        </Tooltip>
+                    </Space>
                 </Col>
             </Row>
 
@@ -286,6 +356,7 @@ const AffiliateApiAccessList = () => {
                     }}
                     onChange={handleTableChange}
                     scroll={{ x: 1400 }}
+                    className="affiliate-api-table"
                 />
             </CustomCard>
 
@@ -320,7 +391,7 @@ const AffiliateApiAccessList = () => {
                     </Row>
 
                     <Row gutter={16}>
-                        <Col span={12}>
+                        <Col span={8}>
                             <Form.Item
                                 label="Type"
                                 name="type"
@@ -332,7 +403,7 @@ const AffiliateApiAccessList = () => {
                                 </Select>
                             </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col span={8}>
                             <Form.Item
                                 label="Payment Type"
                                 name="payment_type"
@@ -344,42 +415,113 @@ const AffiliateApiAccessList = () => {
                                 </Select>
                             </Form.Item>
                         </Col>
+                        <Col span={8}>
+                            <Form.Item
+                                label="Categories"
+                                name="categories"
+                                rules={[{ required: true, message: 'Please select categories' }]}
+                            >
+                                <Select mode="multiple" placeholder="Select categories">
+                                    {categories.map(cat => (
+                                        <Option key={cat._id} value={cat._id}>{cat.name}</Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </Col>
                     </Row>
+
+                    <Divider orientation="left">Quota Settings</Divider>
 
                     <Row gutter={16}>
                         <Col span={12}>
                             <Form.Item
                                 label="Allowed Travel Guides"
                                 name="allowed_travel_guides"
-                                rules={[{ required: true, message: 'Please enter quota' }]}
+                                rules={[
+                                    { required: true, message: 'Please enter quota' },
+                                    () => ({
+                                        validator(_, value) {
+                                            if (!value || !quotaDetails?.remaining_quota) {
+                                                return Promise.resolve();
+                                            }
+                                            if (value > quotaDetails.remaining_quota) {
+                                                return Promise.reject(new Error(`Cannot exceed remaining quota (${quotaDetails.remaining_quota})`));
+                                            }
+                                            return Promise.resolve();
+                                        },
+                                    }),
+                                ]}
                             >
-                                <InputNumber min={1} style={{ width: '100%' }} placeholder="Quota" />
+                                <InputNumber
+                                    min={1}
+                                    max={quotaDetails?.remaining_quota || undefined}
+                                    style={{ width: '100%' }}
+                                    placeholder="Quota"
+                                    onChange={(value) => setCreateQuotaValue(value)}
+                                />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item
                                 label="End Date"
                                 name="end_date"
-                                rules={[{ required: true, message: 'Please select end date' }]}
+                                rules={[
+                                    { required: true, message: 'Please select end date' },
+                                    () => ({
+                                        validator(_, value) {
+                                            if (!value || !affiliateDetails?.quota_end_date) {
+                                                return Promise.resolve();
+                                            }
+                                            const affiliateEndDate = dayjs(affiliateDetails.quota_end_date);
+                                            if (value.isAfter(affiliateEndDate)) {
+                                                return Promise.reject(new Error(`Must be on or before ${affiliateEndDate.format('MMM DD, YYYY')}`));
+                                            }
+                                            return Promise.resolve();
+                                        },
+                                    }),
+                                ]}
                             >
-                                <DatePicker style={{ width: '100%' }} />
+                                <DatePicker
+                                    style={{ width: '100%' }}
+                                    disabledDate={(current) => {
+                                        if (!affiliateDetails?.quota_end_date) return false;
+                                        return current && current.isAfter(dayjs(affiliateDetails.quota_end_date), 'day');
+                                    }}
+                                />
                             </Form.Item>
                         </Col>
                     </Row>
 
-                    <Form.Item
-                        label="Categories"
-                        name="categories"
-                        rules={[{ required: true, message: 'Please select at least one category' }]}
-                    >
-                        <Select mode="multiple" placeholder="Select categories">
-                            {categories.map(cat => (
-                                <Option key={cat._id} value={cat._id}>{cat.name}</Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
+                    {quotaDetails && (
+                        <div style={{ marginTop: 0, marginBottom: 16, padding: '8px 12px', background: '#f5f5f5', borderRadius: 4 }}>
+                            <Row gutter={16}>
+                                <Col span={12}>
+                                    <Text type="secondary">
+                                        Total Quota: <Tag color="blue">{quotaDetails.initial_api_quota || quotaDetails.total_quota || 0}</Tag>
+                                        Remaining: <Tag color={quotaDetails.remaining_quota > 0 ? 'green' : 'red'}>{quotaDetails.remaining_quota || 0}</Tag>
+                                    </Text>
+                                    {createQuotaValue && quotaDetails.remaining_quota !== undefined && (
+                                        <div style={{ marginTop: 4 }}>
+                                            <Text type="secondary">
+                                                After allocation: <Tag color={(quotaDetails.remaining_quota - createQuotaValue) >= 0 ? 'orange' : 'red'}>
+                                                    {quotaDetails.remaining_quota - createQuotaValue}
+                                                </Tag>
+                                            </Text>
+                                        </div>
+                                    )}
+                                </Col>
+                                <Col span={12}>
+                                    {affiliateDetails?.quota_end_date && (
+                                        <Text type="secondary">
+                                            Quota End Date: <Tag color="blue">{dayjs(affiliateDetails.quota_end_date).format('MMM DD, YYYY')}</Tag>
+                                        </Text>
+                                    )}
+                                </Col>
+                            </Row>
+                        </div>
+                    )}
 
-                    <Form.Item>
+                    <Form.Item style={{ marginTop: 24, marginBottom: 0 }}>
                         <Space>
                             <Button type="primary" htmlType="submit">
                                 Create Token
@@ -427,19 +569,78 @@ const AffiliateApiAccessList = () => {
                             <Form.Item
                                 label="Allowed Travel Guides"
                                 name="allowed_travel_guides"
-                                rules={[{ required: true, message: 'Please enter quota' }]}
+                                rules={[
+                                    { required: true, message: 'Please enter quota' },
+                                    () => ({
+                                        validator(_, value) {
+                                            if (!value || !quotaDetails) {
+                                                return Promise.resolve();
+                                            }
+                                            if (value > maxAvailableForEdit) {
+                                                return Promise.reject(new Error(`Cannot exceed available quota (${maxAvailableForEdit})`));
+                                            }
+                                            return Promise.resolve();
+                                        },
+                                    }),
+                                ]}
                             >
-                                <InputNumber min={0} style={{ width: '100%' }} />
+                                <InputNumber
+                                    min={0}
+                                    max={maxAvailableForEdit}
+                                    style={{ width: '100%' }}
+                                    onChange={(value) => setEditAllowedValue(value)}
+                                />
                             </Form.Item>
+                            {quotaDetails && (
+                                <div style={{ marginTop: -10, marginBottom: 8 }}>
+                                    <Text type="secondary">
+                                        Remaining Quota: <Tag color={quotaDetails.remaining_quota > 0 ? 'green' : 'red'}>{quotaDetails.remaining_quota || 0}</Tag>
+                                    </Text>
+                                    {editAllowedValue !== null && editAllowedValue !== undefined && (
+                                        <Text type="secondary" style={{ display: 'block', marginTop: 4 }}>
+                                            After change: <Tag color={
+                                                ((quotaDetails.remaining_quota || 0) + (selectedToken?.allowed_travel_guides || 0) - editAllowedValue) >= 0 ? 'orange' : 'red'
+                                            }>
+                                                {(quotaDetails.remaining_quota || 0) + (selectedToken?.allowed_travel_guides || 0) - editAllowedValue}
+                                            </Tag>
+                                        </Text>
+                                    )}
+                                </div>
+                            )}
                         </Col>
                         <Col span={12}>
                             <Form.Item
                                 label="End Date"
                                 name="end_date"
-                                rules={[{ required: true, message: 'Please select end date' }]}
+                                rules={[
+                                    { required: true, message: 'Please select end date' },
+                                    () => ({
+                                        validator(_, value) {
+                                            if (!value || !affiliateDetails?.quota_end_date) {
+                                                return Promise.resolve();
+                                            }
+                                            const affiliateEndDate = dayjs(affiliateDetails.quota_end_date);
+                                            if (value.isAfter(affiliateEndDate)) {
+                                                return Promise.reject(new Error(`Must be on or before ${affiliateEndDate.format('MMM DD, YYYY')}`));
+                                            }
+                                            return Promise.resolve();
+                                        },
+                                    }),
+                                ]}
                             >
-                                <DatePicker style={{ width: '100%' }} />
+                                <DatePicker
+                                    style={{ width: '100%' }}
+                                    disabledDate={(current) => {
+                                        if (!affiliateDetails?.quota_end_date) return false;
+                                        return current && current.isAfter(dayjs(affiliateDetails.quota_end_date), 'day');
+                                    }}
+                                />
                             </Form.Item>
+                            {affiliateDetails?.quota_end_date && (
+                                <Text type="secondary" style={{ display: 'block', marginTop: -10, marginBottom: 8 }}>
+                                    Quota End Date: <Tag color="blue">{dayjs(affiliateDetails.quota_end_date).format('MMM DD, YYYY')}</Tag>
+                                </Text>
+                            )}
                         </Col>
                     </Row>
 
@@ -468,62 +669,15 @@ const AffiliateApiAccessList = () => {
                 </Form>
             </Modal>
 
-            {/* Stats Drawer */}
-            <Drawer
-                title={`Statistics - ${selectedToken?.name}`}
-                placement="right"
-                width={600}
+            <StatsDrawer
+                visible={statsDrawerVisible}
                 onClose={() => setStatsDrawerVisible(false)}
-                open={statsDrawerVisible}
-            >
-                {statsData && (
-                    <div>
-                        <Row gutter={[16, 16]}>
-                            <Col span={12}>
-                                <Card>
-                                    <Statistic
-                                        title="Total Accesses"
-                                        value={statsData.usage?.total_accesses || 0}
-                                        valueStyle={{ color: '#3f8600' }}
-                                    />
-                                </Card>
-                            </Col>
-                            <Col span={12}>
-                                <Card>
-                                    <Statistic
-                                        title="Unique Guides"
-                                        value={statsData.usage?.unique_guides_accessed || 0}
-                                        valueStyle={{ color: '#1890ff' }}
-                                    />
-                                </Card>
-                            </Col>
-                            <Col span={12}>
-                                <Card>
-                                    <Statistic
-                                        title="Remaining Quota"
-                                        value={statsData.usage?.remaining_quota || 0}
-                                        valueStyle={{ color: '#cf1322' }}
-                                    />
-                                </Card>
-                            </Col>
-                        </Row>
-
-                        <Card title="Access Type Breakdown" style={{ marginTop: 16 }}>
-                            <PieChart
-                                series={[{
-                                    data: (statsData.graphs?.access_type_breakdown || []).map((item, index) => ({
-                                        id: index,
-                                        value: item.count,
-                                        label: item.type
-                                    })),
-                                }]}
-                                height={250}
-                            />
-                        </Card>
-                    </div>
-                )}
-            </Drawer>
+                token={selectedToken}
+                statsData={statsData}
+                isAffiliate={true}
+            />
         </div>
+        </PageTourWrapper>
     );
 };
 

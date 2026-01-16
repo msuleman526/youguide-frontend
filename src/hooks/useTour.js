@@ -53,9 +53,9 @@ export const useTour = (pageName) => {
   // Handle first time popup acceptance
   const handleStartFirstTour = useCallback(() => {
     localStorage.setItem(TOUR_FIRST_TIME_KEY, 'true');
-    localStorage.setItem(TOUR_AUTO_START_KEY, 'true'); // User wants auto-start
+    localStorage.setItem(TOUR_AUTO_START_KEY, 'false'); // Tours are manual only - use header button
     setShowFirstTimePopup(false);
-    setRunTour(true);
+    setRunTour(true); // Start tour for current page only
   }, []);
 
   // Handle first time popup skip
@@ -65,18 +65,17 @@ export const useTour = (pageName) => {
     setShowFirstTimePopup(false);
   }, []);
 
-  // Auto-start tour if it's first time for this specific page
+  // Auto-start tour only if this page's tour hasn't been completed yet
   useEffect(() => {
     if (!isTourCompleted() && pageName) {
-      const autoStartEnabled = localStorage.getItem(TOUR_AUTO_START_KEY);
-
-      // Only auto-start if user clicked "Start Tour" on first-time popup
-      // and this specific page's tour hasn't been completed yet
-      if (autoStartEnabled === 'true') {
+      // Auto-start tour for pages that haven't been completed
+      const firstTimeShown = localStorage.getItem(TOUR_FIRST_TIME_KEY);
+      // Only auto-start if user has already seen the first-time popup (clicked Start or Skip)
+      if (firstTimeShown) {
         setTimeout(() => setRunTour(true), 800);
       }
     }
-  }, [pageName, isTourCompleted]);
+  }, [pageName]); // Only run when page changes, not on every isTourCompleted change
 
   return {
     runTour,

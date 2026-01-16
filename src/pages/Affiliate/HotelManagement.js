@@ -11,6 +11,8 @@ import HotelPopup from './HotelPopup';
 import { useParams } from 'react-router-dom';
 import QRCode from 'qrcode.react';
 import ExtendHotelModal from './ExtendHotelModal';
+import PageTourWrapper from '../../components/PageTourWrapper';
+import { TOUR_PAGES } from '../../Utils/TourConfig';
 
 const HotelManagement = () => {
     const { affiliateId } = useParams();
@@ -192,9 +194,9 @@ const HotelManagement = () => {
     };
 
     return (
-        <>
+        <PageTourWrapper pageName={TOUR_PAGES.HOTEL_MANAGEMENT}>
             <div>
-                <Card style={{ marginBottom: '20px', backgroundColor: affiliate?.primaryColor || '#3498db' }}>
+                <Card className="hotel-management-affiliate-card" style={{ marginBottom: '20px', backgroundColor: affiliate?.primaryColor || '#3498db' }}>
                     <Flex justify="space-between" align="center">
                         <div>
                             <Typography.Title level={3} style={{ color: 'white', margin: 0 }}>
@@ -225,7 +227,7 @@ const HotelManagement = () => {
                         </Typography.Title>
                     </div>
                     <Button
-                        className="custom-primary-btn"
+                        className="custom-primary-btn hotel-management-add-button"
                         type="primary"
                         size="large"
                         onClick={onAddHotel}
@@ -240,7 +242,7 @@ const HotelManagement = () => {
             <CustomCard>
                 <Table
                     size="middle"
-                    className="custom_table"
+                    className="custom_table hotel-management-table"
                     bordered
                     columns={columns}
                     dataSource={hotels}
@@ -297,7 +299,7 @@ const HotelManagement = () => {
                 affiliate={affiliate}
                 onExtendSuccess={onExtendSuccess}
             />
-        </>
+        </PageTourWrapper>
     );
 };
 

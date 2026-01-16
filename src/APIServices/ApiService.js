@@ -263,10 +263,11 @@ class ApiService {
 
     static async getAffiliateByUserId(userId) {
         try {
+            const token = localStorage.getItem('affiliateToken') || localStorage.getItem('token');
             const response = await axios.get(`${this.baseURL}/affiliates/by-user/${userId}`, {
                 headers: {
                     'Content-Type': 'application/json',
-                    "Authorization": "Bearer " + localStorage.getItem("token")
+                    "Authorization": "Bearer " + token
                 },
             });
             return response.data;
@@ -1510,10 +1511,11 @@ class ApiService {
 
     static async getAffiliateApiAccessTokenStats(id) {
         try {
+            const token = localStorage.getItem('affiliateToken') || localStorage.getItem('token');
             const response = await axios.get(`${this.baseURL}/api-access/${id}/stats`, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('affiliateToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
             return response.data;
@@ -1525,16 +1527,34 @@ class ApiService {
 
     static async getAffiliateApiAccessTokenLogs(id, page = 1, limit = 20) {
         try {
+            const token = localStorage.getItem('affiliateToken') || localStorage.getItem('token');
             const response = await axios.get(`${this.baseURL}/api-access/${id}/logs`, {
                 params: { page, limit },
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('affiliateToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
             return response.data;
         } catch (error) {
             console.error('Error fetching affiliate API access logs:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getAffiliateApiAccessDetailLogs(id, page = 1, limit = 50) {
+        try {
+            const token = localStorage.getItem('affiliateToken') || localStorage.getItem('token');
+            const response = await axios.get(`${this.baseURL}/api-access/${id}/detail-logs`, {
+                params: { page, limit },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching affiliate API access detail logs:', error.response?.data || error.message);
             throw error;
         }
     }
@@ -1556,10 +1576,11 @@ class ApiService {
 
     static async updateAffiliateApiAccessToken(id, data) {
         try {
+            const token = localStorage.getItem('affiliateToken') || localStorage.getItem('token');
             const response = await axios.put(`${this.baseURL}/api-access/${id}`, data, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
             return response.data;
@@ -1571,10 +1592,11 @@ class ApiService {
 
     static async deleteAffiliateApiAccessToken(id) {
         try {
+            const token = localStorage.getItem('affiliateToken') || localStorage.getItem('token');
             const response = await axios.delete(`${this.baseURL}/api-access/${id}`, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('affiliateToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
             return response.data;
@@ -1586,10 +1608,11 @@ class ApiService {
 
     static async getAffiliateApiAccessTokenStatsById(id) {
         try {
+            const token = localStorage.getItem('affiliateToken') || localStorage.getItem('token');
             const response = await axios.get(`${this.baseURL}/api-access/${id}/stats`, {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('affiliateToken')}`
+                    'Authorization': `Bearer ${token}`
                 },
             });
             return response.data;
@@ -1686,6 +1709,103 @@ class ApiService {
             return response.data;
         } catch (error) {
             console.error('Error fetching API access stats:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getAffiliateQuotaDetails(userId) {
+        try {
+            const token = localStorage.getItem('affiliateToken') || localStorage.getItem('token');
+            const response = await axios.get(`${this.baseURL}/affiliates/quota-details/${userId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching affiliate quota details:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getAffiliateTokenSummary(userId) {
+        try {
+            const token = localStorage.getItem('affiliateToken') || localStorage.getItem('token');
+            const response = await axios.get(`${this.baseURL}/affiliates/token-summary/${userId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching affiliate token summary:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getApiAccessDetailLogs(id, page = 1, limit = 50) {
+        try {
+            const response = await axios.get(`${this.baseURL}/api-access/${id}/detail-logs`, {
+                params: { page, limit },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching API access detail logs:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    // Quota Package APIs
+    static async getQuotaPackageDetails(affiliateId) {
+        try {
+            const token = localStorage.getItem('affiliateToken') || localStorage.getItem('token');
+            const response = await axios.get(`${this.baseURL}/quota-package/${affiliateId}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching quota package details:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async checkoutQuotaPackage(data) {
+        try {
+            const token = localStorage.getItem('affiliateToken') || localStorage.getItem('token');
+            const response = await axios.post(`${this.baseURL}/quota-package/checkout`, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error initiating quota package checkout:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async requestQuota(data) {
+        try {
+            const token = localStorage.getItem('affiliateToken') || localStorage.getItem('token');
+            const response = await axios.post(`${this.baseURL}/affiliates/request-quota`, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error requesting quota:', error.response?.data || error.message);
             throw error;
         }
     }
