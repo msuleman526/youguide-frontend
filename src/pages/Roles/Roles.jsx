@@ -8,6 +8,8 @@ import { useEffect, useState } from 'react'
 import { handleErrors } from '../../Utils/Utils'
 import ApiService from '../../APIServices/ApiService'
 import RolesPopup from './RolesPopup'
+import PageTourWrapper from '../../components/PageTourWrapper'
+import { TOUR_PAGES } from '../../Utils/TourConfig'
 
 const RoleManagement = () => {
   const theme = useRecoilValue(themeState)
@@ -125,7 +127,7 @@ const RoleManagement = () => {
     : roles.filter(role => role.status === (selectedRoleStatus === 'active'));
 
   return (
-    <>
+    <PageTourWrapper pageName={TOUR_PAGES.ROLES}>
     <div>
       <Flex justify="space-between" align="center" className="mb-2">
         <div>
@@ -160,7 +162,7 @@ const RoleManagement = () => {
             </Select>
           </Flex>
           <Button
-            className="custom-primary-btn"
+            className="custom-primary-btn roles-add-button"
             type="primary"
             size="large"
             onClick={onAddRole}
@@ -176,7 +178,7 @@ const RoleManagement = () => {
     <CustomCard>
       <Table
         size="middle"
-        className="custom_table"
+        className="custom_table roles-table"
         bordered
         columns={columns}
         dataSource={filteredRoles}
@@ -186,7 +188,7 @@ const RoleManagement = () => {
       />
     </CustomCard>
     <RolesPopup open={visible} setOpen={() => setVisible(false)} onSaveRole={onSaveRole} role={selectedRole} type={popupType} />
-    </>
+    </PageTourWrapper>
   )
 }
 

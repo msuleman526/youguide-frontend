@@ -32,7 +32,7 @@ const Users = () => {
     handleSkipFirstTour,
   } = useTour(TOUR_PAGES.USERS)
 
-  const { runTour: contextRunTour, setPageTour } = useTourContext()
+  const { runTour: contextRunTour, setPageTour, stopTour: contextStopTour } = useTourContext()
 
   useEffect(() => {
       setTableLoading(true)
@@ -60,9 +60,11 @@ const Users = () => {
 
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
       stopTour()
+      contextStopTour() // Reset context's runTour to false
       markTourCompleted()
     } else if (action === ACTIONS.CLOSE) {
       stopTour()
+      contextStopTour() // Reset context's runTour to false
       markTourCompleted()
     }
   }

@@ -16,7 +16,7 @@ const PageTourWrapper = ({ pageName, children }) => {
     handleSkipFirstTour,
   } = useTour(pageName);
 
-  const { runTour: contextRunTour, setPageTour } = useTourContext();
+  const { runTour: contextRunTour, setPageTour, stopTour: contextStopTour } = useTourContext();
 
   useEffect(() => {
     setPageTour(pageName);
@@ -33,9 +33,11 @@ const PageTourWrapper = ({ pageName, children }) => {
 
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
       stopTour();
+      contextStopTour(); // Reset context's runTour to false
       markTourCompleted();
     } else if (action === ACTIONS.CLOSE) {
       stopTour();
+      contextStopTour(); // Reset context's runTour to false
       markTourCompleted();
     }
   };

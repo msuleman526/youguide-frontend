@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import ApiService from '../../APIServices/ApiService';
 import { MailOutlined, CheckCircleOutlined, ClockCircleOutlined, SyncOutlined } from '@ant-design/icons';
 import moment from 'moment';
+import PageTourWrapper from '../../components/PageTourWrapper';
+import { TOUR_PAGES } from '../../Utils/TourConfig';
 
 const { Title } = Typography;
 
@@ -131,11 +133,12 @@ const AllRequests = () => {
   ];
 
   return (
+    <PageTourWrapper pageName={TOUR_PAGES.ALL_REQUESTS}>
     <div>
       <Title level={2}>All Requests</Title>
 
       {/* Stats Cards */}
-      <Row gutter={16} style={{ marginBottom: 24 }}>
+      <Row gutter={16} style={{ marginBottom: 24 }} className="requests-stats-cards">
         <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
@@ -193,9 +196,11 @@ const AllRequests = () => {
           }}
           onChange={handleTableChange}
           scroll={{ x: 1200 }}
+          className="requests-table"
         />
       </CustomCard>
     </div>
+    </PageTourWrapper>
   );
 };
 

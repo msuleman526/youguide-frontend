@@ -7,6 +7,8 @@ import CustomCard from '../../components/Card'
 import { useEffect, useState } from 'react'
 import ApiService from '../../APIServices/ApiService'
 import CategoryPopup from './CategoriesPopup'
+import PageTourWrapper from '../../components/PageTourWrapper'
+import { TOUR_PAGES } from '../../Utils/TourConfig'
 
 const Categories = () => {
   const theme = useRecoilValue(themeState)
@@ -110,7 +112,7 @@ const Categories = () => {
   }
 
   return (
-    <>
+    <PageTourWrapper pageName={TOUR_PAGES.CATEGORIES}>
     <div>
       <Flex justify="space-between" align="center" className="mb-2">
         <div>
@@ -123,7 +125,7 @@ const Categories = () => {
         </div>
         <div style={{display: 'flex', gap: '10px'}}>
           <Button
-            className="custom-primary-btn"
+            className="custom-primary-btn categories-add-button"
             type="primary"
             size="large"
             onClick={onAddCategory}
@@ -139,7 +141,7 @@ const Categories = () => {
     <CustomCard>
       <Table
         size="middle"
-        className="custom_table"
+        className="custom_table categories-table"
         bordered
         columns={columns}
         dataSource={categories}
@@ -149,7 +151,7 @@ const Categories = () => {
       />
     </CustomCard>
     <CategoryPopup open={visible} setOpen={() => setVisible(false)} onSaveCategory={onSaveCategory} category={selectedCategory} type={popupType} />
-    </>
+    </PageTourWrapper>
   )
 }
 

@@ -1,8 +1,8 @@
-import { Button, Form, Input, Modal, DatePicker, InputNumber, Switch, Select, Upload, Row, Col, message, Divider, Typography } from 'antd';
+import { Button, Form, Input, Modal, DatePicker, InputNumber, Switch, Select, Upload, Row, Col, message, Divider, Typography, Tag } from 'antd';
 import { UploadOutlined, PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import ApiService from '../../APIServices/ApiService';
-import moment from 'moment';
+import dayjs from 'dayjs';
 
 const { Option } = Select;
 
@@ -16,6 +16,21 @@ const AffiliatePopup = ({ open, setOpen, onSaveAffiliate, affiliate, type, categ
     const [confirmModalVisible, setConfirmModalVisible] = useState(false);
     const [existingAffiliate, setExistingAffiliate] = useState(null);
     const [pendingFormData, setPendingFormData] = useState(null);
+    const [quotaDetails, setQuotaDetails] = useState(null);
+    const [quotaLoading, setQuotaLoading] = useState(false);
+
+    const fetchQuotaDetails = async (userId) => {
+        try {
+            setQuotaLoading(true);
+            const response = await ApiService.getAffiliateQuotaDetails(userId);
+            setQuotaDetails(response);
+            setQuotaLoading(false);
+        } catch (error) {
+            console.error('Failed to fetch quota details');
+            setQuotaDetails(null);
+            setQuotaLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (affiliate) {
@@ -26,20 +41,34 @@ const AffiliatePopup = ({ open, setOpen, onSaveAffiliate, affiliate, type, categ
             // Get userId if it's an object
             const userId = affiliate.userId?._id || affiliate.userId;
 
-            form.setFieldsValue({
-                ...affiliate,
-                subscriptionEndDate: moment(affiliate.subscriptionEndDate),
-                categories: categoryIds,
-                userId: userId,
-                allow_token: affiliate.allow_token || 1,
-                initial_api_quota: affiliate.initial_api_quota,
-                quota_end_date: affiliate.quota_end_date ? moment(affiliate.quota_end_date) : null,
-                quota_packages: affiliate.quota_packages || [],
-            });
+            // Set isLogin first so the API Access Settings fields are rendered
             setIsLogin(affiliate.isLogin || false);
+
+            // Set form values with a small delay to ensure fields are rendered
+            setTimeout(() => {
+                form.setFieldsValue({
+                    ...affiliate,
+                    subscriptionEndDate: dayjs(affiliate.subscriptionEndDate),
+                    categories: categoryIds,
+                    userId: userId,
+                    allow_token: affiliate.allow_token || 1,
+                    initial_api_quota: affiliate.initial_api_quota,
+                    quota_end_date: affiliate.quota_end_date ? dayjs(affiliate.quota_end_date) : null,
+                    quota_packages: affiliate.quota_packages || [],
+                    website: affiliate.website || '',
+                });
+            }, 0);
+
+            // Fetch quota details if user exists
+            if (userId) {
+                fetchQuotaDetails(userId);
+            } else {
+                setQuotaDetails(null);
+            }
         } else {
             form.resetFields();
             setIsLogin(false);
+            setQuotaDetails(null);
         }
     }, [affiliate, form]);
 
@@ -71,16 +100,19 @@ const AffiliatePopup = ({ open, setOpen, onSaveAffiliate, affiliate, type, categ
             if (values.userId) formData.append('userId', values.userId);
             formData.append('initial_api_quota', values.initial_api_quota || 0);
             formData.append('allow_token', values.allow_token || 1);
-            formData.append('quota_end_date', values.quota_end_date);
+            if (values.quota_end_date) {
+                formData.append('quota_end_date', values.quota_end_date.format('YYYY-MM-DD'));
+            }
             formData.append('quota_packages', JSON.stringify(values.quota_packages || []));
         }
 
         formData.append('affiliateName', values.affiliateName);
         formData.append('primaryColor', values.primaryColor);
-        formData.append('subscriptionEndDate', values.subscriptionEndDate);
+        formData.append('subscriptionEndDate', values.subscriptionEndDate?.format('YYYY-MM-DD') || '');
         formData.append('numberOfClicks', values.numberOfClicks);
         formData.append('categories', JSON.stringify(values.categories));
         formData.append('isLogin', isLogin);
+        if (values.website) formData.append('website', values.website);
 
         return formData;
     };
@@ -171,7 +203,7 @@ const AffiliatePopup = ({ open, setOpen, onSaveAffiliate, affiliate, type, categ
             </Typography.Text>
             <Form layout="vertical" form={form} onFinish={handleFinish}>
                 <Row gutter={16}>
-                    <Col span={8}>
+                    <Col span={6}>
                         <Form.Item
                             label="Affiliate Name"
                             name="affiliateName"
@@ -180,7 +212,15 @@ const AffiliatePopup = ({ open, setOpen, onSaveAffiliate, affiliate, type, categ
                             <Input placeholder="Enter affiliate name" />
                         </Form.Item>
                     </Col>
-                    <Col span={8}>
+                    <Col span={6}>
+                        <Form.Item
+                            label="Website"
+                            name="website"
+                        >
+                            <Input placeholder="https://example.com" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={6}>
                         <Form.Item
                             name="image"
                             label="Affiliate Logo"
@@ -195,7 +235,7 @@ const AffiliatePopup = ({ open, setOpen, onSaveAffiliate, affiliate, type, categ
                             </Upload>
                         </Form.Item>
                     </Col>
-                    <Col span={8}>
+                    <Col span={6}>
                         <Form.Item label="Primary Color" name="primaryColor">
                             <Input type="color" defaultValue="#3498db" style={{ width: '100%', height: 32 }} />
                         </Form.Item>
@@ -247,9 +287,21 @@ const AffiliatePopup = ({ open, setOpen, onSaveAffiliate, affiliate, type, categ
                         <Row gutter={16}>
                             <Col span={6}>
                                 <Form.Item label="Select User" name="userId" rules={[{ required: false, message: 'Please select user' }]}>
-                                    <Select placeholder="Select a user" showSearch filterOption={(input, option) =>
-                                        (option?.children?.toLowerCase() ?? '').includes(input.toLowerCase())
-                                    }>
+                                    <Select
+                                        placeholder="Select a user"
+                                        showSearch
+                                        allowClear
+                                        filterOption={(input, option) =>
+                                            (option?.children?.toLowerCase() ?? '').includes(input.toLowerCase())
+                                        }
+                                        onChange={(value) => {
+                                            if (value) {
+                                                fetchQuotaDetails(value);
+                                            } else {
+                                                setQuotaDetails(null);
+                                            }
+                                        }}
+                                    >
                                         {users.map((user) => (
                                             <Option key={user._id} value={user._id}>
                                                 {user.firstName + ' ' + user.lastName + ' - ' + user.email}
@@ -266,6 +318,18 @@ const AffiliatePopup = ({ open, setOpen, onSaveAffiliate, affiliate, type, categ
                                 >
                                     <InputNumber style={{ width: '100%' }} min={0} placeholder="Enter initial quota" />
                                 </Form.Item>
+                                {quotaLoading && (
+                                    <Typography.Text type="secondary" style={{ display: 'block', marginTop: -16, marginBottom: 8 }}>
+                                        Loading...
+                                    </Typography.Text>
+                                )}
+                                {quotaDetails && !quotaLoading && (
+                                    <Typography.Text type="secondary" style={{ display: 'block', marginTop: -16, marginBottom: 8 }}>
+                                        Remaining: <Tag color={quotaDetails.remaining_quota > 0 ? 'green' : 'red'}>
+                                            {quotaDetails.remaining_quota || 0}
+                                        </Tag>
+                                    </Typography.Text>
+                                )}
                             </Col>
                             <Col span={6}>
                                 <Form.Item

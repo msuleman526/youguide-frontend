@@ -249,7 +249,7 @@ const ApiDocumentation = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const BASE_URL = 'https://appapi.youguide.com';
+  const BASE_URL = 'http://localhost:5001';
 
   const menuItems = [
     {
@@ -1434,7 +1434,7 @@ Returns full HTML page with applied styling`
   </div>
 
   <script>
-    const API_BASE = 'https://appapi.youguide.com';
+    const API_BASE = 'http://localhost:5001';
     const YOUR_TOKEN = 'YOUR_TOKEN_HERE'; // Enter your PDF Prepaid Token
 
     let currentFilters = {
@@ -1852,7 +1852,7 @@ Returns full HTML page with applied styling`
   </div>
 
   <script>
-    const API_BASE = 'https://appapi.youguide.com';
+    const API_BASE = 'http://localhost:5001';
     const YOUR_TOKEN = 'YOUR_TOKEN_HERE'; // Enter your PDF Paid Token
 
     let currentPage = 1;
@@ -2355,7 +2355,7 @@ Returns full HTML page with applied styling`
   </div>
 
   <script>
-    const API_BASE = 'https://appapi.youguide.com';
+    const API_BASE = 'http://localhost:5001';
     const YOUR_TOKEN = 'YOUR_TOKEN_HERE'; // Enter your HTML/JSON Prepaid Token
 
     let currentPage = 1;
@@ -2836,7 +2836,7 @@ Returns full HTML page with applied styling`
   </div>
 
   <script>
-    const API_BASE = 'https://appapi.youguide.com';
+    const API_BASE = 'http://localhost:5001';
     const YOUR_TOKEN = 'YOUR_TOKEN_HERE'; // Enter your HTML/JSON Paid Token
 
     let currentPage = 1;

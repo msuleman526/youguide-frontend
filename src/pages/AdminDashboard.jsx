@@ -57,7 +57,7 @@ const AdminDashboard = () => {
     handleSkipFirstTour,
   } = useTour(TOUR_PAGES.ADMIN_DASHBOARD);
 
-  const { runTour: contextRunTour, setPageTour } = useTourContext();
+  const { runTour: contextRunTour, setPageTour, stopTour: contextStopTour } = useTourContext();
   
   // State for all analytics data
   const [dashboardStats, setDashboardStats] = useState({});
@@ -220,9 +220,11 @@ const AdminDashboard = () => {
 
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
       stopTour();
+      contextStopTour(); // Reset context's runTour to false
       markTourCompleted();
     } else if (action === ACTIONS.CLOSE) {
       stopTour();
+      contextStopTour(); // Reset context's runTour to false
       markTourCompleted();
     }
   };
