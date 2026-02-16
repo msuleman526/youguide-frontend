@@ -110,7 +110,7 @@ const ApiDocumentation = () => {
           { id: '4', position: { x: 300, y: 260 }, data: { label: 'POST /api/travel-guides/pdf/secure/checkout\n{ guide_id, content_type: "pdf" }' }, style: { ...nodeStyle, background: '#f0f5ff', border: '1px solid #2f54eb', width: 250 } },
           { id: '5', position: { x: 300, y: 360 }, data: { label: 'VALIDATION\n✓ Token type = pdf?\n✓ Payment = paid?\n✓ Category allowed?' }, style: { ...nodeStyle, background: '#fff1f0', border: '2px solid #ff4d4f', width: 200, height: 90 } },
           { id: '6', position: { x: 300, y: 490 }, data: { label: 'Response:\n{ checkout_url, transaction_id }' }, style: { ...nodeStyle, background: '#f9f0ff', border: '1px solid #722ed1' } },
-          { id: '7', position: { x: 300, y: 580 }, data: { label: 'Redirect to Stripe Checkout' }, style: { ...nodeStyle, background: '#e6fffb', border: '1px solid #13c2c2' } },
+          { id: '7', position: { x: 300, y: 580 }, data: { label: 'Redirect to Mollie Checkout' }, style: { ...nodeStyle, background: '#e6fffb', border: '1px solid #13c2c2' } },
           { id: '8', position: { x: 120, y: 680 }, data: { label: '❌ Payment Failed\nRedirect to cancel URL' }, style: { ...nodeStyle, background: '#fff1f0', border: '1px solid #ff4d4f' } },
           { id: '9', position: { x: 480, y: 680 }, data: { label: '✅ Payment Success\nRedirect to success URL' }, style: { ...nodeStyle, background: '#f6ffed', border: '1px solid #52c41a' } },
           { id: '10', position: { x: 480, y: 780 }, data: { label: 'GET /api/travel-guides/pdf/secure/download\n?transaction_id=xxx&guide_id=xxx' }, style: { ...nodeStyle, background: '#f0f5ff', border: '1px solid #2f54eb', width: 280 } },
@@ -177,7 +177,7 @@ const ApiDocumentation = () => {
           { id: '3', position: { x: 300, y: 170 }, data: { label: 'User selects guide to PURCHASE' }, style: { ...nodeStyle, background: '#fff7e6', border: '1px solid #ffa940' } },
           { id: '4', position: { x: 300, y: 260 }, data: { label: 'POST /digital/secure/checkout\n{ guide_id, content_type: "digital" }' }, style: { ...nodeStyle, background: '#f0f5ff', border: '1px solid #2f54eb', width: 250 } },
           { id: '5', position: { x: 300, y: 360 }, data: { label: 'Response:\n{ checkout_url, transaction_id }' }, style: { ...nodeStyle, background: '#f9f0ff', border: '1px solid #722ed1' } },
-          { id: '6', position: { x: 300, y: 450 }, data: { label: 'Redirect to Stripe Checkout' }, style: { ...nodeStyle, background: '#e6fffb', border: '1px solid #13c2c2' } },
+          { id: '6', position: { x: 300, y: 450 }, data: { label: 'Redirect to Mollie Checkout' }, style: { ...nodeStyle, background: '#e6fffb', border: '1px solid #13c2c2' } },
           { id: '7', position: { x: 100, y: 550 }, data: { label: '❌ Payment Failed' }, style: { ...nodeStyle, background: '#fff1f0', border: '1px solid #ff4d4f' } },
           { id: '8', position: { x: 500, y: 550 }, data: { label: '✅ Payment Success' }, style: { ...nodeStyle, background: '#f6ffed', border: '1px solid #52c41a' } },
           { id: '9', position: { x: 500, y: 650 }, data: { label: 'Choose format: JSON or HTML' }, style: { ...nodeStyle, background: '#fff7e6', border: '1px solid #ffa940' } },
@@ -531,7 +531,7 @@ const ApiDocumentation = () => {
           </div>
           <div>
             <Tag color="orange">Paid Tokens</Tag>
-            <Text>Access /secure/* endpoints with pay-per-guide via Stripe</Text>
+            <Text>Access /secure/* endpoints with pay-per-guide via Mollie</Text>
           </div>
         </Space>
       </Card>
@@ -549,7 +549,7 @@ const ApiDocumentation = () => {
         <Paragraph><strong>For Paid Access (payment_type=paid):</strong></Paragraph>
         <ol>
           <li>Client requests checkout link via /secure/checkout</li>
-          <li>System generates Stripe session with unique transaction_id</li>
+          <li>System generates Mollie payment with unique transaction_id</li>
           <li>Client completes payment, redirected to success page</li>
           <li>Client accesses content via /secure/* endpoints with transaction_id</li>
           <li>System validates payment success, ownership, and guide match</li>
@@ -862,13 +862,13 @@ const ApiDocumentation = () => {
       {renderApiEndpoint(
         'POST',
         '/api/travel-guides/pdf/secure/checkout',
-        'Generate Stripe checkout link for purchasing PDF guide access',
+        'Generate Mollie checkout link for purchasing PDF guide access',
         [
           { name: 'guide_id', description: 'The guide ID to purchase (in request body)', required: true },
         ],
         `{
   "success": true,
-  "checkout_url": "https://checkout.stripe.com/...",
+  "checkout_url": "https://www.mollie.com/checkout/...",
   "transaction_id": "550e8400-e29b-41d4-a716-446655440000",
   "expires_in": 1800
 }`
@@ -1725,9 +1725,9 @@ Returns full HTML page with applied styling`
             <Divider orientation="left">2. PDF Paid API - Complete Payment Application</Divider>
 
             <Card style={{ marginBottom: 24, backgroundColor: '#f9f9f9' }}>
-        <Title level={4}>Full HTML Application - PDF Paid with Stripe Integration</Title>
+        <Title level={4}>Full HTML Application - PDF Paid with Mollie Integration</Title>
         <Paragraph type="secondary">
-          Features: Guide listing, Stripe payment flow, Transaction tracking, PDF download after payment
+          Features: Guide listing, Mollie payment flow, Transaction tracking, PDF download after payment
         </Paragraph>
 
         <Card style={{ marginBottom: '15px', backgroundColor: '#fff7e6', border: '1px solid #ffd591' }}>
@@ -1754,7 +1754,7 @@ Returns full HTML page with applied styling`
             <li><Text code>GET /api/travel-content/languages</Text> - Fetch available languages</li>
             <li><Text code>GET /api/travel-content/categories</Text> - Fetch categories</li>
             <li><Text code>GET /api/travel-content/guides</Text> - List guides with filters</li>
-            <li><Text code>POST /api/travel-guides/pdf/secure/checkout</Text> - Create Stripe checkout session</li>
+            <li><Text code>POST /api/travel-guides/pdf/secure/checkout</Text> - Create Mollie checkout payment</li>
             <li><Text code>GET /api/travel-guides/pdf/secure/download</Text> - Download PDF after payment with transaction ID</li>
           </ul>
         </Card>
@@ -1816,7 +1816,7 @@ Returns full HTML page with applied styling`
   <div class="container" id="app">
     <div class="header">
       <h1>💳 YouGuide Travel Guides - Pay Per Guide</h1>
-      <p>PDF Paid API - Secure payment via Stripe</p>
+      <p>PDF Paid API - Secure payment via Mollie</p>
     </div>
 
     <!-- Main Page (Guide Listing) -->
@@ -1858,7 +1858,7 @@ Returns full HTML page with applied styling`
     let currentPage = 1;
     let totalPages = 1;
 
-    // Check if returning from Stripe payment
+    // Check if returning from Mollie payment
     window.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('payment') === 'success') {
@@ -2040,7 +2040,7 @@ Returns full HTML page with applied styling`
     }
 
     async function initiatePayment(guideId, guideName, price) {
-      if (!confirm(\`Purchase "\${guideName}" for €\${price}?\\n\\nYou will be redirected to Stripe for secure payment.\`)) {
+      if (!confirm(\`Purchase "\${guideName}" for €\${price}?\\n\\nYou will be redirected to Mollie for secure payment.\`)) {
         return;
       }
 
@@ -2063,7 +2063,7 @@ Returns full HTML page with applied styling`
         localStorage.setItem('guide_id', guideId);
         localStorage.setItem('guide_name', guideName);
 
-        // Open Stripe checkout in new tab
+        // Open Mollie checkout in new tab
         window.open(data.checkout_url, '_blank');
       } catch (error) {
         alert('Error initiating payment. Please try again.');
@@ -2631,7 +2631,7 @@ Returns full HTML page with applied styling`
             <Card style={{ marginBottom: 24, backgroundColor: '#f9f9f9' }}>
         <Title level={4}>Full HTML Application - JSON/HTML Paid with All Features</Title>
         <Paragraph type="secondary">
-          Features: Guide listing with filters, Payment via Stripe, Content viewing with heading filters and styling options, Transaction tracking
+          Features: Guide listing with filters, Payment via Mollie, Content viewing with heading filters and styling options, Transaction tracking
         </Paragraph>
 
         <Card style={{ marginBottom: '15px', backgroundColor: '#fff0f6', border: '1px solid #ffadd2' }}>
@@ -2658,7 +2658,7 @@ Returns full HTML page with applied styling`
             <li><Text code>GET /api/travel-content/languages</Text> - Fetch available languages</li>
             <li><Text code>GET /api/travel-content/categories</Text> - Fetch categories</li>
             <li><Text code>GET /api/travel-content/guides</Text> - List guides with filters</li>
-            <li><Text code>POST /api/travel-guides/digital/secure/checkout</Text> - Create Stripe checkout (specify JSON/HTML content type)</li>
+            <li><Text code>POST /api/travel-guides/digital/secure/checkout</Text> - Create Mollie checkout (specify JSON/HTML content type)</li>
             <li><Text code>GET /api/travel-guides/digital/secure/data</Text> - Get JSON content after payment with heading filters</li>
             <li><Text code>GET /api/travel-guides/digital/secure/view</Text> - Get styled HTML view after payment</li>
           </ul>
@@ -2982,7 +2982,7 @@ Returns full HTML page with applied styling`
     }
 
     async function purchase(guideId, guideName, price) {
-      if (!confirm(\`Purchase "\${guideName}" for €\${price}?\\n\\nYou will be redirected to Stripe for secure payment.\`)) {
+      if (!confirm(\`Purchase "\${guideName}" for €\${price}?\\n\\nYou will be redirected to Mollie for secure payment.\`)) {
         return;
       }
 
@@ -3009,7 +3009,7 @@ Returns full HTML page with applied styling`
         localStorage.setItem('guide_name', guideName);
         localStorage.setItem('content_type', 'digital');
 
-        // Open Stripe checkout in new tab
+        // Open Mollie checkout in new tab
         window.open(data.checkout_url, '_blank');
         alert('Checkout opened in new tab. After payment, refresh this page to view content.');
       } catch (error) {
@@ -3122,7 +3122,7 @@ Returns full HTML page with applied styling`
           <li><strong>🎉 READY TO USE:</strong> All code snippets above contain <strong>real, active API tokens</strong> - copy any snippet and run it immediately in your browser!</li>
           <li><strong>Token Details:</strong> Each snippet uses a different token (PDF Prepaid, PDF Paid, HTML/JSON Prepaid, HTML/JSON Paid) to demonstrate all API types</li>
           <li><strong>Prepaid APIs:</strong> Automatically deduct quota on first access to each guide</li>
-          <li><strong>Paid APIs:</strong> Integrate Stripe checkout - set your success URL to redirect back with <Text code>?payment=success</Text> parameter</li>
+          <li><strong>Paid APIs:</strong> Integrate Mollie checkout - set your success URL to redirect back with <Text code>?payment=success</Text> parameter</li>
           <li><strong>Heading Filters:</strong> Use comma-separated numbers (e.g., "2,3,4") based on the Heading Reference section for each category</li>
           <li><strong>Mode Options:</strong> "light" or "dark" for different themes</li>
           <li><strong>Styling:</strong> Customize heading sizes, colors, and sub-heading styles</li>
@@ -3236,14 +3236,14 @@ Returns full HTML page with applied styling`
       {renderApiEndpoint(
         'POST',
         '/api/travel-guides/digital/secure/checkout',
-        'Generate Stripe checkout link for purchasing digital guide access',
+        'Generate Mollie checkout link for purchasing digital guide access',
         [
           { name: 'guide_id', description: 'Guide ID (in request body)', required: true },
           { name: 'content_type', description: 'Type: "html" or "json" (in request body)', required: true },
         ],
         `{
   "success": true,
-  "checkout_url": "https://checkout.stripe.com/...",
+  "checkout_url": "https://www.mollie.com/checkout/...",
   "transaction_id": "uuid-here",
   "content_type": "html",
   "expires_in": 1800

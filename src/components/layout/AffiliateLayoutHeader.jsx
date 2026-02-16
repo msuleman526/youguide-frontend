@@ -141,7 +141,7 @@ const AffiliateLayoutHeader = ({ isMobile, collapsed, setCollapsed, theme, toggl
             </Flex>
           </div>
           <Typography.Text type="secondary" style={{ display: 'block', marginTop: 12 }}>
-            You will be redirected to Stripe for payment.
+            You will be redirected to Mollie for payment.
           </Typography.Text>
         </div>
       ),
