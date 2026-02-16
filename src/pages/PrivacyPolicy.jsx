@@ -151,7 +151,7 @@ const PrivacyPolicy = () => {
             <h4 className="font-semibold text-gray-800 mb-2">Payment Data</h4>
             <p className="text-gray-700 mb-2">
               We may collect data necessary to process your payment if you choose to make purchases, such as your payment instrument number, 
-              and the security code associated with your payment instrument. All payment data is handled and stored by Apple Pay and Stripe.
+              and the security code associated with your payment instrument. All payment data is handled and stored by Apple Pay and Mollie.
             </p>
             <p className="text-gray-700">
               You may find their privacy notice links here:{' '}
@@ -159,8 +159,8 @@ const PrivacyPolicy = () => {
                 https://www.apple.com/legal/applepayments/privacy-notice
               </a>{' '}
               and{' '}
-              <a href="https://stripe.com/privacy" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
-                https://stripe.com/privacy
+              <a href="https://www.mollie.com/privacy" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                https://www.mollie.com/privacy
               </a>.
             </p>
           </div>
