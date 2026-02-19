@@ -25,13 +25,21 @@ const AffiliateDashboard = () => {
     const [analyticsData, setAnalyticsData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [timeRange, setTimeRange] = useState('30days');
+    const [expired, setExpired] = useState(false);
 
     // Analytics data will be fetched from API
+
+    const handleLogout = () => {
+        localStorage.removeItem('affiliateToken');
+        localStorage.removeItem('affiliateData');
+        localStorage.removeItem('affiliateUser');
+        navigate('/login');
+    };
 
     useEffect(() => {
         // Authentication is handled by ProtectedRoute, just verify affiliate ID access
         const affiliateData = localStorage.getItem('affiliateData');
-        
+
         if (affiliateData) {
             try {
                 const parsedAffiliate = JSON.parse(affiliateData);
@@ -47,8 +55,25 @@ const AffiliateDashboard = () => {
                 return;
             }
         }
-        
-        fetchAnalytics();
+
+        // Check subscription expiry
+        const checkExpiry = async () => {
+            try {
+                const expiry = await ApiService.checkAffiliateSubscriptionExpiry(affiliateId);
+                if (expiry?.expired) {
+                    setExpired(true);
+                    return;
+                }
+            } catch (error) {
+                console.error('Subscription expiry check failed:', error);
+                if (error.response?.status === 401 || error.response?.status === 403) {
+                    setExpired(true);
+                    return;
+                }
+            }
+            fetchAnalytics();
+        };
+        checkExpiry();
     }, [affiliateId, navigate, timeRange]);
 
     const fetchAnalytics = async () => {
@@ -77,6 +102,23 @@ const AffiliateDashboard = () => {
             setLoading(false);
         }
     };
+
+    if (expired) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+                <Card style={{ textAlign: 'center', maxWidth: 450, padding: '24px' }}>
+                    <CalendarOutlined style={{ fontSize: '48px', color: '#ff4d4f', marginBottom: '16px' }} />
+                    <Title level={3}>Subscription Expired</Title>
+                    <Text type="secondary" style={{ display: 'block', marginBottom: '24px' }}>
+                        Your affiliate subscription has expired or your session is no longer valid. Please log in again or contact support to renew.
+                    </Text>
+                    <Button type="primary" size="large" onClick={handleLogout}>
+                        Back to Login
+                    </Button>
+                </Card>
+            </div>
+        );
+    }
 
     if (!affiliate || !analyticsData) {
         return (
