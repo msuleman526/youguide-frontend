@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ConfigProvider, Layout, theme, Typography, Row, Col, Image, Spin } from 'antd';
+import { ConfigProvider, Layout, theme, Typography, Row, Col, Image, Spin, Button } from 'antd';
 import AffiliateSidebar from '../components/layout/AffiliateSidebar';
 import AffiliateLayoutHeader from '../components/layout/AffiliateLayoutHeader';
 import { Outlet, useNavigate } from 'react-router-dom';
@@ -18,6 +18,14 @@ const { Title, Paragraph } = Typography;
 
 // Subscription Expired Component for Affiliate Panel
 const AffiliateSubscriptionExpired = ({ primaryColor }) => {
+  const handleBackToLogin = () => {
+    localStorage.removeItem('affiliateToken');
+    localStorage.removeItem('affiliateData');
+    localStorage.removeItem('affiliateUser');
+    window.location.hash = '#/login';
+    window.location.reload();
+  };
+
   return (
     <Layout
       style={{
@@ -69,6 +77,9 @@ const AffiliateSubscriptionExpired = ({ primaryColor }) => {
             >
               Your admin panel subscription with YouGuide has expired. Please contact the administrator to renew your subscription and regain access.
             </Paragraph>
+            <Button type="primary" size="large" danger onClick={handleBackToLogin}>
+              Back to Login
+            </Button>
           </Col>
           <Col
             xs={24}
