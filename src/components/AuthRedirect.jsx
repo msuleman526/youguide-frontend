@@ -24,7 +24,7 @@ const AuthRedirect = () => {
   // Check affiliate authentication
   const affiliateToken = localStorage.getItem('affiliateToken');
   const affiliateData = localStorage.getItem('affiliateData');
-  
+
   if (affiliateToken && affiliateData) {
     try {
       const affiliate = JSON.parse(affiliateData);
@@ -39,7 +39,7 @@ const AuthRedirect = () => {
       localStorage.removeItem('affiliateUser');
     }
   }
-  
+
   // No valid authentication found, redirect to login
   return <Navigate to="/login" replace />;
 };
