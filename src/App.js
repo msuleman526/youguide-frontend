@@ -50,6 +50,7 @@ import ApiAccessDashboard from './pages/ApiAccess/ApiAccessDashboard'
 import ApiAccessList from './pages/ApiAccess/ApiAccessList'
 import ApiDocumentation from './pages/ApiDocumentation/ApiDocumentation'
 import Unauthorized from './pages/Unauthorized/Unauthorized'
+import LanguageGuides from './pages/LanguageGuides/LanguageGuides'
 
 const App = () => {
   return (
@@ -98,6 +99,7 @@ const App = () => {
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/users" element={<Users />} />
           <Route path="/books" element={<Books />} />
+          <Route path="/language-guides" element={<LanguageGuides />} />
           <Route path="/all-requests" element={<AllRequests />} />
           <Route path="/all-contacts" element={<AllContacts />} />
           <Route path="/api-access/dashboard" element={<ApiAccessDashboard />} />

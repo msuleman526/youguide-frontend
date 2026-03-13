@@ -107,6 +107,11 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
       label: 'Manage Guides',
     },
     {
+      key: 'language-guides',
+      icon: <FaFileAlt {...iconProps} />,
+      label: 'Language Guides',
+    },
+    {
       key: 'transactions',
       icon: <FaCog {...iconProps} />,
       label: 'Transactions',

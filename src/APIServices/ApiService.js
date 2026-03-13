@@ -1250,6 +1250,66 @@ class ApiService {
         }
     }
 
+    // Language Guides
+    static async createLanguageGuide(data) {
+        try {
+            const response = await axios.post(`${this.baseURL}/language-guides`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error creating language guide:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getAllLanguageGuides(page = 1, query = "") {
+        try {
+            const response = await axios.get(`${this.baseURL}/language-guides?page=${page}&query=${query}&pageSize=200`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching language guides:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async updateLanguageGuide(id, data) {
+        try {
+            const response = await axios.put(`${this.baseURL}/language-guides/${id}`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error updating language guide:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async deleteLanguageGuide(id) {
+        try {
+            const response = await axios.delete(`${this.baseURL}/language-guides/${id}`, {
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error deleting language guide:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
     static async extendHotelAffiliateSubscription(hotelId, data) {
         try {
             const response = await axios.put(`${this.baseURL}/hotels/extend/${hotelId}`, data, {
