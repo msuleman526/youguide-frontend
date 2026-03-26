@@ -1,12 +1,10 @@
 import axios from 'axios';
 
+const isDev = false
 class ApiService {
-    static URLL = "https://appapi.youguide.com"
+    static URLL = !isDev ? "https://appapi.youguide.com" : 'http://localhost:5001'
     static baseURL = ApiService.URLL + '/api'; // Set your base URL here
     documentURL = "https://appapi.youguide.com" + '/';
-    
-    //static URLL = "http://localhost:5001"
-    //static baseURL = ApiService.URLL + '/api'; // Set your base URL here
     //static documentURL = "http://localhost:5001" + '/';
 
     static async loginUser(data) {
@@ -1529,6 +1527,38 @@ class ApiService {
         }
     }
 
+    // Newsletter APIs
+    static async getAllNewsletters(page = 1, limit = 20) {
+        try {
+            const response = await axios.get(`${this.baseURL}/newsletter/admin/list`, {
+                params: { page, limit },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching newsletters:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async deleteNewsletter(id) {
+        try {
+            const response = await axios.delete(`${this.baseURL}/newsletter/admin/${id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error deleting newsletter:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
     // API Access Management APIs
     static async getAllApiAccessTokens(page = 1, limit = 20, type = null, payment_type = null, user_id = null) {
         try {
@@ -1850,6 +1880,67 @@ class ApiService {
             return response.data;
         } catch (error) {
             console.error('Error initiating quota package checkout:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    // Coupon APIs
+    static async getAllCoupons() {
+        try {
+            const response = await axios.get(`${this.baseURL}/coupons`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching coupons:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async createCoupon(data) {
+        try {
+            const response = await axios.post(`${this.baseURL}/coupons`, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error creating coupon:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async updateCoupon(id, data) {
+        try {
+            const response = await axios.put(`${this.baseURL}/coupons/${id}`, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error updating coupon:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async deleteCoupon(id) {
+        try {
+            const response = await axios.delete(`${this.baseURL}/coupons/${id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error deleting coupon:', error.response?.data || error.message);
             throw error;
         }
     }
