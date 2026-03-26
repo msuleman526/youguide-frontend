@@ -46,11 +46,13 @@ import RequestForm from './pages/RequestForm'
 import AllRequests from './pages/Requests/AllRequests'
 import ContactForm from './pages/ContactForm'
 import AllContacts from './pages/Contact/AllContacts'
+import AllNewsletters from './pages/Newsletter/AllNewsletters'
 import ApiAccessDashboard from './pages/ApiAccess/ApiAccessDashboard'
 import ApiAccessList from './pages/ApiAccess/ApiAccessList'
 import ApiDocumentation from './pages/ApiDocumentation/ApiDocumentation'
 import Unauthorized from './pages/Unauthorized/Unauthorized'
 import LanguageGuides from './pages/LanguageGuides/LanguageGuides'
+import Coupons from './pages/Coupons/Coupons'
 
 const App = () => {
   return (
@@ -100,8 +102,10 @@ const App = () => {
           <Route path="/users" element={<Users />} />
           <Route path="/books" element={<Books />} />
           <Route path="/language-guides" element={<LanguageGuides />} />
+          <Route path="/coupons" element={<Coupons />} />
           <Route path="/all-requests" element={<AllRequests />} />
           <Route path="/all-contacts" element={<AllContacts />} />
+          <Route path="/newsletters" element={<AllNewsletters />} />
           <Route path="/api-access/dashboard" element={<ApiAccessDashboard />} />
           <Route path="/api-access/list" element={<ApiAccessList />} />
         </Route>

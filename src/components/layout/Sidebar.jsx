@@ -29,6 +29,9 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
     size: 18,
   };
 
+  const managementKeys = ['roles', 'users', 'teams', 'all-requests', 'all-contacts', 'newsletters'];
+  const websiteAppKeys = ['categories', 'books', 'language-guides', 'coupons'];
+
   useEffect(() => {
     const path = location.pathname.split('/');
     const menuKey = (path[1] === 'admin-dashboard' || path[1] === 'dashboard') ? 'admin-dashboard' : (path[1] || 'admin-dashboard');
@@ -37,13 +40,15 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
     if (path[1] === 'api-access' && path[2]) {
       setSelectedMenu(`api-access/${path[2]}`);
       setOpenKeys(['api-access']);
+    } else if (managementKeys.includes(menuKey)) {
+      setSelectedMenu(menuKey);
+      setOpenKeys(['management']);
+    } else if (websiteAppKeys.includes(menuKey)) {
+      setSelectedMenu(menuKey);
+      setOpenKeys(['website-app']);
     } else {
       setSelectedMenu(menuKey);
-      if (path[1].includes('reports')) {
-        setOpenKeys(['reports']);
-      } else {
-        setOpenKeys([]);
-      }
+      setOpenKeys([]);
     }
   }, [location.pathname]);
 
@@ -82,49 +87,33 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
       label: 'Admin Dashboard',
     },
     {
-      key: 'roles',
-      icon: <VscLayout {...iconProps} />,
-      label: 'Manage Roles',
-    },
-    {
-      key: 'users',
+      key: 'management',
       icon: <BiUser {...iconProps} />,
-      label: 'Manage Users',
+      label: 'Management',
+      children: [
+        { key: 'roles', label: 'Roles' },
+        { key: 'teams', label: 'Teams' },
+        { key: 'users', label: 'Users' },
+        { key: 'all-requests', label: 'Requests' },
+        { key: 'all-contacts', label: 'Contacts' },
+        { key: 'newsletters', label: 'Newsletters' },
+      ],
     },
     {
-      key: 'teams',
-      icon: <BiUser {...iconProps} />,
-      label: 'Manage Teams',
-    },
-    {
-      key: 'categories',
-      icon: <FaList {...iconProps} />,
-      label: 'Manage Categories',
-    },
-    {
-      key: 'books',
+      key: 'website-app',
       icon: <FaBook {...iconProps} />,
-      label: 'Manage Guides',
-    },
-    {
-      key: 'language-guides',
-      icon: <FaFileAlt {...iconProps} />,
-      label: 'Language Guides',
+      label: 'Website & App',
+      children: [
+        { key: 'categories', label: 'Categories' },
+        { key: 'books', label: 'Travel Guides' },
+        { key: 'language-guides', label: 'Language Guides' },
+        { key: 'coupons', label: 'Coupons' },
+      ],
     },
     {
       key: 'transactions',
-      icon: <FaCog {...iconProps} />,
+      icon: <GrTransaction {...iconProps} />,
       label: 'Transactions',
-    },
-    {
-      key: 'all-requests',
-      icon: <MdEmail {...iconProps} />,
-      label: 'All Requests',
-    },
-    {
-      key: 'all-contacts',
-      icon: <PhoneOutlined style={iconStyle} />,
-      label: 'Contact',
     },
     {
       key: 'api-access',
