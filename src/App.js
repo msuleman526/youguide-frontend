@@ -53,6 +53,7 @@ import ApiDocumentation from './pages/ApiDocumentation/ApiDocumentation'
 import Unauthorized from './pages/Unauthorized/Unauthorized'
 import LanguageGuides from './pages/LanguageGuides/LanguageGuides'
 import Coupons from './pages/Coupons/Coupons'
+import Discounts from './pages/Discounts/Discounts'
 
 const App = () => {
   return (
@@ -103,6 +104,7 @@ const App = () => {
           <Route path="/books" element={<Books />} />
           <Route path="/language-guides" element={<LanguageGuides />} />
           <Route path="/coupons" element={<Coupons />} />
+          <Route path="/discounts" element={<Discounts />} />
           <Route path="/all-requests" element={<AllRequests />} />
           <Route path="/all-contacts" element={<AllContacts />} />
           <Route path="/newsletters" element={<AllNewsletters />} />
