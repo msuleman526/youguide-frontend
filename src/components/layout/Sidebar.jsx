@@ -30,7 +30,7 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
   };
 
   const managementKeys = ['roles', 'users', 'teams', 'all-requests', 'all-contacts', 'newsletters'];
-  const websiteAppKeys = ['categories', 'books', 'language-guides', 'coupons'];
+  const websiteAppKeys = ['categories', 'books', 'language-guides', 'coupons', 'discounts'];
 
   useEffect(() => {
     const path = location.pathname.split('/');
@@ -108,6 +108,7 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
         { key: 'books', label: 'Travel Guides' },
         { key: 'language-guides', label: 'Language Guides' },
         { key: 'coupons', label: 'Coupons' },
+        { key: 'discounts', label: 'Discounts' },
       ],
     },
     {

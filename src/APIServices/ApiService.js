@@ -1945,6 +1945,67 @@ class ApiService {
         }
     }
 
+    // Discount APIs
+    static async getAllDiscounts() {
+        try {
+            const response = await axios.get(`${this.baseURL}/discounts`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching discounts:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async createDiscount(data) {
+        try {
+            const response = await axios.post(`${this.baseURL}/discounts`, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error creating discount:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async updateDiscount(id, data) {
+        try {
+            const response = await axios.put(`${this.baseURL}/discounts/${id}`, data, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error updating discount:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async deleteDiscount(id) {
+        try {
+            const response = await axios.delete(`${this.baseURL}/discounts/${id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error deleting discount:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
     static async requestQuota(data) {
         try {
             const token = localStorage.getItem('affiliateToken') || localStorage.getItem('token');
