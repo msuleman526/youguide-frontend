@@ -42,12 +42,13 @@ const DiscountPopup = ({ type, discount, open, setOpen, onSaveDiscount }) => {
                 startDate: discount.startDate ? dayjs(discount.startDate) : null,
                 endDate: discount.endDate ? dayjs(discount.endDate) : null,
                 isActive: discount.isActive,
+                allowCoupon: discount.allowCoupon !== undefined ? discount.allowCoupon : true,
             };
             form.setFieldsValue(values);
             setDiscountType(discount.type);
         } else if (open) {
             form.resetFields();
-            form.setFieldsValue({ isActive: true, discountUnit: 'percentage', type: 'overall' });
+            form.setFieldsValue({ isActive: true, discountUnit: 'percentage', type: 'overall', allowCoupon: true });
             setDiscountType('overall');
         }
     }, [open, type, discount, form]);
@@ -69,6 +70,7 @@ const DiscountPopup = ({ type, discount, open, setOpen, onSaveDiscount }) => {
                 startDate: values.startDate.toISOString(),
                 endDate: values.endDate.toISOString(),
                 isActive: values.isActive,
+                allowCoupon: values.allowCoupon,
             };
 
             let response;
@@ -179,6 +181,14 @@ const DiscountPopup = ({ type, discount, open, setOpen, onSaveDiscount }) => {
                 </div>
 
                 <Form.Item name="isActive" label="Active" valuePropName="checked">
+                    <Switch />
+                </Form.Item>
+
+                <Divider><Typography.Text strong style={{ fontSize: '16px', color: '#1890ff' }}>Coupon Stacking</Typography.Text></Divider>
+
+                <Form.Item name="allowCoupon" label="Allow coupon usage with this discount?" valuePropName="checked"
+                    tooltip="If disabled, customers cannot apply coupon codes on items that have this discount applied."
+                >
                     <Switch />
                 </Form.Item>
             </Form>
