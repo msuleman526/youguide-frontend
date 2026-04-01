@@ -120,6 +120,12 @@ const Discounts = () => {
             },
         },
         {
+            title: 'Allow Coupon',
+            dataIndex: 'allowCoupon',
+            key: 'allowCoupon',
+            render: (val) => <Tag color={val !== false ? 'green' : 'red'}>{val !== false ? 'Yes' : 'No'}</Tag>,
+        },
+        {
             title: 'Action',
             key: 'action',
             render: (_, record) => (
