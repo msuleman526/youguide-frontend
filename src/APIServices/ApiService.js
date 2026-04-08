@@ -2069,6 +2069,18 @@ class ApiService {
         }
     }
 
+    static async verifyAmazonOrder({ order_id, email }) {
+        try {
+            const response = await axios.post(`${this.baseURL}/amazon-orders/verify`, { order_id, email }, {
+                headers: { 'Content-Type': 'application/json' },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error verifying Amazon order:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
     static async getAmazonOrderLogs(id) {
         try {
             const response = await axios.get(`${this.baseURL}/amazon-orders/${id}/logs`, {
