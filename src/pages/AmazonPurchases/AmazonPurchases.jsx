@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Tag, Button, Typography, Flex, Input, Select, Modal, Drawer, Timeline, message } from 'antd';
-import { EyeOutlined, QrcodeOutlined, UnorderedListOutlined, SearchOutlined, MailOutlined } from '@ant-design/icons';
+import { EyeOutlined, QrcodeOutlined, UnorderedListOutlined, SearchOutlined, MailOutlined, DownloadOutlined } from '@ant-design/icons';
 import QRCode from 'qrcode.react';
 import ApiService from '../../APIServices/ApiService';
 import CustomCard from '../../components/Card';
@@ -33,6 +33,12 @@ const AmazonPurchases = () => {
     // QR Code Modal
     const [qrModalVisible, setQrModalVisible] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState(null);
+
+    // Email Modal
+    const [emailModalVisible, setEmailModalVisible] = useState(false);
+    const [emailOrder, setEmailOrder] = useState(null);
+    const [emailValue, setEmailValue] = useState('');
+    const [emailSending, setEmailSending] = useState(false);
 
     // Logs Drawer
     const [logsDrawerVisible, setLogsDrawerVisible] = useState(false);
@@ -103,15 +109,29 @@ const AmazonPurchases = () => {
         }
     };
 
-    const handleResendEmail = async (record) => {
+    const showEmailModal = (record) => {
+        setEmailOrder(record);
+        setEmailValue(record.customer_email || '');
+        setEmailModalVisible(true);
+    };
+
+    const handleSendEmail = async () => {
+        if (!emailValue?.trim()) {
+            message.warning('Please enter an email address');
+            return;
+        }
+        setEmailSending(true);
         try {
-            const data = await ApiService.resendAmazonOrderEmail(record._id);
+            const data = await ApiService.resendAmazonOrderEmail(emailOrder._id, emailValue.trim());
             if (data.success) {
                 message.success(data.message || 'Email sent successfully');
+                setEmailModalVisible(false);
                 fetchOrders();
             }
         } catch (error) {
             message.error(error.response?.data?.message || 'Failed to send email');
+        } finally {
+            setEmailSending(false);
         }
     };
 
@@ -183,11 +203,11 @@ const AmazonPurchases = () => {
                         onClick={() => showLogs(record)}
                         title="View Logs"
                     />
-                    {record.esim_profiles?.length > 0 && record.customer_email && (
+                    {record.esim_profiles?.length > 0 && (
                         <Button
                             type="link"
                             icon={<MailOutlined />}
-                            onClick={() => handleResendEmail(record)}
+                            onClick={() => showEmailModal(record)}
                             title="Send Email"
                             style={{ color: '#fa8c16' }}
                         />
@@ -196,6 +216,34 @@ const AmazonPurchases = () => {
             ),
         },
     ];
+
+    const handleDownloadCSV = () => {
+        if (!orders.length) {
+            message.warning('No data to export');
+            return;
+        }
+        const headers = ['Order Number', 'Package', 'Customer Email', 'Status', 'Location', 'Created'];
+        const rows = orders.map(order => [
+            order.order_number || '',
+            order.package_name || '',
+            order.customer_email || '',
+            order.status || '',
+            order.location || '',
+            order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-GB', {
+                day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+            }) : '',
+        ]);
+        const csvContent = [headers, ...rows]
+            .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+            .join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `amazon-purchases-${new Date().toISOString().slice(0, 10)}.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+    };
 
     const profile = selectedOrder?.esim_profiles?.[0];
 
@@ -220,6 +268,14 @@ const AmazonPurchases = () => {
                         suffix={<SearchOutlined style={{ color: '#bbb' }} />}
                         size="large"
                     /> */}
+                    <Button
+                        type="primary"
+                        icon={<DownloadOutlined />}
+                        onClick={handleDownloadCSV}
+                        size="large"
+                    >
+                        Download CSV
+                    </Button>
                     <Select
                         placeholder="Filter by status"
                         allowClear
@@ -276,6 +332,30 @@ const AmazonPurchases = () => {
                 ) : (
                     <p style={{ textAlign: 'center', padding: 20 }}>No QR code available for this order.</p>
                 )}
+            </Modal>
+
+            {/* Email Modal */}
+            <Modal
+                title={`Send Email — Order #${emailOrder?.order_number || ''}`}
+                open={emailModalVisible}
+                onCancel={() => setEmailModalVisible(false)}
+                onOk={handleSendEmail}
+                okText="Update & Send Email"
+                okButtonProps={{ loading: emailSending }}
+                centered
+                width={450}
+            >
+                <div style={{ marginBottom: 8 }}>
+                    <Text type="secondary">Update the customer email and resend the eSIM details.</Text>
+                </div>
+                <Input
+                    placeholder="Enter customer email"
+                    value={emailValue}
+                    onChange={(e) => setEmailValue(e.target.value)}
+                    size="large"
+                    type="email"
+                    onPressEnter={handleSendEmail}
+                />
             </Modal>
 
             {/* Logs Drawer */}
