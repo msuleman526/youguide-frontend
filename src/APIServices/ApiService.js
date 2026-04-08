@@ -2054,9 +2054,9 @@ class ApiService {
         }
     }
 
-    static async resendAmazonOrderEmail(id) {
+    static async resendAmazonOrderEmail(id, customer_email) {
         try {
-            const response = await axios.post(`${this.baseURL}/amazon-orders/${id}/resend-email`, {}, {
+            const response = await axios.post(`${this.baseURL}/amazon-orders/${id}/resend-email`, { customer_email }, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
