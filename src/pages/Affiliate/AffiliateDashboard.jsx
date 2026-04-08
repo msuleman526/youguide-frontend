@@ -170,7 +170,7 @@ const AffiliateDashboard = () => {
                     <Card style={{ textAlign: 'center' }}>
                         <Statistic
                             title="Expiry Date"
-                            value={analyticsData?.overview?.thisMonthClicks.split("T")[0] || 'N/A'}
+                            value={analyticsData?.overview?.thisMonthClicks ? String(analyticsData.overview.thisMonthClicks).split("T")[0] : 'N/A'}
                             valueStyle={{ color: '#722ed1', fontSize: '32px', fontWeight: 'bold' }}
                             prefix={<CalendarOutlined style={{ color: '#722ed1' }} />}
                         />

@@ -9,7 +9,7 @@ import smallLogo from '../../assets/small_logo.png';
 import largeLogo from '../../assets/large_logo.png';
 import { BiUser } from 'react-icons/bi';
 import { MdEmail } from 'react-icons/md';
-import { ApiOutlined, PhoneOutlined } from '@ant-design/icons';
+import { AmazonOutlined, ApiOutlined, PhoneOutlined } from '@ant-design/icons';
 
 const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
   const navigate = useNavigate();
@@ -115,6 +115,11 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
       key: 'transactions',
       icon: <GrTransaction {...iconProps} />,
       label: 'Transactions',
+    },
+    {
+      key: 'amazon-purchases',
+      icon: <AmazonOutlined style={iconStyle} />,
+      label: 'Amazon Purchases',
     },
     {
       key: 'api-access',

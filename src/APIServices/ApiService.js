@@ -2021,6 +2021,68 @@ class ApiService {
             throw error;
         }
     }
+    // ─── Amazon Orders ────────────────────────────────────────────────────
+
+    static async getAmazonOrders(params = {}) {
+        try {
+            const response = await axios.get(`${this.baseURL}/amazon-orders`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                params,
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching Amazon orders:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getAmazonOrder(id) {
+        try {
+            const response = await axios.get(`${this.baseURL}/amazon-orders/${id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching Amazon order:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async resendAmazonOrderEmail(id) {
+        try {
+            const response = await axios.post(`${this.baseURL}/amazon-orders/${id}/resend-email`, {}, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error resending Amazon order email:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getAmazonOrderLogs(id) {
+        try {
+            const response = await axios.get(`${this.baseURL}/amazon-orders/${id}/logs`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching Amazon order logs:', error.response?.data || error.message);
+            throw error;
+        }
+    }
 }
 
 export default ApiService;
