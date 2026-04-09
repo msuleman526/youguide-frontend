@@ -180,14 +180,15 @@ const AmazonPurchases = () => {
             dataIndex: 'package_name',
             key: 'package_name',
             width: 200,
-            render: (text, record) => (
-                <div>
-                    <div>{record.cleaned_package_name || text}</div>
-                    {record.quantity > 1 && (
-                        <Tag color="purple" style={{ marginTop: 4 }}>Qty: {record.quantity}</Tag>
-                    )}
-                </div>
-            ),
+            render: (text, record) => record.cleaned_package_name || text,
+        },
+        {
+            title: 'Qty',
+            dataIndex: 'quantity',
+            key: 'quantity',
+            width: 70,
+            align: 'center',
+            render: (qty) => qty || 1,
         },
         {
             title: 'Customer Email',
