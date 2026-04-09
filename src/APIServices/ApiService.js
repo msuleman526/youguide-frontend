@@ -2095,6 +2095,21 @@ class ApiService {
             throw error;
         }
     }
+
+    static async updateAmazonOrderStatus(id, status) {
+        try {
+            const response = await axios.patch(`${this.baseURL}/amazon-orders/${id}/status`, { status }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error updating Amazon order status:', error.response?.data || error.message);
+            throw error;
+        }
+    }
 }
 
 export default ApiService;
