@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Input, Button, Typography, Alert, message } from 'antd';
+import { Input, Button, Typography, Alert, Tag, message } from 'antd';
 import { ShoppingOutlined, MailOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import ApiService from '../../APIServices/ApiService';
 import CustomCard from '../../components/Card';
@@ -26,7 +26,7 @@ const VerifyAmazonOrder = () => {
             if (data.success) {
                 setResult({
                     type: 'success',
-                    message: 'Your eSIM has been activated and sent to your email!',
+                    message: 'Your eSIM(s) have been activated and sent to your email!',
                     order: data.order,
                 });
             } else {
@@ -39,6 +39,8 @@ const VerifyAmazonOrder = () => {
             setLoading(false);
         }
     };
+
+    const packages = result?.order?.packages || [];
 
     return (
         <div style={{ maxWidth: 500, margin: '0 auto', padding: '40px 16px' }}>
@@ -86,10 +88,23 @@ const VerifyAmazonOrder = () => {
                             description={
                                 <>
                                     <p>{result.message}</p>
-                                    {result.order && (
+                                    {packages.length > 0 && (
+                                        <div style={{ marginTop: 8 }}>
+                                            {packages.map((pkg, idx) => (
+                                                <div key={idx} style={{ marginBottom: 8, padding: '8px 12px', background: '#f6ffed', borderRadius: 6, border: '1px solid #b7eb8f' }}>
+                                                    <Text strong style={{ fontSize: 13 }}>{pkg.cleaned_package_name || pkg.package_name}</Text>
+                                                    {pkg.quantity > 1 && <Tag color="purple" style={{ marginLeft: 8 }}>x{pkg.quantity}</Tag>}
+                                                    {pkg.location && <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>{pkg.location}</Text>}
+                                                    <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>
+                                                        {pkg.esim_profiles?.length || 0} eSIM profile(s) sent to your email
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {result.order && !packages.length && (
                                         <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
                                             <p><strong>Package:</strong> {result.order.package_name}</p>
-                                            {result.order.location && <p><strong>Location:</strong> {result.order.location}</p>}
                                             <p style={{ marginTop: 4 }}>Check your email for the QR code and activation details.</p>
                                         </div>
                                     )}
