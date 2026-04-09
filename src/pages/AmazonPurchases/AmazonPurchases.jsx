@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Tag, Button, Typography, Flex, Input, Select, Modal, Drawer, Timeline, message } from 'antd';
-import { EyeOutlined, QrcodeOutlined, UnorderedListOutlined, SearchOutlined, MailOutlined, DownloadOutlined } from '@ant-design/icons';
+import { EyeOutlined, QrcodeOutlined, UnorderedListOutlined, SearchOutlined, MailOutlined, DownloadOutlined, EditOutlined } from '@ant-design/icons';
 import QRCode from 'qrcode.react';
 import ApiService from '../../APIServices/ApiService';
 import CustomCard from '../../components/Card';
@@ -39,6 +39,12 @@ const AmazonPurchases = () => {
     const [emailOrder, setEmailOrder] = useState(null);
     const [emailValue, setEmailValue] = useState('');
     const [emailSending, setEmailSending] = useState(false);
+
+    // Status Update Modal
+    const [statusModalVisible, setStatusModalVisible] = useState(false);
+    const [statusOrder, setStatusOrder] = useState(null);
+    const [statusValue, setStatusValue] = useState('');
+    const [statusUpdating, setStatusUpdating] = useState(false);
 
     // Logs Drawer
     const [logsDrawerVisible, setLogsDrawerVisible] = useState(false);
@@ -135,6 +141,32 @@ const AmazonPurchases = () => {
         }
     };
 
+    const showStatusModal = (record) => {
+        setStatusOrder(record);
+        setStatusValue(record.status);
+        setStatusModalVisible(true);
+    };
+
+    const handleUpdateStatus = async () => {
+        if (!statusValue) {
+            message.warning('Please select a status');
+            return;
+        }
+        setStatusUpdating(true);
+        try {
+            const data = await ApiService.updateAmazonOrderStatus(statusOrder._id, statusValue);
+            if (data.success) {
+                message.success(data.message || 'Status updated successfully');
+                setStatusModalVisible(false);
+                fetchOrders();
+            }
+        } catch (error) {
+            message.error(error.response?.data?.message || 'Failed to update status');
+        } finally {
+            setStatusUpdating(false);
+        }
+    };
+
     const columns = [
         {
             title: 'Order Number',
@@ -148,6 +180,14 @@ const AmazonPurchases = () => {
             dataIndex: 'package_name',
             key: 'package_name',
             width: 200,
+            render: (text, record) => (
+                <div>
+                    <div>{record.cleaned_package_name || text}</div>
+                    {record.quantity > 1 && (
+                        <Tag color="purple" style={{ marginTop: 4 }}>Qty: {record.quantity}</Tag>
+                    )}
+                </div>
+            ),
         },
         {
             title: 'Customer Email',
@@ -212,6 +252,13 @@ const AmazonPurchases = () => {
                             style={{ color: '#fa8c16' }}
                         />
                     )}
+                    <Button
+                        type="link"
+                        icon={<EditOutlined />}
+                        onClick={() => showStatusModal(record)}
+                        title="Update Status"
+                        style={{ color: '#1890ff' }}
+                    />
                 </Flex>
             ),
         },
@@ -355,6 +402,35 @@ const AmazonPurchases = () => {
                     size="large"
                     type="email"
                     onPressEnter={handleSendEmail}
+                />
+            </Modal>
+
+            {/* Status Update Modal */}
+            <Modal
+                title={`Update Status — Order #${statusOrder?.order_number || ''}`}
+                open={statusModalVisible}
+                onCancel={() => setStatusModalVisible(false)}
+                onOk={handleUpdateStatus}
+                okText="Update Status"
+                okButtonProps={{ loading: statusUpdating }}
+                centered
+                width={420}
+            >
+                <div style={{ marginBottom: 8 }}>
+                    <Text type="secondary">Change the status of this order.</Text>
+                </div>
+                <Select
+                    value={statusValue}
+                    onChange={(value) => setStatusValue(value)}
+                    style={{ width: '100%' }}
+                    size="large"
+                    options={[
+                        { label: 'Pending', value: 'pending' },
+                        { label: 'Verified', value: 'verified' },
+                        { label: 'Purchased', value: 'purchased' },
+                        { label: 'Email Sent', value: 'email_sent' },
+                        { label: 'Failed', value: 'failed' },
+                    ]}
                 />
             </Modal>
 
