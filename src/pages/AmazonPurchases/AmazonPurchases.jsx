@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Tag, Button, Typography, Flex, Input, Select, Modal, Drawer, Timeline, message } from 'antd';
 import { EyeOutlined, QrcodeOutlined, UnorderedListOutlined, SearchOutlined, MailOutlined, DownloadOutlined, EditOutlined } from '@ant-design/icons';
-import QRCode from 'qrcode.react';
 import ApiService from '../../APIServices/ApiService';
 import CustomCard from '../../components/Card';
 
@@ -21,6 +20,20 @@ const logActionColors = {
     esim_purchased: 'green',
     email_sent: 'cyan',
     error: 'red',
+};
+
+/** Collect all esim_profiles from packages array or legacy flat field */
+const collectProfiles = (record) => {
+    if (record.packages && record.packages.length > 0) {
+        const profiles = [];
+        record.packages.forEach((pkg, pkgIdx) => {
+            (pkg.esim_profiles || []).forEach((p) => {
+                profiles.push({ ...p, _pkgName: pkg.cleaned_package_name || pkg.package_name, _pkgIdx: pkgIdx });
+            });
+        });
+        return profiles;
+    }
+    return (record.esim_profiles || []).map(p => ({ ...p, _pkgName: record.cleaned_package_name || record.package_name, _pkgIdx: 0 }));
 };
 
 const AmazonPurchases = () => {
@@ -82,23 +95,16 @@ const AmazonPurchases = () => {
         setPagination(prev => ({ ...prev, current: pag.current, pageSize: pag.pageSize }));
     };
 
-    const handleSearch = (value) => {
-        setSearch(value);
-        setPagination(prev => ({ ...prev, current: 1 }));
-    };
-
     const handleStatusFilter = (value) => {
         setStatusFilter(value);
         setPagination(prev => ({ ...prev, current: 1 }));
     };
 
-    // QR Code
     const showQrCode = (record) => {
         setSelectedOrder(record);
         setQrModalVisible(true);
     };
 
-    // Logs
     const showLogs = async (record) => {
         setLogsOrder(record);
         setLogsDrawerVisible(true);
@@ -167,6 +173,9 @@ const AmazonPurchases = () => {
         }
     };
 
+    /** Check if order has any profiles */
+    const hasProfiles = (record) => collectProfiles(record).length > 0;
+
     const columns = [
         {
             title: 'Order Number',
@@ -179,14 +188,35 @@ const AmazonPurchases = () => {
             title: 'Full Name (API)',
             dataIndex: 'package_name',
             key: 'package_name',
-            width: 220,
+            width: 240,
+            render: (text, record) => {
+                const pkgs = record.packages || [];
+                if (pkgs.length > 1) {
+                    return pkgs.map((p, i) => (
+                        <div key={i} style={{ marginBottom: i < pkgs.length - 1 ? 4 : 0 }}>
+                            {p.package_name}
+                        </div>
+                    ));
+                }
+                return text;
+            },
         },
         {
             title: 'Package Name',
             dataIndex: 'cleaned_package_name',
             key: 'cleaned_package_name',
-            width: 180,
-            render: (text) => text || <Text type="secondary">—</Text>,
+            width: 200,
+            render: (text, record) => {
+                const pkgs = record.packages || [];
+                if (pkgs.length > 1) {
+                    return pkgs.map((p, i) => (
+                        <div key={i} style={{ marginBottom: i < pkgs.length - 1 ? 4 : 0 }}>
+                            {p.cleaned_package_name || <Text type="secondary">—</Text>}
+                        </div>
+                    ));
+                }
+                return text || <Text type="secondary">—</Text>;
+            },
         },
         {
             title: 'Qty',
@@ -194,7 +224,17 @@ const AmazonPurchases = () => {
             key: 'quantity',
             width: 70,
             align: 'center',
-            render: (qty) => qty || 1,
+            render: (qty, record) => {
+                const pkgs = record.packages || [];
+                if (pkgs.length > 1) {
+                    return pkgs.map((p, i) => (
+                        <div key={i} style={{ marginBottom: i < pkgs.length - 1 ? 4 : 0 }}>
+                            {p.quantity || 1}
+                        </div>
+                    ));
+                }
+                return qty || 1;
+            },
         },
         {
             title: 'Customer Email',
@@ -234,7 +274,7 @@ const AmazonPurchases = () => {
                         type="link"
                         icon={<QrcodeOutlined />}
                         onClick={() => showQrCode(record)}
-                        disabled={!record.esim_profiles || record.esim_profiles.length === 0}
+                        disabled={!hasProfiles(record)}
                         title="View QR Code"
                     />
                     <Button
@@ -243,7 +283,7 @@ const AmazonPurchases = () => {
                         onClick={() => showLogs(record)}
                         title="View Logs"
                     />
-                    {record.esim_profiles?.length > 0 && (
+                    {hasProfiles(record) && (
                         <Button
                             type="link"
                             icon={<MailOutlined />}
@@ -269,13 +309,14 @@ const AmazonPurchases = () => {
             message.warning('No data to export');
             return;
         }
-        const headers = ['Order Number', 'Package', 'Customer Email', 'Status', 'Location', 'Created'];
+        const headers = ['Order Number', 'Full Name (API)', 'Package Name', 'Qty', 'Customer Email', 'Status', 'Created'];
         const rows = orders.map(order => [
             order.order_number || '',
             order.package_name || '',
+            order.cleaned_package_name || '',
+            order.quantity || 1,
             order.customer_email || '',
             order.status || '',
-            order.location || '',
             order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-GB', {
                 day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
             }) : '',
@@ -292,7 +333,8 @@ const AmazonPurchases = () => {
         URL.revokeObjectURL(url);
     };
 
-    const profile = selectedOrder?.esim_profiles?.[0];
+    // Collect all profiles grouped by package for QR modal
+    const qrProfiles = selectedOrder ? collectProfiles(selectedOrder) : [];
 
     return (
         <>
@@ -307,14 +349,6 @@ const AmazonPurchases = () => {
 
             <CustomCard>
                 <Flex gap={12} style={{ marginBottom: 20 }} wrap="wrap" align="center">
-                    {/* <Input
-                        placeholder="Search by order, email, package..."
-                        allowClear
-                        onChange={(e) => handleSearch(e.target.value)}
-                        style={{ width: 300 }}
-                        suffix={<SearchOutlined style={{ color: '#bbb' }} />}
-                        size="large"
-                    /> */}
                     <Button
                         type="primary"
                         icon={<DownloadOutlined />}
@@ -359,25 +393,37 @@ const AmazonPurchases = () => {
                 />
             </CustomCard>
 
-            {/* QR Code Modal */}
+            {/* QR Code Modal — shows all profiles grouped by package */}
             <Modal
-                title={`QR Code — Order #${selectedOrder?.order_number || ''}`}
+                title={`QR Codes — Order #${selectedOrder?.order_number || ''}`}
                 open={qrModalVisible}
                 onCancel={() => setQrModalVisible(false)}
                 footer={[<Button key="close" onClick={() => setQrModalVisible(false)}>Close</Button>]}
                 centered
-                width={420}
+                width={500}
             >
-                {profile?.qrCode ? (
-                    <div style={{ textAlign: 'center', padding: '10px 0' }}>
-                        <iframe
-                            src={profile.qrCode}
-                            title="eSIM QR Code"
-                            style={{ width: '100%', height: 700, border: 'none', borderRadius: 8 }}
-                        />
+                {qrProfiles.length > 0 ? (
+                    <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                        {qrProfiles.map((profile, idx) => (
+                            <div key={idx} style={{ marginBottom: 16, borderBottom: idx < qrProfiles.length - 1 ? '1px solid #f0f0f0' : 'none', paddingBottom: 16 }}>
+                                <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <Tag color="blue">{profile._pkgName}</Tag>
+                                    <Text type="secondary" style={{ fontSize: 12 }}>eSIM {idx + 1}</Text>
+                                </div>
+                                {profile.qrCode ? (
+                                    <iframe
+                                        src={profile.qrCode}
+                                        title={`eSIM QR Code ${idx + 1}`}
+                                        style={{ width: '100%', height: 600, border: 'none', borderRadius: 8 }}
+                                    />
+                                ) : (
+                                    <p style={{ textAlign: 'center', color: '#999' }}>No QR code available</p>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 ) : (
-                    <p style={{ textAlign: 'center', padding: 20 }}>No QR code available for this order.</p>
+                    <p style={{ textAlign: 'center', padding: 20 }}>No QR codes available for this order.</p>
                 )}
             </Modal>
 
