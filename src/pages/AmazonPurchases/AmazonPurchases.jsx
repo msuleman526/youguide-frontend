@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Table, Tag, Button, Typography, Flex, Input, Select, Modal, Drawer, Timeline, message } from 'antd';
+import { Table, Tag, Button, Typography, Flex, Input, Select, Modal, Drawer, Timeline, Tabs, message } from 'antd';
 import { EyeOutlined, QrcodeOutlined, UnorderedListOutlined, SearchOutlined, MailOutlined, DownloadOutlined, EditOutlined } from '@ant-design/icons';
 import ApiService from '../../APIServices/ApiService';
 import CustomCard from '../../components/Card';
@@ -333,8 +333,60 @@ const AmazonPurchases = () => {
         URL.revokeObjectURL(url);
     };
 
-    // Collect all profiles grouped by package for QR modal
-    const qrProfiles = selectedOrder ? collectProfiles(selectedOrder) : [];
+    // Build tab structure for QR modal: packages → eSIM profiles
+    const qrPackageTabs = (() => {
+        if (!selectedOrder) return [];
+        const pkgs = selectedOrder.packages && selectedOrder.packages.length > 0
+            ? selectedOrder.packages
+            : [{
+                package_name: selectedOrder.package_name,
+                cleaned_package_name: selectedOrder.cleaned_package_name,
+                quantity: selectedOrder.quantity || 1,
+                esim_profiles: selectedOrder.esim_profiles || [],
+            }];
+
+        return pkgs
+            .filter(pkg => pkg.esim_profiles && pkg.esim_profiles.length > 0)
+            .map((pkg, pkgIdx) => ({
+                key: String(pkgIdx),
+                label: pkg.cleaned_package_name || pkg.package_name || `Package ${pkgIdx + 1}`,
+                children: pkg.esim_profiles.length === 1 ? (
+                    <div style={{ textAlign: 'center' }}>
+                        {pkg.esim_profiles[0].qrCode ? (
+                            <iframe
+                                src={pkg.esim_profiles[0].qrCode}
+                                title="eSIM QR Code"
+                                style={{ width: '100%', height: 600, border: 'none', borderRadius: 8 }}
+                            />
+                        ) : (
+                            <p style={{ color: '#999', padding: 20 }}>No QR code available</p>
+                        )}
+                    </div>
+                ) : (
+                    <Tabs
+                        size="small"
+                        type="card"
+                        items={pkg.esim_profiles.map((profile, esimIdx) => ({
+                            key: String(esimIdx),
+                            label: `eSIM ${esimIdx + 1}`,
+                            children: (
+                                <div style={{ textAlign: 'center' }}>
+                                    {profile.qrCode ? (
+                                        <iframe
+                                            src={profile.qrCode}
+                                            title={`eSIM QR Code ${esimIdx + 1}`}
+                                            style={{ width: '100%', height: 600, border: 'none', borderRadius: 8 }}
+                                        />
+                                    ) : (
+                                        <p style={{ color: '#999', padding: 20 }}>No QR code available</p>
+                                    )}
+                                </div>
+                            ),
+                        }))}
+                    />
+                ),
+            }));
+    })();
 
     return (
         <>
@@ -393,34 +445,22 @@ const AmazonPurchases = () => {
                 />
             </CustomCard>
 
-            {/* QR Code Modal — shows all profiles grouped by package */}
+            {/* QR Code Modal — tabs for packages, sub-tabs for eSIMs */}
             <Modal
                 title={`QR Codes — Order #${selectedOrder?.order_number || ''}`}
                 open={qrModalVisible}
                 onCancel={() => setQrModalVisible(false)}
                 footer={[<Button key="close" onClick={() => setQrModalVisible(false)}>Close</Button>]}
                 centered
-                width={500}
+                width={520}
+                styles={{ body: { maxHeight: '75vh', overflowY: 'auto' } }}
             >
-                {qrProfiles.length > 0 ? (
-                    <div style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-                        {qrProfiles.map((profile, idx) => (
-                            <div key={idx} style={{ marginBottom: 16, borderBottom: idx < qrProfiles.length - 1 ? '1px solid #f0f0f0' : 'none', paddingBottom: 16 }}>
-                                <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <Tag color="blue">{profile._pkgName}</Tag>
-                                    <Text type="secondary" style={{ fontSize: 12 }}>eSIM {idx + 1}</Text>
-                                </div>
-                                {profile.qrCode ? (
-                                    <iframe
-                                        src={profile.qrCode}
-                                        title={`eSIM QR Code ${idx + 1}`}
-                                        style={{ width: '100%', height: 600, border: 'none', borderRadius: 8 }}
-                                    />
-                                ) : (
-                                    <p style={{ textAlign: 'center', color: '#999' }}>No QR code available</p>
-                                )}
-                            </div>
-                        ))}
+                {qrPackageTabs.length > 1 ? (
+                    <Tabs items={qrPackageTabs} />
+                ) : qrPackageTabs.length === 1 ? (
+                    <div>
+                        <Tag color="blue" style={{ marginBottom: 12 }}>{qrPackageTabs[0].label}</Tag>
+                        {qrPackageTabs[0].children}
                     </div>
                 ) : (
                     <p style={{ textAlign: 'center', padding: 20 }}>No QR codes available for this order.</p>
