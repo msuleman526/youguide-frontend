@@ -2110,6 +2110,16 @@ class ApiService {
             throw error;
         }
     }
+
+    static async getAmazonFreeGuide(orderNumber, pkgIndex = 0) {
+        try {
+            const response = await axios.get(`${this.baseURL}/amazon-orders/free-guide/${orderNumber}?pkg=${pkgIndex}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching free guide:', error.response?.data || error.message);
+            throw error;
+        }
+    }
 }
 
 export default ApiService;
