@@ -176,11 +176,17 @@ const AmazonPurchases = () => {
             render: (text) => <Text strong>{text}</Text>,
         },
         {
-            title: 'Package',
+            title: 'Full Name (API)',
             dataIndex: 'package_name',
             key: 'package_name',
-            width: 200,
-            render: (text, record) => record.cleaned_package_name || text,
+            width: 220,
+        },
+        {
+            title: 'Package Name',
+            dataIndex: 'cleaned_package_name',
+            key: 'cleaned_package_name',
+            width: 180,
+            render: (text) => text || <Text type="secondary">—</Text>,
         },
         {
             title: 'Qty',
@@ -207,13 +213,6 @@ const AmazonPurchases = () => {
                     {status?.replace('_', ' ').toUpperCase()}
                 </Tag>
             ),
-        },
-        {
-            title: 'Location',
-            dataIndex: 'location',
-            key: 'location',
-            width: 120,
-            render: (text) => text || <Text type="secondary">—</Text>,
         },
         {
             title: 'Created',
