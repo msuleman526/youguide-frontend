@@ -1,342 +1,433 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Typography, message, Table, Tag, Avatar, Modal, Flex, Row, Col } from 'antd';
-import { HiOutlineUpload } from 'react-icons/hi';
-import { FaEdit, FaEye, FaTrashAlt, FaSignOutAlt, FaUser, FaClock } from 'react-icons/fa';
+import {
+    Card, Button, Typography, message, Table, Tag, Modal, Form, Input,
+    InputNumber, Select, Row, Col, Space, Tooltip, Popconfirm, Drawer, Statistic, Spin
+} from 'antd';
+import { CopyOutlined, LinkOutlined, PlusOutlined, ReloadOutlined, BarChartOutlined } from '@ant-design/icons';
 import ApiService from '../../APIServices/ApiService';
 import { useNavigate, useParams } from 'react-router-dom';
 import HotelPopup from './HotelPopup';
-import QRCode from 'qrcode.react';
-import moment from 'moment';
-import ExtendHotelModal from './ExtendHotelModal';
-import PageTourWrapper from '../../components/PageTourWrapper';
-import { TOUR_PAGES } from '../../Utils/TourConfig';
 
-const { Title, Text } = Typography;
+const { Title, Paragraph, Text } = Typography;
+
+const PUBLIC_BASE = (typeof window !== 'undefined') ? `${window.location.origin}/#` : '';
 
 const AffiliateHotelManagement = () => {
     const { affiliateId } = useParams();
     const navigate = useNavigate();
+
     const [affiliate, setAffiliate] = useState(null);
+    const [links, setLinks] = useState([]);
     const [hotels, setHotels] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [visible, setVisible] = useState(false);
-    const [selectedHotel, setSelectedHotel] = useState(null);
-    const [popupType, setPopupType] = useState('Add');
-    const [qrModalVisible, setQrModalVisible] = useState(false);
-    const [selectedQrUrl, setSelectedQrUrl] = useState('');
-    const [extendModalVisible, setExtendModalVisible] = useState(false);
-    const [selectedHotelForExtend, setSelectedHotelForExtend] = useState(null);
+    const [requestOpen, setRequestOpen] = useState(false);
+    const [requestForm] = Form.useForm();
+    const [submitting, setSubmitting] = useState(false);
+
+    const [hotelOpen, setHotelOpen] = useState(false);
+    const [editingHotel, setEditingHotel] = useState(null);
+
+    const [statsOpen, setStatsOpen] = useState(false);
+    const [statsLoading, setStatsLoading] = useState(false);
+    const [statsData, setStatsData] = useState(null);
+
+    const approvedLinks = links.filter((l) => l.status === 'approved');
+    const hasApprovedLink = approvedLinks.length > 0;
 
     useEffect(() => {
-        // Check if user is logged in as affiliate
         const token = localStorage.getItem('affiliateToken');
-        const affiliateData = localStorage.getItem('affiliateData');
-        
-        if (!token || !affiliateData) {
-            navigate('/login');
-            return;
-        }
-
-        const parsedAffiliate = JSON.parse(affiliateData);
-        if (String(parsedAffiliate.id) !== affiliateId) {
+        const data = localStorage.getItem('affiliateData');
+        if (!token || !data) { navigate('/login'); return; }
+        const parsed = JSON.parse(data);
+        if (String(parsed.id) !== affiliateId) {
             message.error('Access denied');
             navigate('/login');
             return;
         }
-
-        setAffiliate(parsedAffiliate);
-        fetchHotels();
+        setAffiliate(parsed);
+        loadAll();
     }, [affiliateId, navigate]);
 
-    const fetchHotels = async () => {
+    const loadAll = async () => {
         setLoading(true);
         try {
-            const response = await ApiService.getMyHotels();
-            setHotels(response);
-        } catch (error) {
-            message.error('Failed to fetch clients');
+            const [linksRes, hotelsRes, catsRes] = await Promise.all([
+                ApiService.getMyAffiliateLinks(),
+                ApiService.getMyHotels(),
+                ApiService.getAllCategories(),
+            ]);
+            setLinks(linksRes || []);
+            setHotels(hotelsRes || []);
+            setCategories(catsRes || []);
+        } catch (e) {
+            message.error('Failed to load data.');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem('affiliateToken');
-        localStorage.removeItem('affiliateData');
-        localStorage.removeItem('affiliateUser');
-        message.success('Logged out successfully');
-        navigate('/login'); // Use unified login
-    };
-
-    const deleteHotel = async (hotelId) => {
-        setLoading(true);
+    const submitRequest = async (values) => {
         try {
-            await ApiService.deleteHotel(hotelId);
-            message.success('Client deleted successfully.');
-            setHotels((prev) => prev.filter((h) => h._id !== hotelId));
-        } catch (err) {
-            message.error('Failed to delete client.');
+            setSubmitting(true);
+            await ApiService.requestAffiliateLink({
+                name: values.name,
+                type: values.type,
+                numberOfClicks: values.numberOfClicks,
+                categories: values.categories,
+            });
+            message.success('Link requested. Awaiting admin approval.');
+            setRequestOpen(false);
+            requestForm.resetFields();
+            loadAll();
+        } catch (e) {
+            message.error(e?.response?.data?.message || 'Request failed.');
         } finally {
-            setLoading(false);
+            setSubmitting(false);
         }
     };
 
-    const confirmDelete = (hotelId) => {
-        Modal.confirm({
-            title: 'Are you sure you want to delete this client?',
-            onOk: () => deleteHotel(hotelId),
-            okText: 'Yes',
-            cancelText: 'No',
-        });
+    const deleteLink = async (id) => {
+        try {
+            await ApiService.deleteAffiliateLink(id);
+            message.success('Link deleted.');
+            loadAll();
+        } catch (e) {
+            message.error(e?.response?.data?.message || 'Delete failed.');
+        }
     };
 
-    const handleView = (hotel) => {
-        window.open(`#/hotel-guides/${affiliateId}/${hotel._id}`, '_blank');
+    const openStats = async (link) => {
+        setStatsOpen(true);
+        setStatsData(null);
+        setStatsLoading(true);
+        try {
+            const data = await ApiService.getAffiliateLinkStats(link._id);
+            setStatsData(data);
+        } catch (e) {
+            message.error(e?.response?.data?.message || 'Failed to load stats.');
+        } finally {
+            setStatsLoading(false);
+        }
     };
 
-    const handleEdit = (hotel) => {
-        setSelectedHotel(hotel);
-        setPopupType('Edit');
-        setVisible(true);
+    const copyUrl = (slug, hotelId) => {
+        const url = `${PUBLIC_BASE}/affiliate-guides/${slug}${hotelId ? `?src=${hotelId}` : ''}`;
+        navigator.clipboard?.writeText(url);
+        message.success('Link copied.');
     };
 
-    const onAddHotel = () => {
-        setPopupType('Add');
-        setSelectedHotel(null);
-        setVisible(true);
-    };
-
-    const onSaveHotel = () => {
-        fetchHotels();
-        setVisible(false);
-    };
-
-    const handleQrCodeClick = (hotelId) => {
-        const hotelUrl = `${window.location.origin}/#/hotel-guides/${affiliateId}/${hotelId}`;
-        setSelectedQrUrl(hotelUrl);
-        setQrModalVisible(true);
-    };
-
-    const handleExtendHotelSubscription = (hotel) => {
-        setSelectedHotelForExtend(hotel);
-        setExtendModalVisible(true);
-    };
-
-    const onExtendSuccess = (updatedAffiliate, updatedHotel) => {
-        // Update affiliate data
-        setAffiliate(prev => ({ ...prev, ...updatedAffiliate }));
-        // Refresh hotels list
-        fetchHotels();
-        setExtendModalVisible(false);
-    };
-
-    const columns = [
+    const linkColumns = [
+        { title: 'Name', dataIndex: 'name', key: 'name' },
         {
-            title: 'Logo',
-            dataIndex: 'logo',
-            key: 'logo',
-            render: (logo) => logo ? <Avatar style={{ width: '100px', height: 'fit-content' }} src={logo} shape="square" /> : 'N/A',
+            title: 'Type', dataIndex: 'type', key: 'type',
+            render: (t) => <Tag color={t === 'paid' ? 'gold' : 'blue'}>{t}</Tag>,
         },
         {
-            title: 'Client Name',
-            dataIndex: 'hotelName',
-            key: 'hotelName',
+            title: 'Status', dataIndex: 'status', key: 'status',
+            render: (s) => {
+                const colors = { pending: 'orange', approved: 'green', rejected: 'red', exhausted: 'red', expired: 'red' };
+                return <Tag color={colors[s] || 'default'}>{s}</Tag>;
+            },
         },
         {
-            title: 'QR Code',
-            key: 'qrCode',
-            width: 120,
-            render: (_, record) => {
-                const hotelUrl = `${window.location.origin}/#/hotel-guides/${affiliateId}/${record._id}`;
-                return (
-                    <div 
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => handleQrCodeClick(record._id)}
-                        title="Click to enlarge QR code"
-                    >
-                        <QRCode 
-                            value={hotelUrl} 
-                            size={80}
-                            level="M"
-                            includeMargin={true}
+            title: 'Slug / URL', dataIndex: 'slug', key: 'slug',
+            render: (slug) => slug ? (
+                <Space>
+                    <code>{slug}</code>
+                    <Tooltip title="Copy URL"><Button size="small" icon={<CopyOutlined />} onClick={() => copyUrl(slug)} /></Tooltip>
+                </Space>
+            ) : <Text type="secondary">—</Text>,
+        },
+        {
+            title: 'Clicks', key: 'clicks',
+            render: (_, r) => `${r.clicksRemaining ?? 0} / ${r.clicksBudget ?? 0}`,
+        },
+        {
+            title: 'Categories', dataIndex: 'categories', key: 'cats',
+            render: (cats) => (cats || []).map((c) => <Tag key={c._id || c}>{c.name || c}</Tag>),
+        },
+        {
+            title: 'Actions', key: 'a',
+            render: (_, r) => (
+                <Space>
+                    <Tooltip title="View stats">
+                        <Button
+                            size="small"
+                            icon={<BarChartOutlined />}
+                            onClick={() => openStats(r)}
+                            disabled={r.status !== 'approved' && r.status !== 'exhausted'}
                         />
-                    </div>
-                );
-            }
-        },
-        {
-            title: 'Primary Color',
-            dataIndex: 'primaryColor',
-            key: 'primaryColor',
-            render: (color) => <Tag color={color}>{color}</Tag>
-        },
-        {
-            title: 'Categories',
-            dataIndex: 'categories',
-            key: 'categories',
-            render: (cats) => (cats || []).map((cat) => <Tag key={cat._id}>{cat.name}</Tag>)
-        },
-        {
-            title: 'Created At',
-            dataIndex: 'createdAt',
-            key: 'createdAt',
-            render: (val) => moment(val).format('YYYY-MM-DD HH:mm')
-        },
-        {
-            title: 'Action',
-            key: 'action',
-            render: (_, record) => (
-                <Flex>
-                    <Button type="link" onClick={() => handleView(record)}>
-                        <FaEye />
-                    </Button>
-                    <Button type="link" onClick={() => handleExtendHotelSubscription(record)} title="Extend Subscription">
-                        <FaClock />
-                    </Button>
-                    <Button type="link" onClick={() => handleEdit(record)}>
-                        <FaEdit />
-                    </Button>
-                    <Button type="link" danger onClick={() => confirmDelete(record._id)}>
-                        <FaTrashAlt />
-                    </Button>
-                </Flex>
+                    </Tooltip>
+                    {r.rejectionReason && (
+                        <Tooltip title={r.rejectionReason}><Tag color="red">Why?</Tag></Tooltip>
+                    )}
+                    <Popconfirm title="Delete this link?" onConfirm={() => deleteLink(r._id)}>
+                        <Button size="small" danger>Delete</Button>
+                    </Popconfirm>
+                </Space>
             ),
         },
     ];
 
-    if (!affiliate) {
-        return <div>Loading...</div>;
-    }
+    const hotelColumns = [
+        { title: 'Client', dataIndex: 'hotelName', key: 'name' },
+        {
+            title: 'Linked Link', dataIndex: 'affiliateLinkId', key: 'link',
+            render: (linkId) => {
+                const l = links.find((x) => x._id === (linkId?._id || linkId));
+                return l ? <Tag color="blue">{l.name}</Tag> : <Tag>—</Tag>;
+            },
+        },
+        {
+            title: 'Tracking URL', key: 'url',
+            render: (_, r) => {
+                const l = links.find((x) => x._id === (r.affiliateLinkId?._id || r.affiliateLinkId));
+                if (!l?.slug) return <Text type="secondary">—</Text>;
+                return (
+                    <Space>
+                        <code style={{ fontSize: 11 }}>{`/affiliate-guides/${l.slug}?src=${r._id}`}</code>
+                        <Button size="small" icon={<CopyOutlined />} onClick={() => copyUrl(l.slug, r._id)} />
+                    </Space>
+                );
+            },
+        },
+        {
+            title: 'Created', dataIndex: 'createdAt', key: 'cd',
+            render: (d) => d ? new Date(d).toLocaleDateString() : '—',
+        },
+        {
+            title: 'Actions', key: 'a',
+            render: (_, r) => (
+                <Space>
+                    <Popconfirm title="Delete client?" onConfirm={async () => {
+                        try {
+                            await ApiService.deleteHotel(r._id);
+                            message.success('Deleted.');
+                            loadAll();
+                        } catch (e) {
+                            message.error('Failed to delete.');
+                        }
+                    }}>
+                        <Button size="small" danger>Delete</Button>
+                    </Popconfirm>
+                </Space>
+            ),
+        },
+    ];
 
     return (
-        <PageTourWrapper pageName={TOUR_PAGES.AFFILIATE_HOTELS}>
-        <div style={{ padding: '24px', backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
-            
-            {/* Header */}
-            <Card 
-                style={{ 
-                    marginBottom: '24px', 
-                    background: `linear-gradient(135deg, ${affiliate.primaryColor || '#1890ff'}, ${affiliate.primaryColor || '#1890ff'}dd)`,
-                    border: 'none'
-                }}
+        <div style={{ padding: 24 }}>
+            <Card
+                title={<><LinkOutlined /> My Affiliate Links</>}
+                extra={
+                    <Space>
+                        <Button icon={<ReloadOutlined />} onClick={loadAll} />
+                        <Button type="primary" icon={<PlusOutlined />} onClick={() => setRequestOpen(true)}>
+                            Request New Link
+                        </Button>
+                    </Space>
+                }
+                style={{ marginBottom: 16 }}
             >
-                <Row justify="space-between" align="middle">
-                    <Col>
-                        <Title level={2} style={{ color: 'white', margin: 0 }}>
-                            Clients Management
-                        </Title>
-                        <Text style={{ color: 'white', fontSize: '16px' }}>
-                            Manage your clients/sub-affiliates and QR codes
-                        </Text>
-                        <br />
-                        <Text style={{ color: 'white', fontSize: '14px' }}>
-                            Subscription ends: {moment(affiliate.subscriptionEndDate).format('MMM DD, YYYY')} | Pending clicks: {affiliate.pendingClicks || 0}
-                        </Text>
-                    </Col>
-                </Row>
+                <Paragraph type="secondary">
+                    Each link gets its own click budget and category set. New requests go to YouGuide admin for approval.
+                </Paragraph>
+                <Table rowKey="_id" dataSource={links} columns={linkColumns} loading={loading} size="middle" />
             </Card>
 
-            {/* Default Affiliate Link */}
-            <Card style={{ marginBottom: '24px' }}>
-                <Title level={4}>Your Affiliate Link</Title>
-                <div style={{ 
-                    padding: '15px', 
-                    backgroundColor: '#f9f9f9', 
-                    borderRadius: '8px',
-                    border: '1px solid #e0e0e0'
-                }}>
-                    <Text code style={{ fontSize: '14px' }}>
-                        {`${window.location.origin}/#/affiliate-guides/${affiliateId}`}
-                    </Text>
-                </div>
+            <Card
+                title="My Clients"
+                extra={
+                    <Tooltip title={hasApprovedLink ? '' : 'Approve at least one link before adding clients'}>
+                        <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            disabled={!hasApprovedLink}
+                            onClick={() => { setEditingHotel(null); setHotelOpen(true); }}
+                        >
+                            Add Client
+                        </Button>
+                    </Tooltip>
+                }
+            >
+                <Paragraph type="secondary">
+                    Clients ride on top of an existing approved link. The same link is shared — the <code>src</code> query param identifies which client a click came from.
+                </Paragraph>
+                <Table rowKey="_id" dataSource={hotels} columns={hotelColumns} loading={loading} size="middle" />
             </Card>
 
-            {/* Hotel Management */}
-            <Card>
-                <Flex justify="space-between" align="center" style={{ marginBottom: '20px' }}>
-                    <div>
-                        <Title level={3} style={{ margin: 0 }}>
-                           Clients
-                        </Title>
-                        <Text type="secondary">
-                            Manage your clients/sub-affiliates
-                        </Text>
-                    </div>
-                    <Button
-                        type="primary"
-                        size="large"
-                        className="affiliate-hotels-add-button"
-                        onClick={onAddHotel}
-                        style={{ backgroundColor: affiliate.primaryColor }}
-                    >
-                        <Flex gap="small" align="center">
-                            <span>Add Client</span>
-                            <HiOutlineUpload size={20} color="#fff" />
-                        </Flex>
-                    </Button>
-                </Flex>
-
-                <Table
-                    size="middle"
-                    bordered
-                    className="affiliate-hotels-table"
-                    columns={columns}
-                    dataSource={hotels}
-                    loading={loading}
-                    scroll={{ x: 'max-content' }}
-                    pagination={{ pageSize: 10 }}
-                    rowKey="_id"
-                />
-            </Card>
-
-            <HotelPopup
-                open={visible}
-                setOpen={() => setVisible(false)}
-                onSaveHotel={onSaveHotel}
-                categories={affiliate.categories}
-                hotel={selectedHotel}
-                type={popupType}
-                affiliateId={affiliateId}
-            />
-            
-            {/* QR Code Modal */}
             <Modal
-                title="QR Code - Client Guide Link"
-                open={qrModalVisible}
-                onCancel={() => setQrModalVisible(false)}
-                footer={[
-                    <Button key="close" onClick={() => setQrModalVisible(false)}>
-                        Close
-                    </Button>
-                ]}
-                width={400}
-                centered
+                title="Request a new link"
+                open={requestOpen}
+                onCancel={() => setRequestOpen(false)}
+                onOk={() => requestForm.submit()}
+                confirmLoading={submitting}
+                okText="Submit request"
+                width={620}
             >
-                <div style={{ textAlign: 'center', padding: '20px' }}>
-                    <QRCode 
-                        value={selectedQrUrl}
-                        size={300}
-                        level="M"
-                        includeMargin={true}
-                    />
-                    <div style={{ marginTop: '20px', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
-                        <Typography.Text style={{ fontSize: '12px', wordBreak: 'break-all' }}>
-                            {selectedQrUrl}
-                        </Typography.Text>
-                    </div>
-                </div>
+                <Form
+                    layout="vertical"
+                    form={requestForm}
+                    onFinish={submitRequest}
+                    initialValues={{ type: 'free_html', numberOfClicks: 500 }}
+                >
+                    <Form.Item name="name" label="Name (for your reference)">
+                        <Input placeholder="Optional, e.g. 'Summer 2026 promo'" />
+                    </Form.Item>
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item name="type" label="Type" rules={[{ required: true }]}>
+                                <Select>
+                                    <Select.Option value="free_html">Free HTML (Open guides)</Select.Option>
+                                    <Select.Option value="paid">Paid (Buy Now via Stripe)</Select.Option>
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="numberOfClicks"
+                                label="No Of Clicks"
+                                rules={[{ required: true }]}
+                                extra="One click is consumed the first time a visitor opens a guide. Re-opens of the same guide by the same visitor are tracked but don't consume."
+                            >
+                                <InputNumber min={1} style={{ width: '100%' }} />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Form.Item name="categories" label="Categories" rules={[{ required: true, message: 'Pick at least one' }]}>
+                        <Select
+                            mode="multiple"
+                            placeholder="Pick categories"
+                            options={categories.map((c) => ({ label: c.name, value: c._id }))}
+                        />
+                    </Form.Item>
+                </Form>
             </Modal>
-            
-            {/* Extend Hotel Subscription Modal */}
-            <ExtendHotelModal
-                open={extendModalVisible}
-                onClose={() => setExtendModalVisible(false)}
-                hotel={selectedHotelForExtend}
-                affiliate={affiliate}
-                onExtendSuccess={onExtendSuccess}
-            />
+
+            {hotelOpen && (
+                <HotelPopup
+                    open={hotelOpen}
+                    setOpen={setHotelOpen}
+                    type={editingHotel ? 'Edit' : 'Add'}
+                    hotel={editingHotel}
+                    approvedLinks={approvedLinks}
+                    onSaved={() => { setHotelOpen(false); loadAll(); }}
+                />
+            )}
+
+            <Drawer
+                width={760}
+                title={statsData?.link ? `Stats — ${statsData.link.name}` : 'Stats'}
+                open={statsOpen}
+                onClose={() => { setStatsOpen(false); setStatsData(null); }}
+            >
+                {statsLoading && (
+                    <div style={{ textAlign: 'center', padding: 40 }}><Spin size="large" /></div>
+                )}
+                {statsData && !statsLoading && (() => {
+                    const isPaid = statsData.link.type === 'paid';
+                    const eventLabel = isPaid ? 'Purchases' : 'Opens';
+                    const eventLabelSingular = isPaid ? 'purchase' : 'open';
+                    const fmtCurrency = (cents) => `$${((cents || 0) / 100).toFixed(2)}`;
+
+                    return (
+                        <>
+                            <Row gutter={16} style={{ marginBottom: 16 }}>
+                                <Col xs={12} md={6}>
+                                    <Card>
+                                        <Statistic
+                                            title="Clicks Used"
+                                            value={Math.max(0, (statsData.link.clicksBudget || 0) - (statsData.link.clicksRemaining || 0))}
+                                            suffix={`/ ${statsData.link.clicksBudget || 0}`}
+                                        />
+                                    </Card>
+                                </Col>
+                                <Col xs={12} md={6}>
+                                    <Card>
+                                        <Statistic title="Link Views" value={statsData.totals.linkViews} />
+                                    </Card>
+                                </Col>
+                                {isPaid ? (
+                                    <>
+                                        <Col xs={12} md={6}>
+                                            <Card>
+                                                <Statistic title="Purchases" value={statsData.totals.purchases} />
+                                            </Card>
+                                        </Col>
+                                        <Col xs={12} md={6}>
+                                            <Card>
+                                                <Statistic title="Gross Revenue" value={fmtCurrency(statsData.revenue?.gross)} />
+                                            </Card>
+                                        </Col>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Col xs={12} md={6}>
+                                            <Card>
+                                                <Statistic title="Total Opens" value={statsData.totals.opens} />
+                                            </Card>
+                                        </Col>
+                                        <Col xs={12} md={6}>
+                                            <Card>
+                                                <Statistic title="Unique Opens" value={statsData.totals.uniqueOpens} />
+                                            </Card>
+                                        </Col>
+                                    </>
+                                )}
+                            </Row>
+
+                            <Card title={`${eventLabel} — last 30 days`} size="small" style={{ marginBottom: 16 }}>
+                                <Table
+                                    rowKey="date"
+                                    size="small"
+                                    dataSource={statsData.byDay}
+                                    pagination={false}
+                                    scroll={{ y: 200 }}
+                                    locale={{ emptyText: `No ${eventLabelSingular}s yet` }}
+                                    columns={[
+                                        { title: 'Date', dataIndex: 'date', key: 'date' },
+                                        { title: eventLabel, dataIndex: 'opens', key: 'o' },
+                                        ...(isPaid ? [] : [{ title: 'Unique', dataIndex: 'unique', key: 'u' }]),
+                                    ]}
+                                />
+                            </Card>
+
+                            <Card title={`${eventLabel} by Guide`} size="small" style={{ marginBottom: 16 }}>
+                                <Table
+                                    rowKey={(r) => r.book?._id || Math.random()}
+                                    size="small"
+                                    dataSource={statsData.byBook}
+                                    pagination={{ pageSize: 8 }}
+                                    locale={{ emptyText: `No guide ${eventLabelSingular}s yet` }}
+                                    columns={[
+                                        { title: 'Guide', key: 'name', render: (_, r) => r.book ? (r.book.name || r.book.eng_name) : '—' },
+                                        { title: 'Location', key: 'loc', render: (_, r) => r.book ? [r.book.city, r.book.country].filter(Boolean).join(', ') : '' },
+                                        { title: eventLabel, dataIndex: 'opens', key: 'o' },
+                                        ...(isPaid ? [] : [{ title: 'Unique', dataIndex: 'unique', key: 'u' }]),
+                                    ]}
+                                />
+                            </Card>
+
+                            <Card title={`${eventLabel} by Client`} size="small">
+                                <Table
+                                    rowKey={(r) => r.hotel?._id || Math.random()}
+                                    size="small"
+                                    dataSource={statsData.byHotel}
+                                    pagination={false}
+                                    locale={{ emptyText: 'No client traffic yet' }}
+                                    columns={[
+                                        { title: 'Client', key: 'name', render: (_, r) => r.hotel?.hotelName || '—' },
+                                        { title: eventLabel, dataIndex: 'opens', key: 'o' },
+                                        ...(isPaid ? [] : [{ title: 'Unique', dataIndex: 'unique', key: 'u' }]),
+                                    ]}
+                                />
+                            </Card>
+                        </>
+                    );
+                })()}
+            </Drawer>
         </div>
-        </PageTourWrapper>
     );
 };
 

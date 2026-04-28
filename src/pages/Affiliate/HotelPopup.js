@@ -1,181 +1,117 @@
-import { Modal, Form, Input, Select, Button, Upload, message, ColorPicker } from 'antd';
+import { Modal, Form, Input, Select, Button, Upload, message, Tag, Typography } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { useState, useEffect } from 'react';
 import ApiService from '../../APIServices/ApiService';
 
-const HotelPopup = ({ open, setOpen, onSaveHotel, categories, hotel, type, affiliateId }) => {
+const { Text } = Typography;
+
+const HotelPopup = ({ open, setOpen, onSaved, hotel, type, approvedLinks = [] }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [fileList, setFileList] = useState([]);
 
     useEffect(() => {
-        if (hotel && type === 'Edit') {
-            form.setFieldsValue({
-                hotelName: hotel.hotelName,
-                primaryColor: hotel.primaryColor,
-                categories: hotel.categories.map(cat => cat._id || cat),
-            });
-
-            // Set existing logo file if available
-            if (hotel.logo) {
-                setFileList([{
-                    uid: '-1',
-                    name: 'current-logo',
-                    status: 'done',
-                    url: hotel.logo,
-                    thumbUrl: hotel.logo,
-                }]);
+        if (open) {
+            if (hotel && type === 'Edit') {
+                form.setFieldsValue({
+                    hotelName: hotel.hotelName,
+                    primaryColor: hotel.primaryColor,
+                    affiliateLinkId: hotel.affiliateLinkId?._id || hotel.affiliateLinkId,
+                });
+                if (hotel.logo) {
+                    setFileList([{ uid: '-1', name: 'logo', status: 'done', url: hotel.logo, thumbUrl: hotel.logo }]);
+                }
+            } else {
+                form.resetFields();
+                form.setFieldsValue({ primaryColor: '#3498db' });
+                setFileList([]);
             }
-        } else {
-            form.resetFields();
-            setFileList([]);
         }
     }, [hotel, type, form, open]);
 
     const handleSave = async (values) => {
         setLoading(true);
-
         try {
-            const formData = new FormData();
-            formData.append('hotelName', values.hotelName);
-            formData.append('primaryColor', values.primaryColor || '#3498db');
-            formData.append('categories', JSON.stringify(values.categories || []));
-
-            // Add logo if uploaded
+            const fd = new FormData();
+            fd.append('hotelName', values.hotelName);
+            fd.append('primaryColor', values.primaryColor || '#3498db');
+            fd.append('affiliateLinkId', values.affiliateLinkId);
             if (fileList.length > 0 && fileList[0].originFileObj) {
-                formData.append('logo', fileList[0].originFileObj);
+                fd.append('logo', fileList[0].originFileObj);
             }
 
-            let response;
             if (type === 'Edit' && hotel?._id) {
-                response = await ApiService.updateHotel(hotel._id, formData);
+                await ApiService.updateHotel(hotel._id, fd);
+                message.success('Client updated.');
             } else {
-                // Check if we're in affiliate dashboard context
-                const affiliateToken = localStorage.getItem('affiliateToken');
-                if (affiliateToken && !affiliateId) {
-                    // Use affiliate's own method
-                    response = await ApiService.createMyHotel(formData);
-                } else {
-                    // Use admin method
-                    response = await ApiService.createHotel(affiliateId, formData);
-                }
+                await ApiService.createMyHotel(fd);
+                message.success('Client added.');
             }
-
-            message.success(`Client ${type === 'Edit' ? 'updated' : 'created'} successfully!`);
-            onSaveHotel();
-            handleClose();
-        } catch (error) {
-            const errorMessage = error.response?.data?.message || `Failed to ${type.toLowerCase()} client`;
-            message.error(errorMessage);
+            onSaved?.();
+            setOpen(false);
+            form.resetFields();
+            setFileList([]);
+        } catch (e) {
+            message.error(e?.response?.data?.message || 'Save failed.');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleClose = () => {
-        form.resetFields();
-        setFileList([]);
-        setOpen();
-    };
-
-    const handleLogoChange = (info) => {
-        let newFileList = [...info.fileList];
-
-        // Limit to one file
-        newFileList = newFileList.slice(-1);
-
-        // Add preview URL
-        newFileList = newFileList.map(file => {
-            if (file.response) {
-                file.url = file.response.url;
-            }
-            return file;
-        });
-
-        setFileList(newFileList);
-    };
-
-    const uploadProps = {
-        beforeUpload: () => false, // Prevent auto upload
-        fileList,
-        onChange: handleLogoChange,
-        accept: 'image/*',
-        listType: 'picture',
-        maxCount: 1,
-    };
+    const handleUploadChange = ({ fileList: newFileList }) => setFileList(newFileList);
 
     return (
         <Modal
-            title={`${type} Client`}
+            title={`${type === 'Edit' ? 'Edit' : 'Add'} Client`}
             open={open}
-            onCancel={handleClose}
-            footer={null}
-            width={600}
-            destroyOnClose
+            onCancel={() => setOpen(false)}
+            onOk={() => form.submit()}
+            confirmLoading={loading}
+            okText={type === 'Edit' ? 'Update' : 'Add'}
         >
-            <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleSave}
-                initialValues={{
-                    primaryColor: '#3498db'
-                }}
-            >
-                <Form.Item
-                    label="Client Name"
-                    name="hotelName"
-                    rules={[{ required: true, message: 'Please enter Client name!' }]}
-                >
-                    <Input placeholder="Enter Client name" />
+            <Form layout="vertical" form={form} onFinish={handleSave}>
+                <Form.Item name="hotelName" label="Client / Hotel Name" rules={[{ required: true }]}>
+                    <Input />
                 </Form.Item>
 
                 <Form.Item
-                    label="Logo"
-                    name="logo"
-                >
-                    <Upload {...uploadProps}>
-                        <Button icon={<UploadOutlined />}>Select Logo</Button>
-                    </Upload>
-                </Form.Item>
-
-                <Form.Item
-                    label="Primary Color"
-                    name="primaryColor"
-                >
-                    <ColorPicker
-                        format="hex"
-                        value={form.getFieldValue('primaryColor')}
-                        onChange={(color) => {
-                            form.setFieldsValue({ primaryColor: color.toHexString() });
-                        }}
-                        showText
-                    />
-                </Form.Item>
-
-                <Form.Item
-                    label="Categories"
-                    name="categories"
-                    rules={[{ required: true, message: 'Please select at least one category!' }]}
+                    name="affiliateLinkId"
+                    label="Use Affiliate Link"
+                    rules={[{ required: true, message: 'Pick the link this client is associated with.' }]}
+                    extra="The shareable URL is the same — clicks from this client will be tagged with src=clientId."
                 >
                     <Select
-                        mode="multiple"
-                        placeholder="Select categories"
-                        style={{ width: '100%' }}
-                        options={categories.map(cat => ({
-                            label: cat.name,
-                            value: cat._id
+                        placeholder="Select an approved link"
+                        options={approvedLinks.map((l) => ({
+                            label: (
+                                <span>
+                                    {l.name} <Tag color={l.type === 'paid' ? 'gold' : 'blue'} style={{ marginLeft: 6 }}>{l.type}</Tag>
+                                </span>
+                            ),
+                            value: l._id,
                         }))}
                     />
                 </Form.Item>
 
-                <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
-                    <Button onClick={handleClose} style={{ marginRight: 8 }}>
-                        Cancel
-                    </Button>
-                    <Button type="primary" htmlType="submit" loading={loading}>
-                        {type === 'Edit' ? 'Update' : 'Create'} Client
-                    </Button>
+                <Form.Item name="primaryColor" label="Primary Color">
+                    <Input type="color" style={{ width: 80, height: 32 }} />
                 </Form.Item>
+
+                <Form.Item label="Logo">
+                    <Upload
+                        listType="picture"
+                        fileList={fileList}
+                        onChange={handleUploadChange}
+                        beforeUpload={() => false}
+                        maxCount={1}
+                    >
+                        <Button icon={<UploadOutlined />}>Upload</Button>
+                    </Upload>
+                </Form.Item>
+
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                    Categories are inherited from the chosen link.
+                </Text>
             </Form>
         </Modal>
     );

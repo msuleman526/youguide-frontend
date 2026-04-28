@@ -1,431 +1,217 @@
-import { Button, Form, Input, Modal, DatePicker, InputNumber, Switch, Select, Upload, Row, Col, message, Divider, Typography, Tag } from 'antd';
-import { UploadOutlined, PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
+import { Button, Form, Input, Modal, DatePicker, InputNumber, Select, Upload, Row, Col, message, Divider, Typography } from 'antd';
+import { UploadOutlined, UserAddOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import ApiService from '../../APIServices/ApiService';
 import dayjs from 'dayjs';
 
-const { Option } = Select;
-
-const AffiliatePopup = ({ open, setOpen, onSaveAffiliate, affiliate, type, categories }) => {
+const AffiliatePopup = ({ open, setOpen, onSaveAffiliate, affiliate, type }) => {
     const [form] = Form.useForm();
+    const [createUserForm] = Form.useForm();
     const [users, setUsers] = useState([]);
-    const [tableLoading, setTableLoading] = useState(false);
-    const [logoFile, setLogoFile] = useState(null);
-    const [isLogin, setIsLogin] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [confirmModalVisible, setConfirmModalVisible] = useState(false);
-    const [existingAffiliate, setExistingAffiliate] = useState(null);
-    const [pendingFormData, setPendingFormData] = useState(null);
-    const [quotaDetails, setQuotaDetails] = useState(null);
-    const [quotaLoading, setQuotaLoading] = useState(false);
+    const [createUserOpen, setCreateUserOpen] = useState(false);
 
-    const fetchQuotaDetails = async (userId) => {
+    const loadUsers = async () => {
         try {
-            setQuotaLoading(true);
-            const response = await ApiService.getAffiliateQuotaDetails(userId);
-            setQuotaDetails(response);
-            setQuotaLoading(false);
-        } catch (error) {
-            console.error('Failed to fetch quota details');
-            setQuotaDetails(null);
-            setQuotaLoading(false);
-        }
+            const list = await ApiService.listAffiliateUsersForPicker(false);
+            setUsers(list || []);
+        } catch (_) { /* ignore */ }
     };
+
+    useEffect(() => {
+        if (open) {
+            loadUsers();
+        }
+    }, [open]);
 
     useEffect(() => {
         if (affiliate) {
-            // Convert categories to array of IDs if they are objects
-            const categoryIds = (affiliate.categories || []).map(cat =>
-                typeof cat === 'object' ? cat._id : cat
-            );
-            // Get userId if it's an object
             const userId = affiliate.userId?._id || affiliate.userId;
-
-            // Set isLogin first so the API Access Settings fields are rendered
-            setIsLogin(affiliate.isLogin || false);
-
-            // Set form values with a small delay to ensure fields are rendered
             setTimeout(() => {
                 form.setFieldsValue({
-                    ...affiliate,
-                    subscriptionEndDate: dayjs(affiliate.subscriptionEndDate),
-                    categories: categoryIds,
-                    userId: userId,
-                    allow_token: affiliate.allow_token || 1,
-                    initial_api_quota: affiliate.initial_api_quota,
-                    quota_end_date: affiliate.quota_end_date ? dayjs(affiliate.quota_end_date) : null,
-                    quota_packages: affiliate.quota_packages || [],
-                    website: affiliate.website || '',
+                    affiliateName: affiliate.affiliateName,
+                    website: affiliate.website,
+                    primaryColor: affiliate.primaryColor || '#3498db',
+                    subscriptionEndDate: affiliate.subscriptionEndDate ? dayjs(affiliate.subscriptionEndDate) : null,
+                    userId,
+                    affiliateCommissionPct: affiliate.affiliateCommissionPct ?? 30,
+                    subAffiliateCommissionPct: affiliate.subAffiliateCommissionPct ?? 10,
                 });
             }, 0);
-
-            // Fetch quota details if user exists
-            if (userId) {
-                fetchQuotaDetails(userId);
-            } else {
-                setQuotaDetails(null);
-            }
         } else {
             form.resetFields();
-            setIsLogin(false);
-            setQuotaDetails(null);
-        }
-    }, [affiliate, form]);
-
-    useEffect(() => {
-        ApiService.getAllUsers()
-            .then((response) => {
-                // Filter users to only show affiliates (where role.slug === 'affiliate')
-                const affiliateUsers = (response || []).filter(user =>
-                    user.role?.slug === 'affiliate'
-                );
-                setUsers(affiliateUsers);
-                setTableLoading(false);
-            })
-            .catch((error) => {
-                setTableLoading(false);
-                setUsers([]);
+            form.setFieldsValue({
+                primaryColor: '#3498db',
+                affiliateCommissionPct: 30,
+                subAffiliateCommissionPct: 10,
             });
-    }, []);
-
-    const buildFormData = (values) => {
-        const formData = new FormData();
-
-        // Only append logo if a new image is uploaded
-        if (values.image?.file) {
-            formData.append('logo', values.image.file);
         }
-
-        if (isLogin) {
-            if (values.userId) formData.append('userId', values.userId);
-            formData.append('initial_api_quota', values.initial_api_quota || 0);
-            formData.append('allow_token', values.allow_token || 1);
-            if (values.quota_end_date) {
-                formData.append('quota_end_date', values.quota_end_date.format('YYYY-MM-DD'));
-            }
-            formData.append('quota_packages', JSON.stringify(values.quota_packages || []));
-        }
-
-        formData.append('affiliateName', values.affiliateName);
-        formData.append('primaryColor', values.primaryColor);
-        formData.append('subscriptionEndDate', values.subscriptionEndDate?.format('YYYY-MM-DD') || '');
-        formData.append('numberOfClicks', values.numberOfClicks);
-        formData.append('categories', JSON.stringify(values.categories));
-        formData.append('isLogin', isLogin);
-        if (values.website) formData.append('website', values.website);
-
-        return formData;
-    };
-
-    const saveAffiliate = async (formData) => {
-        try {
-            if (type === 'Edit' && affiliate?._id) {
-                await ApiService.updateAffiliateSubscription(affiliate._id, formData);
-                message.success("Affiliate updated successfully");
-            } else {
-                await ApiService.saveAffiliateSubscription(formData);
-                message.success("Affiliate saved successfully");
-            }
-            setLoading(false);
-            onSaveAffiliate();
-            form.resetFields();
-            setLogoFile(null);
-            setIsLogin(false);
-            setConfirmModalVisible(false);
-            setPendingFormData(null);
-            setExistingAffiliate(null);
-        } catch (error) {
-            console.error("Error saving affiliate:", error);
-            message.error(error?.response?.data?.message || "Error saving affiliate");
-            setLoading(false);
-        }
-    };
+    }, [affiliate, form, open]);
 
     const handleFinish = async (values) => {
-        setLoading(true);
-        const formData = buildFormData(values);
+        try {
+            setLoading(true);
+            const fd = new FormData();
+            fd.append('affiliateName', values.affiliateName);
+            if (values.website) fd.append('website', values.website);
+            fd.append('primaryColor', values.primaryColor || '#3498db');
+            fd.append('subscriptionEndDate', values.subscriptionEndDate.format('YYYY-MM-DD'));
+            fd.append('isLogin', 'true');
+            fd.append('userId', values.userId);
+            fd.append('affiliateCommissionPct', String(values.affiliateCommissionPct ?? 30));
+            fd.append('subAffiliateCommissionPct', String(values.subAffiliateCommissionPct ?? 10));
+            if (values.image?.file) fd.append('logo', values.image.file);
 
-        // Check if user is selected and isLogin is enabled
-        if (isLogin && values.userId) {
-            try {
-                const existingAff = await ApiService.getAffiliateByUserId(values.userId);
-
-                if (existingAff) {
-                    // In edit mode, if the existing affiliate is the same as the one being edited, proceed
-                    if (type === 'Edit' && affiliate?._id === existingAff._id) {
-                        await saveAffiliate(formData);
-                    } else {
-                        // User is attached to another affiliate, show confirmation
-                        setExistingAffiliate(existingAff);
-                        setPendingFormData(formData);
-                        setConfirmModalVisible(true);
-                        setLoading(false);
-                    }
-                } else {
-                    // User is not attached to any affiliate, proceed
-                    await saveAffiliate(formData);
-                }
-            } catch (error) {
-                console.error("Error checking user affiliate:", error);
-                message.error("Error checking user affiliate");
-                setLoading(false);
+            if (type === 'Edit' && affiliate?._id) {
+                await ApiService.updateAffiliateSubscription(affiliate._id, fd);
+                message.success('Affiliate updated.');
+            } else {
+                await ApiService.saveAffiliateSubscription(fd);
+                message.success('Affiliate created.');
             }
-        } else {
-            // No user selected or login not enabled, proceed directly
-            await saveAffiliate(formData);
+            onSaveAffiliate();
+            setOpen(false);
+            form.resetFields();
+        } catch (e) {
+            message.error(e?.response?.data?.message || 'Save failed.');
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleConfirmRemoveAndCreate = async () => {
-        setLoading(true);
-        setConfirmModalVisible(false);
-        await saveAffiliate(pendingFormData);
-    };
-
-    const handleCancelConfirm = () => {
-        setConfirmModalVisible(false);
-        setPendingFormData(null);
-        setExistingAffiliate(null);
+    const handleCreateUser = async (values) => {
+        try {
+            const u = await ApiService.createAffiliateUserInline(values);
+            message.success(`User ${u.email} created.`);
+            await loadUsers();
+            form.setFieldValue('userId', u.id);
+            createUserForm.resetFields();
+            setCreateUserOpen(false);
+        } catch (e) {
+            message.error(e?.response?.data?.message || 'Failed to create user.');
+        }
     };
 
     return (
-        <Modal
-            title={`${type} Affiliate`}
-            open={open}
-            confirmLoading={loading}
-            onCancel={() => setOpen(false)}
-            onOk={() => form.submit()}
-            okText={type === 'Edit' ? 'Update' : 'Create'}
-            width={800}
-        >
-            <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
-                Affiliate website and clients setting.
-            </Typography.Text>
-            <Form layout="vertical" form={form} onFinish={handleFinish}>
-                <Row gutter={16}>
-                    <Col span={6}>
-                        <Form.Item
-                            label="Affiliate Name"
-                            name="affiliateName"
-                            rules={[{ required: true, message: 'Please enter affiliate name' }]}
-                        >
-                            <Input placeholder="Enter affiliate name" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={6}>
-                        <Form.Item
-                            label="Website"
-                            name="website"
-                        >
-                            <Input placeholder="https://example.com" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={6}>
-                        <Form.Item
-                            name="image"
-                            label="Affiliate Logo"
-                            rules={[{ required: type !== 'Edit', message: 'Image is required' }]}
-                            valuePropName="file"
-                            getValueFromEvent={e => e}
-                        >
-                            <Upload maxCount={1} beforeUpload={() => false}>
-                                <Button icon={<UploadOutlined />}>
-                                    {type === 'Edit' ? 'Change Image' : 'Upload Image'}
-                                </Button>
-                            </Upload>
-                        </Form.Item>
-                    </Col>
-                    <Col span={6}>
-                        <Form.Item label="Primary Color" name="primaryColor">
-                            <Input type="color" defaultValue="#3498db" style={{ width: '100%', height: 32 }} />
-                        </Form.Item>
-                    </Col>
-                </Row>
-
-                <Row gutter={16}>
-                    <Col span={8}>
-                        <Form.Item
-                            label="Admin Panel End Date"
-                            name="subscriptionEndDate"
-                            rules={[{ required: true, message: 'Please select end date' }]}
-                        >
-                            <DatePicker style={{ width: '100%' }} />
-                        </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                        <Form.Item
-                            label="Number of Clicks"
-                            name="numberOfClicks"
-                            rules={[{ required: true, message: 'Please enter number of clicks' }]}
-                        >
-                            <InputNumber style={{ width: '100%' }} min={0} placeholder="Enter clicks" />
-                        </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                        <Form.Item label="Login Enabled" name="isLogin" valuePropName="checked" initialValue={false}>
-                            <Switch onChange={(checked) => setIsLogin(checked)} />
-                        </Form.Item>
-                    </Col>
-                </Row>
-
-                <Row gutter={16}>
-                    <Col span={24}>
-                        <Form.Item
-                            label="Categories"
-                            name="categories"
-                            rules={[{ required: true, message: 'Please select at least one category' }]}
-                        >
-                            <Select mode="multiple" style={{ width: '100%' }} placeholder="Select categories" options={categories.map((c) => ({ label: c.name, value: c._id }))} />
-                        </Form.Item>
-                    </Col>
-                </Row>
-
-                {isLogin && (
-                    <>
-                        <Divider>API Access Settings</Divider>
-
-                        <Row gutter={16}>
-                            <Col span={6}>
-                                <Form.Item label="Select User" name="userId" rules={[{ required: false, message: 'Please select user' }]}>
-                                    <Select
-                                        placeholder="Select a user"
-                                        showSearch
-                                        allowClear
-                                        filterOption={(input, option) =>
-                                            (option?.children?.toLowerCase() ?? '').includes(input.toLowerCase())
-                                        }
-                                        onChange={(value) => {
-                                            if (value) {
-                                                fetchQuotaDetails(value);
-                                            } else {
-                                                setQuotaDetails(null);
-                                            }
-                                        }}
-                                    >
-                                        {users.map((user) => (
-                                            <Option key={user._id} value={user._id}>
-                                                {user.firstName + ' ' + user.lastName + ' - ' + user.email}
-                                            </Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                            <Col span={6}>
-                                <Form.Item
-                                    label="Initial Quota"
-                                    name="initial_api_quota"
-                                    rules={[{ required: true, message: 'Please enter initial quota' }]}
-                                >
-                                    <InputNumber style={{ width: '100%' }} min={0} placeholder="Enter initial quota" />
-                                </Form.Item>
-                                {quotaLoading && (
-                                    <Typography.Text type="secondary" style={{ display: 'block', marginTop: -16, marginBottom: 8 }}>
-                                        Loading...
-                                    </Typography.Text>
-                                )}
-                                {quotaDetails && !quotaLoading && (
-                                    <Typography.Text type="secondary" style={{ display: 'block', marginTop: -16, marginBottom: 8 }}>
-                                        Remaining: <Tag color={quotaDetails.remaining_quota > 0 ? 'green' : 'red'}>
-                                            {quotaDetails.remaining_quota || 0}
-                                        </Tag>
-                                    </Typography.Text>
-                                )}
-                            </Col>
-                            <Col span={6}>
-                                <Form.Item
-                                    label="Allow Token"
-                                    name="allow_token"
-                                    initialValue={1}
-                                    rules={[{ required: true, message: 'Please enter allow token' }]}
-                                >
-                                    <InputNumber style={{ width: '100%' }} min={1} placeholder="Allow token" />
-                                </Form.Item>
-                            </Col>
-                            <Col span={6}>
-                                <Form.Item
-                                    label="API Access End Date"
-                                    name="quota_end_date"
-                                    rules={[{ required: true, message: 'Please select end date' }]}
-                                >
-                                    <DatePicker style={{ width: '100%' }} />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-
-                        <Form.List name="quota_packages">
-                            {(fields, { add, remove }) => (
-                                <>
-                                    {fields.map(({ key, name, ...restField }) => (
-                                        <Row key={key} gutter={16} align="middle">
-                                            <Col span={11}>
-                                                <Form.Item
-                                                    {...restField}
-                                                    name={[name, 'quota_amount']}
-                                                    label={key === 0 ? 'Quota Amount' : ''}
-                                                    rules={[{ required: true, message: 'Required' }]}
-                                                >
-                                                    <InputNumber style={{ width: '100%' }} min={1} placeholder="Quota" />
-                                                </Form.Item>
-                                            </Col>
-                                            <Col span={11}>
-                                                <Form.Item
-                                                    {...restField}
-                                                    name={[name, 'price']}
-                                                    label={key === 0 ? 'Price' : ''}
-                                                    rules={[{ required: true, message: 'Required' }]}
-                                                >
-                                                    <InputNumber style={{ width: '100%' }} min={0} placeholder="Price" prefix="€" />
-                                                </Form.Item>
-                                            </Col>
-                                            <Col span={2}>
-                                                <MinusCircleOutlined
-                                                    style={{ color: 'red', fontSize: 18, marginTop: key === 0 ? 8 : -24 }}
-                                                    onClick={() => remove(name)}
-                                                />
-                                            </Col>
-                                        </Row>
-                                    ))}
-                                    <Form.Item>
-                                        <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                            Add Quota Package
-                                        </Button>
-                                    </Form.Item>
-                                </>
-                            )}
-                        </Form.List>
-                    </>
-                )}
-            </Form>
-
-            {/* Confirmation Modal for existing user */}
+        <>
             <Modal
-                title="User Already Attached"
-                open={confirmModalVisible}
-                onCancel={handleCancelConfirm}
-                footer={[
-                    <Button key="cancel" onClick={handleCancelConfirm}>
-                        Cancel
-                    </Button>,
-                    <Button
-                        key="confirm"
-                        type="primary"
-                        danger
-                        loading={loading}
-                        onClick={handleConfirmRemoveAndCreate}
-                    >
-                        {type === 'Edit' ? 'Remove & Update' : 'Remove & Create'}
-                    </Button>,
-                ]}
+                title={`${type} Affiliate`}
+                open={open}
+                onCancel={() => setOpen(false)}
+                onOk={() => form.submit()}
+                confirmLoading={loading}
+                okText={type === 'Edit' ? 'Update' : 'Create'}
+                width={780}
             >
-                <p>
-                    This user is already attached with another affiliate dashboard:
-                    <strong> {existingAffiliate?.affiliateName}</strong>
-                </p>
-                <p>
-                    Do you want to remove the user from the existing affiliate and {type === 'Edit' ? 'update' : 'create'} this one?
-                </p>
+                <Typography.Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+                    Brand and login. Click budgets and categories now live on individual affiliate links the affiliate will request.
+                </Typography.Text>
+                <Form layout="vertical" form={form} onFinish={handleFinish}>
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item name="affiliateName" label="Affiliate Name" rules={[{ required: true }]}>
+                                <Input placeholder="Acme Travel" />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item name="website" label="Website">
+                                <Input placeholder="https://acme.travel" />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Row gutter={16}>
+                        <Col span={8}>
+                            <Form.Item
+                                name="image" label="Logo"
+                                rules={[{ required: type !== 'Edit', message: 'Logo is required' }]}
+                                valuePropName="file" getValueFromEvent={(e) => e}
+                            >
+                                <Upload
+                                    maxCount={1}
+                                    beforeUpload={() => false}
+                                    className="upload-full-width"
+                                    style={{ display: 'block', width: '100%' }}
+                                >
+                                    <Button block icon={<UploadOutlined />} style={{ width: '100%' }}>
+                                        {type === 'Edit' ? 'Change' : 'Upload'}
+                                    </Button>
+                                </Upload>
+                            </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                            <Form.Item name="primaryColor" label="Primary Color">
+                                <Input type="color" style={{ width: '100%', height: 32 }} />
+                            </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                            <Form.Item name="subscriptionEndDate" label="Admin Panel End Date" rules={[{ required: true }]}>
+                                <DatePicker style={{ width: '100%' }} />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <style>{`
+                        .upload-full-width .ant-upload,
+                        .upload-full-width .ant-upload-select {
+                            display: block !important;
+                            width: 100% !important;
+                        }
+                    `}</style>
+
+                    <Divider>Commission</Divider>
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item name="affiliateCommissionPct" label="Affiliate %" rules={[{ required: true }]}>
+                                <InputNumber min={0} max={100} style={{ width: '100%' }} addonAfter="%" />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item name="subAffiliateCommissionPct" label="Sub-affiliate %" rules={[{ required: true }]}>
+                                <InputNumber min={0} max={100} style={{ width: '100%' }} addonAfter="%" />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Divider>Login</Divider>
+                    <Row gutter={16}>
+                        <Col span={20}>
+                            <Form.Item name="userId" label="Login User" rules={[{ required: true, message: 'Please pick a user' }]}>
+                                <Select
+                                    showSearch
+                                    placeholder="Pick user"
+                                    filterOption={(input, opt) => (opt?.label || '').toLowerCase().includes(input.toLowerCase())}
+                                    options={users.map((u) => ({ label: `${u.firstName} ${u.lastName} — ${u.email}`, value: u._id }))}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col span={4} style={{ display: 'flex', alignItems: 'flex-end' }}>
+                            <Form.Item label=" ">
+                                <Button icon={<UserAddOutlined />} onClick={() => setCreateUserOpen(true)} block>New</Button>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                </Form>
             </Modal>
-        </Modal>
+
+            <Modal
+                title="Create new affiliate user"
+                open={createUserOpen}
+                onCancel={() => setCreateUserOpen(false)}
+                onOk={() => createUserForm.submit()}
+                okText="Create"
+            >
+                <Form layout="vertical" form={createUserForm} onFinish={handleCreateUser}>
+                    <Row gutter={16}>
+                        <Col span={12}><Form.Item name="firstName" label="First name" rules={[{ required: true }]}><Input /></Form.Item></Col>
+                        <Col span={12}><Form.Item name="lastName" label="Last name" rules={[{ required: true }]}><Input /></Form.Item></Col>
+                    </Row>
+                    <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email' }]}><Input /></Form.Item>
+                    <Form.Item name="password" label="Password" rules={[{ required: true, min: 8 }]} extra="Min 8 chars, with upper/lower/number/special.">
+                        <Input.Password />
+                    </Form.Item>
+                </Form>
+            </Modal>
+        </>
     );
 };
 

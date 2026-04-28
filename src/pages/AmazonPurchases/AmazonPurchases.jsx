@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Tag, Button, Typography, Flex, Input, Select, Modal, Drawer, Timeline, Tabs, message } from 'antd';
-import { EyeOutlined, QrcodeOutlined, UnorderedListOutlined, SearchOutlined, MailOutlined, DownloadOutlined, EditOutlined } from '@ant-design/icons';
+import { EyeOutlined, QrcodeOutlined, UnorderedListOutlined, SearchOutlined, MailOutlined, DownloadOutlined, EditOutlined, CreditCardOutlined } from '@ant-design/icons';
 import ApiService from '../../APIServices/ApiService';
 import CustomCard from '../../components/Card';
 
@@ -64,6 +64,13 @@ const AmazonPurchases = () => {
     const [logs, setLogs] = useState([]);
     const [logsLoading, setLogsLoading] = useState(false);
     const [logsOrder, setLogsOrder] = useState(null);
+
+    // Stripe Checkout Modal
+    const [stripeModalVisible, setStripeModalVisible] = useState(false);
+    const [stripeOrder, setStripeOrder] = useState(null);
+    const [stripeEmail, setStripeEmail] = useState('');
+    const [stripeAmount, setStripeAmount] = useState('');
+    const [stripeLoading, setStripeLoading] = useState(false);
 
     const fetchOrders = useCallback(async () => {
         setLoading(true);
@@ -151,6 +158,44 @@ const AmazonPurchases = () => {
         setStatusOrder(record);
         setStatusValue(record.status);
         setStatusModalVisible(true);
+    };
+
+    const showStripeModal = (record) => {
+        setStripeOrder(record);
+        setStripeEmail(record.customer_email || '');
+        setStripeAmount('');
+        setStripeModalVisible(true);
+    };
+
+    const handleStripeCheckout = async () => {
+        if (!stripeEmail?.trim()) {
+            message.warning('Please enter a customer email');
+            return;
+        }
+        const amt = parseFloat(stripeAmount);
+        if (!amt || amt <= 0) {
+            message.warning('Please enter a valid amount');
+            return;
+        }
+        setStripeLoading(true);
+        try {
+            const data = await ApiService.createAmazonEsimCheckout({
+                order_number: stripeOrder.order_number,
+                customer_email: stripeEmail.trim(),
+                amount: amt,
+            });
+            if (data.success && data.checkoutUrl) {
+                window.open(data.checkoutUrl, '_blank');
+                setStripeModalVisible(false);
+                fetchOrders();
+            } else {
+                message.error(data.message || 'Failed to create checkout');
+            }
+        } catch (error) {
+            message.error(error.response?.data?.message || 'Failed to create Stripe checkout');
+        } finally {
+            setStripeLoading(false);
+        }
     };
 
     const handleUpdateStatus = async () => {
@@ -298,6 +343,13 @@ const AmazonPurchases = () => {
                         onClick={() => showStatusModal(record)}
                         title="Update Status"
                         style={{ color: '#1890ff' }}
+                    />
+                    <Button
+                        type="link"
+                        icon={<CreditCardOutlined />}
+                        onClick={() => showStripeModal(record)}
+                        title="Stripe Checkout"
+                        style={{ color: '#52c41a' }}
                     />
                 </Flex>
             ),
@@ -518,6 +570,47 @@ const AmazonPurchases = () => {
                         { label: 'Failed', value: 'failed' },
                     ]}
                 />
+            </Modal>
+
+            {/* Stripe Checkout Modal */}
+            <Modal
+                title={`Stripe Checkout — Order #${stripeOrder?.order_number || ''}`}
+                open={stripeModalVisible}
+                onCancel={() => setStripeModalVisible(false)}
+                onOk={handleStripeCheckout}
+                okText="Create Checkout Link"
+                okButtonProps={{ loading: stripeLoading }}
+                centered
+                width={440}
+            >
+                <div style={{ marginBottom: 12 }}>
+                    <Text type="secondary">
+                        Charges the customer via Stripe (admin_panel key). On success, the eSIM is auto-provisioned and emailed.
+                    </Text>
+                </div>
+                <div style={{ marginBottom: 10 }}>
+                    <Text strong>Customer Email</Text>
+                    <Input
+                        value={stripeEmail}
+                        onChange={(e) => setStripeEmail(e.target.value)}
+                        placeholder="customer@example.com"
+                        size="large"
+                        style={{ marginTop: 4 }}
+                    />
+                </div>
+                <div>
+                    <Text strong>Amount (EUR)</Text>
+                    <Input
+                        value={stripeAmount}
+                        onChange={(e) => setStripeAmount(e.target.value)}
+                        placeholder="e.g. 14.99"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        size="large"
+                        style={{ marginTop: 4 }}
+                    />
+                </div>
             </Modal>
 
             {/* Logs Drawer */}
