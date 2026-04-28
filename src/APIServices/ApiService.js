@@ -1,6 +1,6 @@
 import axios from 'axios';
+const isDev = false
 
-const isDev = true
 class ApiService {
     static URLL = !isDev ? "https://appapi.youguide.com" : 'http://localhost:5001'
     static baseURL = ApiService.URLL + '/api'; // Set your base URL here
