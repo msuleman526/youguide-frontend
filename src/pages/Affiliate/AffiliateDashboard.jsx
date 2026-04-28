@@ -25,6 +25,8 @@ const AffiliateDashboard = () => {
     const [analyticsData, setAnalyticsData] = useState(null);
     const [loading, setLoading] = useState(false);
     const [timeRange, setTimeRange] = useState('30days');
+    const [earnings, setEarnings] = useState(null);
+    const [subAffiliates, setSubAffiliates] = useState([]);
 
     // Analytics data will be fetched from API
 
@@ -49,7 +51,23 @@ const AffiliateDashboard = () => {
         }
 
         fetchAnalytics();
+        fetchEarnings();
+        fetchSubs();
     }, [affiliateId, navigate, timeRange]);
+
+    const fetchEarnings = async () => {
+        try {
+            const e = await ApiService.getMyEarnings();
+            setEarnings(e);
+        } catch (_) { setEarnings(null); }
+    };
+
+    const fetchSubs = async () => {
+        try {
+            const s = await ApiService.getMyDirectChildren();
+            setSubAffiliates(s || []);
+        } catch (_) { setSubAffiliates([]); }
+    };
 
     const fetchAnalytics = async () => {
         setLoading(true);
@@ -133,6 +151,32 @@ const AffiliateDashboard = () => {
                     </Select>
                 </Col>
             </Row>
+
+            {/* Earnings summary */}
+            {earnings && (
+                <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+                    <Col xs={24} sm={8}>
+                        <Card><Statistic title="Lifetime Earned" value={`$${((earnings.totals.lifetime || 0) / 100).toFixed(2)}`} valueStyle={{ color: '#1890ff' }} /></Card>
+                    </Col>
+                    <Col xs={24} sm={8}>
+                        <Card><Statistic title="Pending Payout" value={`$${((earnings.totals.pending || 0) / 100).toFixed(2)}`} valueStyle={{ color: '#fa8c16' }} /></Card>
+                    </Col>
+                    <Col xs={24} sm={8}>
+                        <Card><Statistic title="Paid Out" value={`$${((earnings.totals.paid || 0) / 100).toFixed(2)}`} valueStyle={{ color: '#52c41a' }} /></Card>
+                    </Col>
+                </Row>
+            )}
+
+            {/* Sub-affiliates quick view */}
+            {subAffiliates.length > 0 && (
+                <Card title={`My Sub-Affiliates (${subAffiliates.length})`} style={{ marginBottom: 24 }} size="small">
+                    <Space wrap>
+                        {subAffiliates.map((s) => (
+                            <Tag key={s._id} color="purple">{s.affiliateName}</Tag>
+                        ))}
+                    </Space>
+                </Card>
+            )}
 
             {/* 4 Key Metrics Cards */}
             <Row gutter={[16, 16]} style={{ marginBottom: '24px' }} className="affiliate-stats-cards">

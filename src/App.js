@@ -57,6 +57,13 @@ import Discounts from './pages/Discounts/Discounts'
 import AmazonPurchases from './pages/AmazonPurchases/AmazonPurchases'
 import VerifyAmazonOrder from './pages/VerifyAmazonOrder/VerifyAmazonOrder'
 import FreeGuide from './pages/FreeGuide/FreeGuide'
+import OrderSuccess from './pages/Affiliate/OrderSuccess'
+import MyEarnings from './pages/Affiliate/MyEarnings'
+import SubAffiliates from './pages/Affiliate/SubAffiliates'
+import LinkApprovalQueue from './pages/Admin/LinkApprovalQueue'
+import ApiAccessRequestQueue from './pages/Admin/ApiAccessRequestQueue'
+import AdminPayouts from './pages/Admin/AdminPayouts'
+import AdminEarningsReport from './pages/Admin/AdminEarningsReport'
 
 const App = () => {
   return (
@@ -81,6 +88,7 @@ const App = () => {
         <Route path="/subscription-expired" element={<ContractExpired />} />
         <Route path="/subscription-guides/:id" element={<SubscriptionGuides />} />
         <Route path="/affiliate-guides/:id" element={<AffiliateSubscriptionGuides />} />
+        <Route path="/order-success" element={<OrderSuccess />} />
         <Route path="/hotel-guides/:affiliateId/:hotelId" element={<HotelSubscriptionGuides />} />
         <Route path="/view-content/:affilate/:id" element={<PdfViewer />} />
         <Route path="/view-affiliate-content/:affilate/:id" element={<PdfAffiliateViewer />} />
@@ -116,6 +124,10 @@ const App = () => {
           <Route path="/amazon-purchases" element={<AmazonPurchases />} />
           <Route path="/api-access/dashboard" element={<ApiAccessDashboard />} />
           <Route path="/api-access/list" element={<ApiAccessList />} />
+          <Route path="/link-approvals" element={<LinkApprovalQueue />} />
+          <Route path="/api-access-approvals" element={<ApiAccessRequestQueue />} />
+          <Route path="/admin-payouts" element={<AdminPayouts />} />
+          <Route path="/admin-earnings-report" element={<AdminEarningsReport />} />
         </Route>
 
         {/* Affiliate Layout Routes */}
@@ -124,6 +136,8 @@ const App = () => {
           <Route path="/affiliate-hotels/:affiliateId" element={<AffiliateHotelManagement />} />
           <Route path="/affiliate-api-access/:affiliateId" element={<AffiliateApiAccessDashboard />} />
           <Route path="/affiliate-api-access-list/:affiliateId" element={<AffiliateApiAccessList />} />
+          <Route path="/affiliate-my-earnings/:affiliateId" element={<MyEarnings />} />
+          <Route path="/affiliate-sub-affiliates/:affiliateId" element={<SubAffiliates />} />
         </Route>
       </Routes>
     </HashRouter>

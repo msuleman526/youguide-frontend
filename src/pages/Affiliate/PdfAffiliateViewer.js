@@ -1,11 +1,16 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { Spin, Result, Button, Typography } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 import ApiService from '../../APIServices/ApiService';
 import axios from 'axios';
 
 const PdfAffiliateViewer = () => {
-    console.log(useParams())
-    const { id, affilate } = useParams(); // Get ID from the URL
+    // Route: /view-affiliate-content/:affilate/:id  (`affilate` is the link slug)
+    const { id, affilate: slug } = useParams();
+    const [searchParams] = useSearchParams();
+    const src = searchParams.get('src') || null;
+
     const [book, setBook] = useState(null);
     const [jsonPath, setJsonPath] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -27,9 +32,14 @@ const PdfAffiliateViewer = () => {
             setLoading(true);
             try {
                 if (id) {
-                    ApiService.openAffiliateBookOneTime(affilate)
+                    // Log the open via the new slug-based endpoint. Fire-and-forget;
+                    // it writes a ClickEvent and decrements the link's click budget
+                    // on the first open of this book by this visitor.
+                    if (slug) {
+                        ApiService.logAffiliateGuideOpen({ slug, bookId: id, src }).catch(() => {});
+                    }
                     const response = await ApiService.getVendorBookByID(id);
-                    setBook(response)
+                    setBook(response);
                     setJsonPath(response.jsonPath);
                 }
             } catch (err) {
@@ -40,7 +50,8 @@ const PdfAffiliateViewer = () => {
         };
 
         fetchHtmlContent();
-    }, [id]);
+        // eslint-disable-next-line
+    }, [id, slug]);
 
     useEffect(() => {
         const fetchAndRenderJsonContent = async () => {
@@ -85,8 +96,50 @@ const PdfAffiliateViewer = () => {
     }, [jsonPath]);
 
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>{error}</div>;
+    if (loading) {
+        return (
+            <div
+                style={{
+                    height: '100vh',
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    background: '#fafafa',
+                    gap: 16,
+                }}
+            >
+                <Spin
+                    size="large"
+                    indicator={<LoadingOutlined style={{ fontSize: 56, color: '#29b8e3' }} spin />}
+                />
+                <Typography.Title level={4} style={{ margin: 0, color: '#555' }}>
+                    Loading your guide…
+                </Typography.Title>
+                <Typography.Text type="secondary">
+                    Fetching content. This usually takes a moment.
+                </Typography.Text>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div style={{ padding: 40 }}>
+                <Result
+                    status="warning"
+                    title="Couldn't load this guide"
+                    subTitle={error}
+                    extra={
+                        <Button type="primary" onClick={() => window.location.reload()}>
+                            Try again
+                        </Button>
+                    }
+                />
+            </div>
+        );
+    }
 
     return (
         <div style={{ display: 'flex', height: '100vh' }}>

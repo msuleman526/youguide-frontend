@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const isDev = false
+const isDev = true
 class ApiService {
     static URLL = !isDev ? "https://appapi.youguide.com" : 'http://localhost:5001'
     static baseURL = ApiService.URLL + '/api'; // Set your base URL here
@@ -2069,6 +2069,21 @@ class ApiService {
         }
     }
 
+    static async createAmazonEsimCheckout({ order_number, customer_email, amount }) {
+        try {
+            const response = await axios.post(`${this.baseURL}/amazon-orders/stripe-checkout`, { order_number, customer_email, amount }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error creating Amazon eSIM checkout:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
     static async verifyAmazonOrder({ order_id, email }) {
         try {
             const response = await axios.post(`${this.baseURL}/amazon-orders/verify`, { order_id, email }, {
@@ -2119,6 +2134,168 @@ class ApiService {
             console.error('Error fetching free guide:', error.response?.data || error.message);
             throw error;
         }
+    }
+
+    // ===========================================================================
+    // Affiliate v2 — links, sub-affiliates, payouts, earnings, Buy-Now
+    // ===========================================================================
+
+    static _adminHeaders() {
+        return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + localStorage.getItem('token') };
+    }
+    static _affiliateHeaders() {
+        return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + localStorage.getItem('affiliateToken') };
+    }
+
+    // ----- Affiliate Links -----
+    static async requestAffiliateLink(payload) {
+        const r = await axios.post(`${this.baseURL}/affiliate-links/request`, payload, { headers: this._affiliateHeaders() });
+        return r.data;
+    }
+    static async getMyAffiliateLinks() {
+        const r = await axios.get(`${this.baseURL}/affiliate-links/mine`, { headers: this._affiliateHeaders() });
+        return r.data;
+    }
+    static async getPendingAffiliateLinks() {
+        const r = await axios.get(`${this.baseURL}/affiliate-links/pending`, { headers: this._adminHeaders() });
+        return r.data;
+    }
+    static async getAllAffiliateLinks(params = {}) {
+        const r = await axios.get(`${this.baseURL}/affiliate-links`, { params, headers: this._adminHeaders() });
+        return r.data;
+    }
+    static async approveAffiliateLink(id) {
+        const r = await axios.post(`${this.baseURL}/affiliate-links/${id}/approve`, {}, { headers: this._adminHeaders() });
+        return r.data;
+    }
+    static async rejectAffiliateLink(id, reason) {
+        const r = await axios.post(`${this.baseURL}/affiliate-links/${id}/reject`, { reason }, { headers: this._adminHeaders() });
+        return r.data;
+    }
+    static async deleteAffiliateLink(id) {
+        const tok = localStorage.getItem('affiliateToken') || localStorage.getItem('token');
+        const r = await axios.delete(`${this.baseURL}/affiliate-links/${id}`, {
+            headers: { Authorization: 'Bearer ' + tok },
+        });
+        return r.data;
+    }
+    static async getAffiliateLinkEvents(id, params = {}) {
+        const tok = localStorage.getItem('affiliateToken') || localStorage.getItem('token');
+        const r = await axios.get(`${this.baseURL}/affiliate-links/${id}/events`, {
+            params,
+            headers: { Authorization: 'Bearer ' + tok },
+        });
+        return r.data;
+    }
+    static async getAffiliateLinkBySlug(slug, src) {
+        const r = await axios.get(`${this.baseURL}/affiliate-links/by-slug/${slug}`, { params: { src } });
+        return r.data;
+    }
+    static async getAffiliateLinkStats(id) {
+        const tok = localStorage.getItem('affiliateToken') || localStorage.getItem('token');
+        const r = await axios.get(`${this.baseURL}/affiliate-links/${id}/stats`, {
+            headers: { Authorization: 'Bearer ' + tok },
+        });
+        return r.data;
+    }
+    static async getBooksByLinkSlug(slug, params = {}) {
+        const r = await axios.get(`${this.baseURL}/affiliate-links/by-slug/${slug}/books`, { params });
+        return r.data;
+    }
+    static async logAffiliateGuideOpen(payload) {
+        const r = await axios.post(`${this.baseURL}/affiliate-links/log/guide-open`, payload);
+        return r.data;
+    }
+
+    // ----- Sub-affiliates / inline user create -----
+    static async createSubAffiliate(formData) {
+        const r = await axios.post(`${this.baseURL}/affiliates/sub`, formData, {
+            headers: { Authorization: 'Bearer ' + localStorage.getItem('affiliateToken') },
+        });
+        return r.data;
+    }
+    static async createAffiliateUserInline(payload) {
+        const tok = localStorage.getItem('token') || localStorage.getItem('affiliateToken');
+        const r = await axios.post(`${this.baseURL}/affiliates/create-user`, payload, {
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok },
+        });
+        return r.data;
+    }
+    static async listAffiliateUsersForPicker(unattachedOnly = false) {
+        const tok = localStorage.getItem('token') || localStorage.getItem('affiliateToken');
+        const r = await axios.get(`${this.baseURL}/affiliates/users`, {
+            params: unattachedOnly ? { unattachedOnly: 'true' } : {},
+            headers: { Authorization: 'Bearer ' + tok },
+        });
+        return r.data;
+    }
+    static async getMyAffiliateTree() {
+        const r = await axios.get(`${this.baseURL}/affiliates/my-tree`, { headers: this._affiliateHeaders() });
+        return r.data;
+    }
+    static async getMyDirectChildren() {
+        const r = await axios.get(`${this.baseURL}/affiliates/direct-children`, { headers: this._affiliateHeaders() });
+        return r.data;
+    }
+
+    // ----- API Access Requests -----
+    static async createApiAccessRequest(payload) {
+        const r = await axios.post(`${this.baseURL}/api-access-requests`, payload, { headers: this._affiliateHeaders() });
+        return r.data;
+    }
+    static async getMyApiAccessRequests() {
+        const r = await axios.get(`${this.baseURL}/api-access-requests/mine`, { headers: this._affiliateHeaders() });
+        return r.data;
+    }
+    static async getAllApiAccessRequests(params = {}) {
+        const r = await axios.get(`${this.baseURL}/api-access-requests`, { params, headers: this._adminHeaders() });
+        return r.data;
+    }
+    static async approveApiAccessRequest(id) {
+        const r = await axios.post(`${this.baseURL}/api-access-requests/${id}/approve`, {}, { headers: this._adminHeaders() });
+        return r.data;
+    }
+    static async rejectApiAccessRequest(id, reason) {
+        const r = await axios.post(`${this.baseURL}/api-access-requests/${id}/reject`, { reason }, { headers: this._adminHeaders() });
+        return r.data;
+    }
+
+    // ----- Payouts (admin) -----
+    static async getPayoutsSummary() {
+        const r = await axios.get(`${this.baseURL}/payouts/summary`, { headers: this._adminHeaders() });
+        return r.data;
+    }
+    static async getPayoutsForAffiliate(affiliateId, status = 'unpaid') {
+        const r = await axios.get(`${this.baseURL}/payouts/${affiliateId}`, { params: { status }, headers: this._adminHeaders() });
+        return r.data;
+    }
+    static async markPayoutPaid(affiliateId, body) {
+        const r = await axios.post(`${this.baseURL}/payouts/${affiliateId}/mark-paid`, body, { headers: this._adminHeaders() });
+        return r.data;
+    }
+    static async getPayoutHistory(affiliateId) {
+        const r = await axios.get(`${this.baseURL}/payouts/${affiliateId}/history`, { headers: this._adminHeaders() });
+        return r.data;
+    }
+
+    // ----- Earnings -----
+    static async getMyEarnings() {
+        const r = await axios.get(`${this.baseURL}/earnings/mine`, { headers: this._affiliateHeaders() });
+        return r.data;
+    }
+    static async getAdminEarningsReport(params = {}) {
+        const r = await axios.get(`${this.baseURL}/earnings/admin/report`, { params, headers: this._adminHeaders() });
+        return r.data;
+    }
+
+    // ----- Stripe Buy-Now (paid affiliate links) -----
+    static async createAffiliateGuideCheckout(payload) {
+        const r = await axios.post(`${this.baseURL}/purchase/affiliate-guide`, payload);
+        return r.data;
+    }
+    static async getAffiliateGuideOrder(sessionId) {
+        const r = await axios.get(`${this.baseURL}/purchase/affiliate-guide/order/${sessionId}`);
+        return r.data;
     }
 }
 

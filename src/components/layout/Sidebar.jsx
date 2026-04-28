@@ -31,6 +31,7 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
 
   const managementKeys = ['roles', 'users', 'teams', 'all-requests', 'all-contacts', 'newsletters'];
   const websiteAppKeys = ['categories', 'books', 'language-guides', 'coupons', 'discounts'];
+  const affiliatesKeys = ['affiliates', 'link-approvals', 'api-access-approvals', 'admin-payouts', 'admin-earnings-report'];
 
   useEffect(() => {
     const path = location.pathname.split('/');
@@ -46,6 +47,9 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
     } else if (websiteAppKeys.includes(menuKey)) {
       setSelectedMenu(menuKey);
       setOpenKeys(['website-app']);
+    } else if (affiliatesKeys.includes(menuKey)) {
+      setSelectedMenu(menuKey);
+      setOpenKeys(['affiliates-group']);
     } else {
       setSelectedMenu(menuKey);
       setOpenKeys([]);
@@ -142,9 +146,16 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
       label: 'Vendors',
     },
     {
-      key: 'affiliates',
+      key: 'affiliates-group',
       icon: <FaCog {...iconProps} />,
       label: 'Affiliates',
+      children: [
+        { key: 'affiliates', label: 'All Affiliates' },
+        { key: 'link-approvals', label: 'Link Approvals' },
+        { key: 'api-access-approvals', label: 'API Access Approvals' },
+        { key: 'admin-payouts', label: 'Payouts' },
+        { key: 'admin-earnings-report', label: 'Earnings Report' },
+      ],
     },
   ];
 

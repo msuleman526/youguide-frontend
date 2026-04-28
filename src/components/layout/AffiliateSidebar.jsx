@@ -1,7 +1,7 @@
 import { Flex, Image, Layout, Menu, Typography, Drawer } from 'antd';
 import { FaChartBar, FaHotel } from 'react-icons/fa';
 import { TbLogout2 } from 'react-icons/tb';
-import { ApiOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { ApiOutlined, UnorderedListOutlined, LinkOutlined, DollarOutlined, TeamOutlined } from '@ant-design/icons';
 import { useEffect, useState, useLayoutEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import smallLogo from '../../assets/small_logo.png';
@@ -31,6 +31,10 @@ const AffiliateSidebar = ({ collapsed, drawerVisible, setDrawerVisible, affiliat
       setSelectedMenu('affiliate-dashboard');
     } else if (path.includes('affiliate-hotels')) {
       setSelectedMenu('my-hotels');
+    } else if (path.includes('affiliate-my-earnings')) {
+      setSelectedMenu('my-earnings');
+    } else if (path.includes('affiliate-sub-affiliates')) {
+      setSelectedMenu('sub-affiliates');
     } else if (path.includes('affiliate-api-access-list')) {
       setSelectedMenu('api-access-list');
     } else if (path.includes('affiliate-api-access')) {
@@ -56,6 +60,10 @@ const AffiliateSidebar = ({ collapsed, drawerVisible, setDrawerVisible, affiliat
       navigate(`/affiliate-dashboard/${affiliate?.id}`);
     } else if (key === 'my-hotels') {
       navigate(`/affiliate-hotels/${affiliate?.id}`);
+    } else if (key === 'my-earnings') {
+      navigate(`/affiliate-my-earnings/${affiliate?.id}`);
+    } else if (key === 'sub-affiliates') {
+      navigate(`/affiliate-sub-affiliates/${affiliate?.id}`);
     } else if (key === 'api-access-dashboard') {
       let user = JSON.parse(localStorage.getItem('affiliateUser'));
       navigate(`/affiliate-api-access/${user?.id}`);
@@ -84,7 +92,17 @@ const AffiliateSidebar = ({ collapsed, drawerVisible, setDrawerVisible, affiliat
     {
       key: 'my-hotels',
       icon: <FaHotel {...iconProps} />,
-      label: 'My Clients',
+      label: 'Links & Clients',
+    },
+    {
+      key: 'my-earnings',
+      icon: <DollarOutlined style={iconStyle} />,
+      label: 'My Earnings',
+    },
+    {
+      key: 'sub-affiliates',
+      icon: <TeamOutlined style={iconStyle} />,
+      label: 'Sub-Affiliates',
     },
     {
       key: 'api-access-dashboard',
@@ -94,7 +112,7 @@ const AffiliateSidebar = ({ collapsed, drawerVisible, setDrawerVisible, affiliat
     {
       key: 'api-access-list',
       icon: <UnorderedListOutlined style={iconStyle} />,
-      label: 'API Access List',
+      label: 'API Access',
     },
   ];
 

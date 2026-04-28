@@ -28,6 +28,9 @@ const AffiliateManagement = () => {
     const [extendModalVisible, setExtendModalVisible] = useState(false);
     const [selectedAffiliateForExtend, setSelectedAffiliateForExtend] = useState(null);
 
+    const [payoutsByAffiliate, setPayoutsByAffiliate] = useState({});
+    const [linkCounts, setLinkCounts] = useState({});
+
     useEffect(() => {
         ApiService.getAllCategories()
             .then((response) => setCategories(response))
@@ -38,10 +41,23 @@ const AffiliateManagement = () => {
     const fetchAffiliates = async () => {
         setTableLoading(true);
         try {
-            const response = await ApiService.getAllAffiliateSubscriptions();
-            console.log("RESPONSe")
-            console.log(response);
-            setAffiliates(response);
+            const [affs, summary, allLinks] = await Promise.all([
+                ApiService.getAllAffiliateSubscriptions(),
+                ApiService.getPayoutsSummary().catch(() => []),
+                ApiService.getAllAffiliateLinks({ limit: 1000 }).catch(() => ({ links: [] })),
+            ]);
+            setAffiliates(affs || []);
+            const byAff = {};
+            (summary || []).forEach((s) => { byAff[s.affiliateId] = s; });
+            setPayoutsByAffiliate(byAff);
+            const counts = {};
+            (allLinks?.links || []).forEach((l) => {
+                if (l.status === 'approved') {
+                    const id = l.affiliateId?._id || l.affiliateId;
+                    counts[id] = (counts[id] || 0) + 1;
+                }
+            });
+            setLinkCounts(counts);
         } catch (error) {
             message.error(error?.response?.data?.message || 'Failed to fetch affiliates.');
             setAffiliates([]);
@@ -153,45 +169,57 @@ const AffiliateManagement = () => {
             render: (val) => moment(val).format('YYYY-MM-DD')
         },
         {
-            title: 'No of Clicks',
-            dataIndex: 'numberOfClicks',
-            width: 120,
-            key: 'numberOfClicks'
+            title: 'Parent',
+            key: 'parent',
+            width: 140,
+            render: (_, r) => {
+                const parent = (affiliates || []).find((a) => a._id === (r.parentAffiliateId?._id || r.parentAffiliateId));
+                return parent ? <Tag color="purple">{parent.affiliateName}</Tag> : <Typography.Text type="secondary">—</Typography.Text>;
+            },
         },
         {
-            title: 'Pending Clicks',
-            dataIndex: 'pendingClicks',
-            width: 140,
-            key: 'pendingClicks'
+            title: 'Aff %',
+            dataIndex: 'affiliateCommissionPct',
+            key: 'apct',
+            width: 70,
+            render: (v) => (v != null ? `${v}%` : '—'),
+        },
+        {
+            title: 'Sub %',
+            dataIndex: 'subAffiliateCommissionPct',
+            key: 'spct',
+            width: 70,
+            render: (v) => (v != null ? `${v}%` : '—'),
+        },
+        {
+            title: 'Active Links',
+            key: 'links',
+            width: 100,
+            render: (_, r) => linkCounts[r._id] || 0,
+        },
+        {
+            title: 'Lifetime Earned',
+            key: 'le',
+            width: 130,
+            render: (_, r) => {
+                const v = payoutsByAffiliate[r._id]?.lifetimeEarned || 0;
+                return `$${(v / 100).toFixed(2)}`;
+            },
+        },
+        {
+            title: 'Pending Payout',
+            key: 'pp',
+            width: 130,
+            render: (_, r) => {
+                const v = payoutsByAffiliate[r._id]?.pending || 0;
+                return <Tag color={v > 0 ? 'orange' : 'default'}>{`$${(v / 100).toFixed(2)}`}</Tag>;
+            },
         },
         {
             title: 'Is Login',
             dataIndex: 'isLogin',
             key: 'isLogin',
             render: (val) => val ? 'Yes' : 'No'
-        },
-        {
-            title: 'Categories',
-            dataIndex: 'categories',
-            key: 'categories',
-            width: 200,
-            render: (cats) => {
-                const categories = cats || [];
-                const displayCount = 3;
-                const visibleCats = categories.slice(0, displayCount);
-                const remainingCount = categories.length - displayCount;
-
-                return (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, maxWidth: 180 }}>
-                        {visibleCats.map((cat) => (
-                            <Tag key={cat._id} style={{ margin: 0 }}>{cat.name}</Tag>
-                        ))}
-                        {remainingCount > 0 && (
-                            <Tag style={{ margin: 0 }} color="blue">+{remainingCount} more</Tag>
-                        )}
-                    </div>
-                );
-            }
         },
         {
             title: 'Created At',
