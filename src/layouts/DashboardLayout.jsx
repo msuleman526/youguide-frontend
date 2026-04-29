@@ -10,6 +10,7 @@ import {
   dashboardLightTheme,
 } from '../theme/dashboardTheme'
 import { TourProvider, useTourContext } from '../context/TourContext'
+import MobileWarningModal from '../components/MobileWarningModal'
 const { Content } = Layout
 
 const DashboardLayoutContent = ({ children }) => {
@@ -62,6 +63,7 @@ const DashboardLayoutContent = ({ children }) => {
       }}
     >
       <Layout style={{ minHeight: '100vh' }}>
+        <MobileWarningModal />
         <Sidebar collapsed={collapsed} drawerVisible={drawerVisible} setDrawerVisible={setDrawerVisible}/>
         <Layout>
           <LayoutHeader

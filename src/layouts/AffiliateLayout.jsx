@@ -12,6 +12,7 @@ import {
 import { TourProvider, useTourContext } from '../context/TourContext';
 import dayjs from 'dayjs';
 import ApiService from '../APIServices/ApiService';
+import MobileWarningModal from '../components/MobileWarningModal';
 
 const { Content } = Layout;
 const { Title, Paragraph } = Typography;
@@ -225,6 +226,7 @@ const AffiliateLayoutContent = ({ children }) => {
       }}
     >
       <Layout style={{ minHeight: '100vh' }}>
+        <MobileWarningModal />
         <AffiliateSidebar
           collapsed={collapsed}
           drawerVisible={drawerVisible}
