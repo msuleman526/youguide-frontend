@@ -3,7 +3,6 @@ import {
     Modal, Form, Input, InputNumber, Select, Switch, Upload, Button, message, Image, Spin,
 } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import axios from 'axios';
 import ApiService from '../../APIServices/ApiService';
 import COUNTRIES from '../../Utils/countries';
 
@@ -15,8 +14,8 @@ const bookLabel = (b) =>
 const PackageFormModal = ({ open, editing, onClose, onSaved }) => {
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
-    const [uploading, setUploading] = useState(false);
-    const [coverUrl, setCoverUrl] = useState('');
+    const [coverFile, setCoverFile] = useState(null); // newly picked File (if any)
+    const [coverPreview, setCoverPreview] = useState(''); // local blob URL or existing remote URL
 
     // Travel guides — server-side searchable
     const [bookOptions, setBookOptions] = useState([]); // [{ value, label, raw }]
@@ -61,14 +60,25 @@ const PackageFormModal = ({ open, editing, onClose, onSaved }) => {
                 languageGuideIds: (editing.languageGuideIds || []).map((g) => (typeof g === 'object' ? g._id : g)),
                 status: editing.status !== false,
             });
-            setCoverUrl(editing.coverImage || '');
+            setCoverPreview(editing.coverImage || '');
+            setCoverFile(null);
         } else {
             form.resetFields();
             form.setFieldsValue({ status: true });
             setBookOptions([]);
-            setCoverUrl('');
+            setCoverPreview('');
+            setCoverFile(null);
         }
     }, [open, editing, form]);
+
+    // Free local preview blob URLs to avoid memory leaks.
+    useEffect(() => {
+        return () => {
+            if (coverPreview && coverPreview.startsWith('blob:')) {
+                URL.revokeObjectURL(coverPreview);
+            }
+        };
+    }, [coverPreview]);
 
     const fetchBooks = async (query) => {
         const seq = ++searchSeq.current;
@@ -112,30 +122,29 @@ const PackageFormModal = ({ open, editing, onClose, onSaved }) => {
         searchTimer.current = setTimeout(() => fetchBooks(q), 350);
     };
 
-    const handleUpload = async (file) => {
-        try {
-            setUploading(true);
-            const presign = await ApiService.presignWebsitePackageCover(file.name, file.type, file.size);
-            if (!presign?.uploadUrl) throw new Error('Presign failed');
-            await axios.put(presign.uploadUrl, file, {
-                headers: { 'Content-Type': file.type, 'x-amz-acl': 'public-read' },
-            });
-            setCoverUrl(presign.fileUrl);
-            message.success('Cover uploaded.');
-        } catch (e) {
-            console.error(e);
-            message.error('Upload failed.');
-        } finally {
-            setUploading(false);
+    const handleCoverPick = (file) => {
+        if (!file.type.startsWith('image/')) {
+            message.error('Please select an image file.');
+            return false;
         }
-        return false; // Prevent Antd auto-upload
+        if (file.size > 10 * 1024 * 1024) {
+            message.error('Image must be 10MB or smaller.');
+            return false;
+        }
+        if (coverPreview && coverPreview.startsWith('blob:')) {
+            URL.revokeObjectURL(coverPreview);
+        }
+        setCoverFile(file);
+        setCoverPreview(URL.createObjectURL(file));
+        return false; // Prevent Antd auto-upload — we send it ourselves.
     };
 
     const handleSubmit = async () => {
         try {
             const values = await form.validateFields();
-            if (!coverUrl) {
-                message.warning('Please upload a cover image.');
+            // Cover required on create. On edit, keep the existing one if no new file.
+            if (!editing && !coverFile) {
+                message.warning('Please select a cover image.');
                 return;
             }
             const payload = {
@@ -143,10 +152,10 @@ const PackageFormModal = ({ open, editing, onClose, onSaved }) => {
                 description: values.description || '',
                 country: values.country,
                 price: values.price,
-                coverImage: coverUrl,
                 bookIds: values.bookIds || [],
                 languageGuideIds: values.languageGuideIds || [],
                 status: values.status !== false,
+                coverFile: coverFile || undefined,
             };
             setSubmitting(true);
             if (editing) {
@@ -200,19 +209,24 @@ const PackageFormModal = ({ open, editing, onClose, onSaved }) => {
                         </Form.Item>
                     </div>
 
-                    <Form.Item label="Cover Image" required>
+                    <Form.Item label="Cover Image" required={!editing} extra={editing && !coverFile ? 'Pick a new file to replace the current cover.' : 'JPG / PNG / WEBP / GIF, max 10MB.'}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                             <Upload
                                 accept="image/*"
                                 showUploadList={false}
-                                beforeUpload={handleUpload}
+                                beforeUpload={handleCoverPick}
                             >
-                                <Button icon={<UploadOutlined />} loading={uploading}>
-                                    {coverUrl ? 'Replace Cover' : 'Upload Cover'}
+                                <Button icon={<UploadOutlined />}>
+                                    {coverPreview ? 'Replace Cover' : 'Choose Cover'}
                                 </Button>
                             </Upload>
-                            {coverUrl && (
-                                <Image src={coverUrl} width={120} height={80} style={{ objectFit: 'cover', borderRadius: 6 }} />
+                            {coverPreview && (
+                                <Image src={coverPreview} width={120} height={80} style={{ objectFit: 'cover', borderRadius: 6 }} />
+                            )}
+                            {coverFile && (
+                                <span style={{ color: '#888', fontSize: 12 }}>
+                                    {coverFile.name} ({Math.round(coverFile.size / 1024)} KB)
+                                </span>
                             )}
                         </div>
                     </Form.Item>
