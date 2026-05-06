@@ -2298,6 +2298,40 @@ class ApiService {
         return r.data;
     }
 
+    // ----- Website Packages (admin) -----
+    static async listWebsitePackages(params = {}) {
+        const r = await axios.get(`${this.baseURL}/website-packages`, { params, headers: this._adminHeaders() });
+        return r.data;
+    }
+    static async getWebsitePackage(id) {
+        const r = await axios.get(`${this.baseURL}/website-packages/${id}`, { headers: this._adminHeaders() });
+        return r.data;
+    }
+    static async createWebsitePackage(payload) {
+        const r = await axios.post(`${this.baseURL}/website-packages`, payload, { headers: this._adminHeaders() });
+        return r.data;
+    }
+    static async updateWebsitePackage(id, payload) {
+        const r = await axios.put(`${this.baseURL}/website-packages/${id}`, payload, { headers: this._adminHeaders() });
+        return r.data;
+    }
+    static async toggleWebsitePackage(id) {
+        const r = await axios.patch(`${this.baseURL}/website-packages/${id}/toggle`, {}, { headers: this._adminHeaders() });
+        return r.data;
+    }
+    static async deleteWebsitePackage(id) {
+        const r = await axios.delete(`${this.baseURL}/website-packages/${id}`, { headers: this._adminHeaders() });
+        return r.data;
+    }
+    static async presignWebsitePackageCover(filename, contentType, size) {
+        const r = await axios.post(
+            `${this.baseURL}/website-packages/presign-cover`,
+            { filename, contentType, size },
+            { headers: this._adminHeaders() }
+        );
+        return r.data;
+    }
+
     // ----- Website Orders (admin) -----
     static async getWebsiteOrders(params = {}) {
         const r = await axios.get(`${this.baseURL}/website/admin/orders`, {
