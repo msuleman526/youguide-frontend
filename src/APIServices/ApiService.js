@@ -2348,6 +2348,14 @@ class ApiService {
         );
         return r.data;
     }
+    static async reprovisionWebsiteOrderEsims(orderId) {
+        const r = await axios.post(
+            `${this.baseURL}/website/admin/orders/${orderId}/provision-esims`,
+            {},
+            { headers: this._adminHeaders() }
+        );
+        return r.data;
+    }
 }
 
 export default ApiService;

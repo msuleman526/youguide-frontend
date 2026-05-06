@@ -3,7 +3,7 @@ import {
     Card, Table, Tag, Space, Button, Drawer, Input, Select, DatePicker,
     Tooltip, message, Typography, Descriptions, Divider, Popconfirm, Badge,
 } from 'antd';
-import { ReloadOutlined, MailOutlined, EyeOutlined, SendOutlined } from '@ant-design/icons';
+import { ReloadOutlined, MailOutlined, EyeOutlined, SendOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import ApiService from '../../APIServices/ApiService';
 
 const { RangePicker } = DatePicker;
@@ -48,6 +48,7 @@ const WebsiteOrders = () => {
     const [dateRange, setDateRange] = useState();
 
     const [resendingId, setResendingId] = useState(null);
+    const [provisioningId, setProvisioningId] = useState(null);
     const [detail, setDetail] = useState({ open: false, order: null });
 
     const queryParams = useMemo(() => {
@@ -92,6 +93,22 @@ const WebsiteOrders = () => {
         setDateRange(undefined);
         setPagination((p) => ({ ...p, current: 1 }));
     };
+
+    const onProvisionEsims = async (order) => {
+        try {
+            setProvisioningId(order._id);
+            await ApiService.reprovisionWebsiteOrderEsims(order._id);
+            message.success('eSIM provisioning re-run.');
+            await load();
+        } catch (e) {
+            message.error(e?.response?.data?.message || 'Failed to provision eSIMs.');
+        } finally {
+            setProvisioningId(null);
+        }
+    };
+
+    const hasUnprocessedEsims = (order) =>
+        (order.esimItems || []).some((e) => e.status === 'pending' || e.status === 'ordering');
 
     const onResend = async (order) => {
         try {
@@ -236,9 +253,21 @@ const WebsiteOrders = () => {
                             </Button>
                         </Popconfirm>
                     )}
+                    {r.status === 'paid' && hasUnprocessedEsims(r) && (
+                        <Tooltip title="Re-run eSIM provisioning for items still pending">
+                            <Button
+                                size="small"
+                                icon={<ThunderboltOutlined />}
+                                loading={provisioningId === r._id}
+                                onClick={() => onProvisionEsims(r)}
+                            >
+                                Provision eSIMs
+                            </Button>
+                        </Tooltip>
+                    )}
                 </Space>
             ),
-            width: 200,
+            width: 280,
         },
     ];
 
