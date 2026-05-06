@@ -126,6 +126,11 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
       label: 'Amazon Purchases',
     },
     {
+      key: 'website-orders',
+      icon: <FaFileAlt {...iconProps} />,
+      label: 'Website Orders',
+    },
+    {
       key: 'api-access',
       icon: <ApiOutlined style={iconStyle} />,
       label: 'API Access',

@@ -2297,6 +2297,23 @@ class ApiService {
         const r = await axios.get(`${this.baseURL}/purchase/affiliate-guide/order/${sessionId}`);
         return r.data;
     }
+
+    // ----- Website Orders (admin) -----
+    static async getWebsiteOrders(params = {}) {
+        const r = await axios.get(`${this.baseURL}/website/admin/orders`, {
+            params,
+            headers: this._adminHeaders(),
+        });
+        return r.data;
+    }
+    static async resendWebsiteOrderEmail(orderId) {
+        const r = await axios.post(
+            `${this.baseURL}/website/admin/orders/${orderId}/resend-email`,
+            {},
+            { headers: this._adminHeaders() }
+        );
+        return r.data;
+    }
 }
 
 export default ApiService;
