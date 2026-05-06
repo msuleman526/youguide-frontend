@@ -2307,12 +2307,30 @@ class ApiService {
         const r = await axios.get(`${this.baseURL}/website-packages/${id}`, { headers: this._adminHeaders() });
         return r.data;
     }
+    static _buildPackageFormData({ name, description, country, price, bookIds, languageGuideIds, status, coverFile }) {
+        const fd = new FormData();
+        if (name !== undefined) fd.append('name', name);
+        if (description !== undefined) fd.append('description', description || '');
+        if (country !== undefined) fd.append('country', country);
+        if (price !== undefined) fd.append('price', String(price));
+        if (status !== undefined) fd.append('status', String(!!status));
+        if (bookIds !== undefined) fd.append('bookIds', JSON.stringify(bookIds || []));
+        if (languageGuideIds !== undefined) fd.append('languageGuideIds', JSON.stringify(languageGuideIds || []));
+        if (coverFile) fd.append('cover', coverFile);
+        return fd;
+    }
     static async createWebsitePackage(payload) {
-        const r = await axios.post(`${this.baseURL}/website-packages`, payload, { headers: this._adminHeaders() });
+        const fd = this._buildPackageFormData(payload);
+        const r = await axios.post(`${this.baseURL}/website-packages`, fd, {
+            headers: { Authorization: 'Bearer ' + localStorage.getItem('token') },
+        });
         return r.data;
     }
     static async updateWebsitePackage(id, payload) {
-        const r = await axios.put(`${this.baseURL}/website-packages/${id}`, payload, { headers: this._adminHeaders() });
+        const fd = this._buildPackageFormData(payload);
+        const r = await axios.put(`${this.baseURL}/website-packages/${id}`, fd, {
+            headers: { Authorization: 'Bearer ' + localStorage.getItem('token') },
+        });
         return r.data;
     }
     static async toggleWebsitePackage(id) {
@@ -2321,14 +2339,6 @@ class ApiService {
     }
     static async deleteWebsitePackage(id) {
         const r = await axios.delete(`${this.baseURL}/website-packages/${id}`, { headers: this._adminHeaders() });
-        return r.data;
-    }
-    static async presignWebsitePackageCover(filename, contentType, size) {
-        const r = await axios.post(
-            `${this.baseURL}/website-packages/presign-cover`,
-            { filename, contentType, size },
-            { headers: this._adminHeaders() }
-        );
         return r.data;
     }
 
