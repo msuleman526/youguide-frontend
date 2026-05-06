@@ -289,7 +289,9 @@ const WebsiteOrders = () => {
                     <Input.Search
                         placeholder="Search email / order ID / Stripe session"
                         allowClear
-                        style={{ width: 320 }}
+                        size="small"
+                        style={{ width: 320, height: 20 }}
+                        styles={{ input: { height: 20, lineHeight: '20px', padding: '0 8px' }, affixWrapper: { height: 20, padding: 0 } }}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         onSearch={(v) => {
