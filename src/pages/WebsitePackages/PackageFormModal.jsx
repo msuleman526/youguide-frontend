@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     Modal, Form, Input, InputNumber, Select, Switch, Upload, Button, message, Image, Spin,
 } from 'antd';
@@ -9,30 +9,36 @@ import COUNTRIES from '../../Utils/countries';
 
 const { TextArea } = Input;
 
+const bookLabel = (b) =>
+    `${b.eng_name || b.name || 'Untitled'}${b.lang ? ' (' + b.lang + ')' : ''}${b.country ? ' — ' + b.country : ''}`;
+
 const PackageFormModal = ({ open, editing, onClose, onSaved }) => {
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [coverUrl, setCoverUrl] = useState('');
-    const [books, setBooks] = useState([]);
+
+    // Travel guides — server-side searchable
+    const [bookOptions, setBookOptions] = useState([]); // [{ value, label, raw }]
+    const [searchingBooks, setSearchingBooks] = useState(false);
+    const searchSeq = useRef(0);
+    const searchTimer = useRef(null);
+
+    // Language guides — loaded once on open (small list)
     const [langGuides, setLangGuides] = useState([]);
-    const [loadingOptions, setLoadingOptions] = useState(false);
+    const [loadingLangs, setLoadingLangs] = useState(false);
 
     useEffect(() => {
         if (!open) return;
         (async () => {
             try {
-                setLoadingOptions(true);
-                const [bookRes, lgRes] = await Promise.all([
-                    ApiService.getAllBooks(1, 'en', '', 200),
-                    ApiService.getAllLanguageGuides(1, ''),
-                ]);
-                setBooks(bookRes?.data || bookRes?.books || []);
+                setLoadingLangs(true);
+                const lgRes = await ApiService.getAllLanguageGuides(1, '');
                 setLangGuides(lgRes?.data || lgRes?.languageGuides || lgRes?.languages || []);
             } catch (e) {
-                message.error('Failed to load guide options.');
+                message.error('Failed to load language guides.');
             } finally {
-                setLoadingOptions(false);
+                setLoadingLangs(false);
             }
         })();
     }, [open]);
@@ -40,12 +46,18 @@ const PackageFormModal = ({ open, editing, onClose, onSaved }) => {
     useEffect(() => {
         if (!open) return;
         if (editing) {
+            const selectedBooks = (editing.bookIds || []).filter((b) => typeof b === 'object');
+            const selectedIds = (editing.bookIds || []).map((b) => (typeof b === 'object' ? b._id : b));
+            // Seed dropdown with currently-selected books so their labels render.
+            setBookOptions(
+                selectedBooks.map((b) => ({ value: b._id, label: bookLabel(b), raw: b }))
+            );
             form.setFieldsValue({
                 name: editing.name,
                 description: editing.description,
                 country: editing.country,
                 price: editing.price,
-                bookIds: (editing.bookIds || []).map((b) => (typeof b === 'object' ? b._id : b)),
+                bookIds: selectedIds,
                 languageGuideIds: (editing.languageGuideIds || []).map((g) => (typeof g === 'object' ? g._id : g)),
                 status: editing.status !== false,
             });
@@ -53,9 +65,52 @@ const PackageFormModal = ({ open, editing, onClose, onSaved }) => {
         } else {
             form.resetFields();
             form.setFieldsValue({ status: true });
+            setBookOptions([]);
             setCoverUrl('');
         }
     }, [open, editing, form]);
+
+    const fetchBooks = async (query) => {
+        const seq = ++searchSeq.current;
+        try {
+            setSearchingBooks(true);
+            const res = await ApiService.getAllBooks(1, 'en', query, 50);
+            if (seq !== searchSeq.current) return; // a newer search superseded this
+            const list = res?.data || res?.books || [];
+            const fetched = list.map((b) => ({ value: b._id, label: bookLabel(b), raw: b }));
+
+            // Preserve any currently-selected options so their labels don't disappear.
+            const selectedIds = form.getFieldValue('bookIds') || [];
+            setBookOptions((prev) => {
+                const keep = prev.filter((o) => selectedIds.includes(o.value));
+                const seen = new Set(keep.map((o) => o.value));
+                const merged = [...keep];
+                for (const opt of fetched) {
+                    if (!seen.has(opt.value)) {
+                        merged.push(opt);
+                        seen.add(opt.value);
+                    }
+                }
+                return merged;
+            });
+        } catch (e) {
+            console.error('Book search error:', e);
+        } finally {
+            if (seq === searchSeq.current) setSearchingBooks(false);
+        }
+    };
+
+    const handleBookSearch = (value) => {
+        if (searchTimer.current) clearTimeout(searchTimer.current);
+        const q = (value || '').trim();
+        if (q.length < 2) {
+            // Don't spam the API for 0/1 chars; clear non-selected options.
+            const selectedIds = form.getFieldValue('bookIds') || [];
+            setBookOptions((prev) => prev.filter((o) => selectedIds.includes(o.value)));
+            return;
+        }
+        searchTimer.current = setTimeout(() => fetchBooks(q), 350);
+    };
 
     const handleUpload = async (file) => {
         try {
@@ -121,7 +176,7 @@ const PackageFormModal = ({ open, editing, onClose, onSaved }) => {
             width={760}
             destroyOnClose
         >
-            <Spin spinning={loadingOptions}>
+            <Spin spinning={loadingLangs}>
                 <Form form={form} layout="vertical">
                     <Form.Item label="Name" name="name" rules={[{ required: true, message: 'Name is required' }]}>
                         <Input placeholder="e.g. Paris Essentials" />
@@ -162,15 +217,21 @@ const PackageFormModal = ({ open, editing, onClose, onSaved }) => {
                         </div>
                     </Form.Item>
 
-                    <Form.Item label="Travel Guides" name="bookIds">
+                    <Form.Item
+                        label="Travel Guides"
+                        name="bookIds"
+                        extra="Type at least 2 characters to search the guide library."
+                    >
                         <Select
                             mode="multiple"
-                            placeholder="Select travel guides included in this package"
-                            optionFilterProp="label"
-                            options={books.map((b) => ({
-                                label: `${b.eng_name || b.name} (${b.lang || ''})${b.country ? ' — ' + b.country : ''}`,
-                                value: b._id,
-                            }))}
+                            placeholder="Search by guide name, language, or country"
+                            showSearch
+                            filterOption={false}
+                            onSearch={handleBookSearch}
+                            loading={searchingBooks}
+                            notFoundContent={searchingBooks ? <Spin size="small" /> : 'Type to search…'}
+                            options={bookOptions}
+                            allowClear
                         />
                     </Form.Item>
 
