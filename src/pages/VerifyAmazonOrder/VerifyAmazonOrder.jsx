@@ -1,21 +1,26 @@
 import React, { useState } from 'react';
-import { Input, Button, Typography, Alert, Tag, message } from 'antd';
-import { ShoppingOutlined, MailOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import ApiService from '../../APIServices/ApiService';
-import CustomCard from '../../components/Card';
-
-const { Title, Text } = Typography;
+import './VerifyAmazonOrder.css';
 
 const VerifyAmazonOrder = () => {
     const [orderId, setOrderId] = useState('');
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
+    const [openFaq, setOpenFaq] = useState(null);
 
-    const handleVerify = async () => {
+    const handleVerify = async (e) => {
+        if (e && e.preventDefault) e.preventDefault();
         setResult(null);
-        if (!orderId.trim()) return message.warning('Please enter your Amazon Order ID');
-        if (!email.trim()) return message.warning('Please enter your email address');
+
+        if (!orderId.trim()) {
+            setResult({ type: 'error', message: 'Please enter your Amazon Order Number' });
+            return;
+        }
+        if (!email.trim()) {
+            setResult({ type: 'error', message: 'Please enter your email address so we can send your eSIM' });
+            return;
+        }
 
         setLoading(true);
         try {
@@ -42,60 +47,136 @@ const VerifyAmazonOrder = () => {
 
     const packages = result?.order?.packages || [];
 
+    const faqs = [
+        {
+            q: 'What is an eSIM?',
+            a: 'An eSIM is a digital SIM card built into many modern phones and tablets. Instead of inserting a plastic SIM card, you install your mobile data plan using a QR code or installation link.',
+        },
+        {
+            q: 'Do I need an internet connection to install?',
+            a: 'Yes. Please connect to Wi-Fi before installing your eSIM. After installation, activate the eSIM only when you arrive in your destination country and make sure data roaming is enabled for the eSIM.',
+        },
+        {
+            q: 'Is my device eSIM compatible?',
+            a: 'Most recent iPhones, Google Pixel phones, Samsung Galaxy phones, and selected tablets support eSIM. Check your device settings or manufacturer website before installing, because some models or country versions may not support eSIM.',
+        },
+        {
+            q: 'Can I keep my WhatsApp number?',
+            a: 'Yes. Your WhatsApp account can normally continue using your existing number. The eSIM provides mobile data only, so you can use WhatsApp calls and messages through the eSIM data connection.',
+        },
+        {
+            q: 'When will I receive my eSIM?',
+            a: 'After you enter your Amazon Order Number, your eSIM QR code and installation instructions will be sent to your email immediately.',
+        },
+        {
+            q: 'Can I use the eSIM in multiple countries?',
+            a: 'That depends on the package you purchased. Some eSIMs work in one country only, while regional packages may work in several countries. Please check the destination and coverage shown in your order details.',
+        },
+        {
+            q: 'How do I install my eSIM?',
+            a: 'Enter your Amazon Order Number above, open the installation instructions, and follow the steps for iPhone or Android. Install the eSIM on the device you will use while travelling, because most eSIMs can only be installed once.',
+        },
+        {
+            q: 'What if I need help?',
+            a: 'Contact support@youguide.com for assistance. Include your Amazon Order Number and the phone model you are using, so support can help you faster.',
+        },
+    ];
+
     return (
-        <div style={{ maxWidth: 500, margin: '0 auto', padding: '40px 16px' }}>
-            <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                <SafetyCertificateOutlined style={{ fontSize: 48, color: '#29b8e3', marginBottom: 12 }} />
-                <Title level={2} className="my-0 fw-500">Verify Amazon Order</Title>
-                <Text type="secondary" style={{ fontSize: 14 }}>
-                    Enter your Amazon order ID and email address to activate your eSIM.
-                    Your eSIM details and QR code will be sent to your email.
-                </Text>
-            </div>
+        <div className="yg-amz">
+            <div className="page">
+                <header className="top">
+                    <div className="logo">
+                        YouGuide<span>✈</span>
+                    </div>
+                    <nav className="nav">
+                        <a
+                            href="https://appadmin.youguide.com/#/contact"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="nav-link"
+                        >
+                            <svg className="ico-sm" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="9" />
+                                <path d="M9.5 9a2.6 2.6 0 1 1 4.5 1.8c-.9.7-1.7 1.2-1.7 2.7" />
+                                <path d="M12 17h.01" />
+                            </svg>
+                            <span>Help Center</span>
+                        </a>
+                        <a
+                            href="https://appadmin.youguide.com/#/contact"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="nav-link"
+                        >
+                            <svg className="ico-sm" viewBox="0 0 24 24">
+                                <path d="M4 13v-1a8 8 0 0 1 16 0v1" />
+                                <path d="M4 13h3v6H4zM17 13h3v6h-3z" />
+                                <path d="M20 18c0 2-2 3-5 3" />
+                            </svg>
+                            <span>24/7 Support</span>
+                        </a>
+                    </nav>
+                </header>
 
-            <CustomCard>
-                <div style={{ marginBottom: 20 }}>
-                    <Text strong style={{ display: 'block', marginBottom: 6 }}>Amazon Order ID</Text>
-                    <Input
-                        size="large"
-                        prefix={<ShoppingOutlined style={{ color: '#bbb' }} />}
-                        placeholder="e.g. 123-4567890-1234567"
-                        value={orderId}
-                        onChange={(e) => setOrderId(e.target.value)}
-                        onPressEnter={handleVerify}
-                    />
-                </div>
+                <main className="main">
+                    <section className="hero">
+                        <div className="eyebrow"><span>Amazon eSIM activation</span></div>
+                        <h1 className="headline">Get your eSIM instructions instantly</h1>
+                        <p className="sub">
+                            Enter your <strong>Amazon Order Number</strong> below. Your eSIM QR code and installation
+                            instructions will be sent to your email immediately.
+                        </p>
+                    </section>
 
-                <div style={{ marginBottom: 24 }}>
-                    <Text strong style={{ display: 'block', marginBottom: 6 }}>Email Address</Text>
-                    <Input
-                        size="large"
-                        prefix={<MailOutlined style={{ color: '#bbb' }} />}
-                        placeholder="your@email.com"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        onPressEnter={handleVerify}
-                    />
-                </div>
+                    <section className="center-card" aria-label="Amazon order number form">
+                        <h2 className="card-title">Enter your Amazon Order Number</h2>
+                        <form onSubmit={handleVerify}>
+                            <div className="form-row">
+                                <input
+                                    className="order-input"
+                                    type="text"
+                                    inputMode="text"
+                                    autoComplete="off"
+                                    placeholder="Example: 114-1234567-1234567"
+                                    aria-label="Amazon Order Number"
+                                    value={orderId}
+                                    onChange={(e) => setOrderId(e.target.value)}
+                                />
+                                <div
+                                    className="info"
+                                    data-tooltip="Your Amazon order number has 3 groups of numbers (e.g. 114-1234567-1234567)"
+                                    aria-label="Your Amazon order number has 3 groups of numbers"
+                                    tabIndex={0}
+                                >
+                                    i
+                                </div>
+                            </div>
 
-                {result && (
-                    <div style={{ marginBottom: 20 }}>
-                        <Alert
-                            type={result.type === 'success' ? 'success' : 'error'}
-                            showIcon
-                            message={result.type === 'success' ? 'Success!' : 'Error'}
-                            description={
-                                <>
+                            <div className="optional-email">
+                                <label htmlFor="yg-amz-email">Email address (we send your eSIM here)</label>
+                                <input
+                                    id="yg-amz-email"
+                                    className="email-input"
+                                    type="email"
+                                    placeholder="your@email.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                            </div>
+
+                            {result && (
+                                <div className={`result-box ${result.type}`}>
+                                    <strong>{result.type === 'success' ? 'Success!' : 'Error'}</strong>
                                     <p>{result.message}</p>
                                     {packages.length > 0 && (
-                                        <div style={{ marginTop: 8 }}>
+                                        <div className="order-meta">
                                             {packages.map((pkg, idx) => (
-                                                <div key={idx} style={{ marginBottom: 8, padding: '8px 12px', background: '#f6ffed', borderRadius: 6, border: '1px solid #b7eb8f' }}>
-                                                    <Text strong style={{ fontSize: 13 }}>{pkg.cleaned_package_name || pkg.package_name}</Text>
-                                                    {pkg.quantity > 1 && <Tag color="purple" style={{ marginLeft: 8 }}>x{pkg.quantity}</Tag>}
-                                                    {pkg.location && <Text type="secondary" style={{ fontSize: 12, marginLeft: 8 }}>{pkg.location}</Text>}
-                                                    <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>
+                                                <div key={idx} className="pkg-row">
+                                                    <strong>{pkg.cleaned_package_name || pkg.package_name}</strong>
+                                                    {pkg.quantity > 1 && <span className="qty">x{pkg.quantity}</span>}
+                                                    {pkg.location && <span className="loc">{pkg.location}</span>}
+                                                    <div className="profiles">
                                                         {pkg.esim_profiles?.length || 0} eSIM profile(s) sent to your email
                                                     </div>
                                                 </div>
@@ -103,31 +184,141 @@ const VerifyAmazonOrder = () => {
                                         </div>
                                     )}
                                     {result.order && !packages.length && (
-                                        <div style={{ marginTop: 8, fontSize: 12, color: '#666' }}>
-                                            <p><strong>Package:</strong> {result.order.package_name}</p>
-                                            <p style={{ marginTop: 4 }}>Check your email for the QR code and activation details.</p>
+                                        <div className="order-meta">
+                                            {result.order.package_name && (
+                                                <p><strong>Package:</strong> {result.order.package_name}</p>
+                                            )}
+                                            <p>Check your email for the QR code and activation details.</p>
                                         </div>
                                     )}
-                                </>
-                            }
-                        />
+                                </div>
+                            )}
+
+                            <button className="primary-btn" type="submit" disabled={loading}>
+                                {loading ? 'Verifying & Activating...' : 'Get My eSIM Instructions'}
+                            </button>
+                        </form>
+
+                        <div className="reassurance">
+                            <div className="mini">
+                                <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>
+                                <span>Instant email delivery</span>
+                            </div>
+                            <div className="mini">
+                                <svg viewBox="0 0 24 24">
+                                    <rect x="5" y="10" width="14" height="10" rx="2" />
+                                    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                                </svg>
+                                <span>Secure order lookup</span>
+                            </div>
+                            <div className="mini">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M4 13v-1a8 8 0 0 1 16 0v1" />
+                                    <path d="M4 13h3v6H4zM17 13h3v6h-3z" />
+                                </svg>
+                                <span>24/7 Support available</span>
+                            </div>
+                        </div>
+
+                        <div className="secure">
+                            <svg viewBox="0 0 24 24">
+                                <rect x="6" y="10" width="12" height="10" rx="2" />
+                                <path d="M9 10V7a3 3 0 0 1 6 0v3" />
+                            </svg>
+                            <span>Your information is protected and only used to find your eSIM order.</span>
+                        </div>
+                    </section>
+
+                    <section className="tip" aria-label="Where to find your Amazon order number">
+                        <div>
+                            <h2>Tip: where do I find my Amazon Order Number?</h2>
+                            <p>
+                                Open your Amazon order confirmation email or go to{' '}
+                                <strong>
+                                    <a
+                                        href="https://www.amazon.com/gp/css/order-history"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{ color: '#0083da', textDecoration: 'none' }}
+                                    >
+                                        Your Orders
+                                    </a>
+                                </strong>{' '}
+                                in your Amazon account. Look for a number formatted like this:
+                            </p>
+                            <div className="example">114-1234567-1234567</div>
+                        </div>
+                        <div className="amazon-illustration" aria-hidden="true">
+                            <div className="az-head">
+                                <span className="az-logo">a</span>
+                                <span>Amazon order details</span>
+                            </div>
+                            <div className="receipt-line" />
+                            <div className="receipt-line short" />
+                            <div className="highlight">
+                                <strong>114-1234567-1234567</strong>
+                            </div>
+                            <div className="arrow">Use this number above ↑</div>
+                        </div>
+                    </section>
+                </main>
+
+                <section className="help">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4 13v-1a8 8 0 0 1 16 0v1" />
+                        <path d="M4 13h3v6H4zM17 13h3v6h-3z" />
+                        <path d="M20 18c0 2-2 3-5 3" />
+                    </svg>
+                    <div>
+                        <h3>We're here to help, 24/7</h3>
+                        <p>Our support team is available around the clock.</p>
                     </div>
-                )}
+                    <div className="support">
+                        <a className="outline" href="mailto:support@youguide.com">Contact Support</a>
+                        <a className="mail" href="mailto:support@youguide.com">support@youguide.com</a>
+                    </div>
+                </section>
 
-                <Button
-                    size="large"
-                    block
-                    loading={loading}
-                    onClick={handleVerify}
-                    style={{ backgroundColor: '#29b8e3', borderColor: '#29b8e3', color: '#fff' }}
-                >
-                    {loading ? 'Verifying & Activating...' : 'Verify & Activate eSIM'}
-                </Button>
+                <section className="faq">
+                    <h2>eSIM FAQ</h2>
+                    <div className="faq-grid">
+                        {faqs.map((item, idx) => (
+                            <div key={idx} className={`faq-item${openFaq === idx ? ' open' : ''}`}>
+                                <button
+                                    className="q"
+                                    type="button"
+                                    onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                                >
+                                    <span>{item.q}</span>
+                                    <span>⌄</span>
+                                </button>
+                                <div className="answer">{item.a}</div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
 
-                <Text type="secondary" style={{ display: 'block', textAlign: 'center', marginTop: 16, fontSize: 12 }}>
-                    Your eSIM will be purchased and activation details sent to your email immediately.
-                </Text>
-            </CustomCard>
+                <section className="amazon">
+                    <div className="az">a</div>
+                    <p>
+                        You purchased this eSIM on Amazon. For any order, payment or refund related questions,
+                        please contact{' '}
+                        <a
+                            href="https://www.amazon.com/gp/help/customer/contact-us"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Amazon Customer Service
+                        </a>.
+                    </p>
+                </section>
+
+                <footer className="footer">
+                    <span>© 2026-2027 YouGuide. All rights reserved.</span>
+                    <a href="/#/privacy-policy">Privacy Policy</a>
+                    <a href="mailto:support@youguide.com">Contact</a>
+                </footer>
+            </div>
         </div>
     );
 };
