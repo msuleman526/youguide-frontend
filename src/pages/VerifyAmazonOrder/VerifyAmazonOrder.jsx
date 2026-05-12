@@ -1,6 +1,109 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ApiService from '../../APIServices/ApiService';
 import './VerifyAmazonOrder.css';
+
+const EsimPopup = ({ profiles, orderNumber, emailSent, customerEmail, onClose }) => {
+    const [active, setActive] = useState(0);
+    const [frameBlocked, setFrameBlocked] = useState(false);
+    const current = profiles[active];
+
+    useEffect(() => {
+        const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', onKey);
+        const prevOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.removeEventListener('keydown', onKey);
+            document.body.style.overflow = prevOverflow;
+        };
+    }, [onClose]);
+
+    useEffect(() => { setFrameBlocked(false); }, [active]);
+
+    return (
+        <div
+            className="yg-amz-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Your eSIM"
+            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        >
+            <div className="yg-amz-modal__card">
+                <div className="yg-amz-modal__head">
+                    <div>
+                        <h2 className="yg-amz-modal__title">Your eSIM is ready</h2>
+                        <p className="yg-amz-modal__sub">
+                            Order #{orderNumber}
+                            {emailSent && customerEmail ? ` · also emailed to ${customerEmail}` : ''}
+                        </p>
+                    </div>
+                    <button type="button" className="yg-amz-modal__close" aria-label="Close" onClick={onClose}>×</button>
+                </div>
+
+                {profiles.length > 1 && (
+                    <div className="yg-amz-modal__tabs" role="tablist">
+                        {profiles.map((p, i) => (
+                            <button
+                                key={i}
+                                type="button"
+                                role="tab"
+                                aria-selected={i === active}
+                                className={`yg-amz-modal__tab${i === active ? ' is-active' : ''}`}
+                                onClick={() => setActive(i)}
+                            >
+                                eSIM {i + 1}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                <div className="yg-amz-modal__body">
+                    {frameBlocked ? (
+                        <div style={{ padding: '36px 24px', textAlign: 'center', color: '#144c74' }}>
+                            <p style={{ margin: '0 0 14px', fontWeight: 800 }}>
+                                Your eSIM viewer can't be shown in this window.
+                            </p>
+                            <a
+                                className="yg-amz-modal__open"
+                                href={current.qrCode}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Open eSIM viewer in a new tab ↗
+                            </a>
+                        </div>
+                    ) : (
+                        <iframe
+                            key={current.qrCode}
+                            src={current.qrCode}
+                            title={`eSIM ${active + 1}`}
+                            className="yg-amz-modal__frame"
+                            loading="lazy"
+                            referrerPolicy="no-referrer"
+                            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                            onError={() => setFrameBlocked(true)}
+                        />
+                    )}
+                </div>
+
+                <div className="yg-amz-modal__foot">
+                    <a
+                        className="yg-amz-modal__open"
+                        href={current.qrCode}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Open in new tab ↗
+                    </a>
+                    <span className="yg-amz-modal__meta">
+                        {current.packageName && <strong>{current.packageName}</strong>}
+                        {current.location ? ` · ${current.location}` : ''}
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const VerifyAmazonOrder = () => {
     const [orderId, setOrderId] = useState('');
@@ -8,6 +111,9 @@ const VerifyAmazonOrder = () => {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [openFaq, setOpenFaq] = useState(null);
+    const [popupProfiles, setPopupProfiles] = useState(null);
+
+    const closePopup = useCallback(() => setPopupProfiles(null), []);
 
     const handleVerify = async (e) => {
         if (e && e.preventDefault) e.preventDefault();
@@ -15,10 +121,6 @@ const VerifyAmazonOrder = () => {
 
         if (!orderId.trim()) {
             setResult({ type: 'error', message: 'Please enter your Amazon Order Number' });
-            return;
-        }
-        if (!email.trim()) {
-            setResult({ type: 'error', message: 'Please enter your email address so we can send your eSIM' });
             return;
         }
 
@@ -29,11 +131,22 @@ const VerifyAmazonOrder = () => {
                 email: email.trim(),
             });
             if (data.success) {
+                const profiles = Array.isArray(data.profiles) ? data.profiles : [];
                 setResult({
                     type: 'success',
-                    message: 'Your eSIM(s) have been activated and sent to your email!',
+                    message: data.message || 'Your eSIM is ready below.',
                     order: data.order,
+                    emailSent: !!data.emailSent,
+                    alreadyFulfilled: !!data.alreadyFulfilled,
                 });
+                if (profiles.length > 0) {
+                    setPopupProfiles({
+                        profiles,
+                        orderNumber: data.order?.order_number || orderId.trim(),
+                        emailSent: !!data.emailSent,
+                        customerEmail: email.trim(),
+                    });
+                }
             } else {
                 setResult({ type: 'error', message: data.message || 'Verification failed' });
             }
@@ -66,7 +179,7 @@ const VerifyAmazonOrder = () => {
         },
         {
             q: 'When will I receive my eSIM?',
-            a: 'After you enter your Amazon Order Number, your eSIM QR code and installation instructions will be sent to your email immediately.',
+            a: 'After you enter your Amazon Order Number, your eSIM QR code is shown on-screen immediately. If you also enter your email, we send the QR code there too.',
         },
         {
             q: 'Can I use the eSIM in multiple countries?',
@@ -87,7 +200,7 @@ const VerifyAmazonOrder = () => {
             <div className="page">
                 <header className="top">
                     <div className="logo">
-                        YouGuide<span>✈</span>
+                        <img src="/logo.gif" alt="YouGuide" />
                     </div>
                     <nav className="nav">
                         <a
@@ -122,10 +235,10 @@ const VerifyAmazonOrder = () => {
                 <main className="main">
                     <section className="hero">
                         <div className="eyebrow"><span>Amazon eSIM activation</span></div>
-                        <h1 className="headline">Get your eSIM instructions instantly</h1>
+                        <h1 className="headline">Get your eSIM instantly</h1>
                         <p className="sub">
-                            Enter your <strong>Amazon Order Number</strong> below. Your eSIM QR code and installation
-                            instructions will be sent to your email immediately.
+                            Enter your <strong>Amazon Order Number</strong> below. Your eSIM QR code opens
+                            right here — and if you add your email, we'll send it there too.
                         </p>
                     </section>
 
@@ -154,12 +267,12 @@ const VerifyAmazonOrder = () => {
                             </div>
 
                             <div className="optional-email">
-                                <label htmlFor="yg-amz-email">Email address (we send your eSIM here)</label>
+                                <label htmlFor="yg-amz-email">Email address (optional — we'll also email your eSIM)</label>
                                 <input
                                     id="yg-amz-email"
                                     className="email-input"
                                     type="email"
-                                    placeholder="your@email.com"
+                                    placeholder="your@email.com (optional)"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
@@ -167,7 +280,7 @@ const VerifyAmazonOrder = () => {
 
                             {result && (
                                 <div className={`result-box ${result.type}`}>
-                                    <strong>{result.type === 'success' ? 'Success!' : 'Error'}</strong>
+                                    <strong>{result.type === 'success' ? (result.alreadyFulfilled ? 'Already activated' : 'Success!') : 'Error'}</strong>
                                     <p>{result.message}</p>
                                     {packages.length > 0 && (
                                         <div className="order-meta">
@@ -177,32 +290,24 @@ const VerifyAmazonOrder = () => {
                                                     {pkg.quantity > 1 && <span className="qty">x{pkg.quantity}</span>}
                                                     {pkg.location && <span className="loc">{pkg.location}</span>}
                                                     <div className="profiles">
-                                                        {pkg.esim_profiles?.length || 0} eSIM profile(s) sent to your email
+                                                        {pkg.esim_profiles?.length || 0} eSIM profile(s) ready
                                                     </div>
                                                 </div>
                                             ))}
-                                        </div>
-                                    )}
-                                    {result.order && !packages.length && (
-                                        <div className="order-meta">
-                                            {result.order.package_name && (
-                                                <p><strong>Package:</strong> {result.order.package_name}</p>
-                                            )}
-                                            <p>Check your email for the QR code and activation details.</p>
                                         </div>
                                     )}
                                 </div>
                             )}
 
                             <button className="primary-btn" type="submit" disabled={loading}>
-                                {loading ? 'Verifying & Activating...' : 'Get My eSIM Instructions'}
+                                {loading ? 'Activating…' : 'Get my eSIM'}
                             </button>
                         </form>
 
                         <div className="reassurance">
                             <div className="mini">
                                 <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>
-                                <span>Instant email delivery</span>
+                                <span>Instant on-screen delivery</span>
                             </div>
                             <div className="mini">
                                 <svg viewBox="0 0 24 24">
@@ -239,7 +344,7 @@ const VerifyAmazonOrder = () => {
                                         href="https://www.amazon.com/gp/css/order-history"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        style={{ color: '#0083da', textDecoration: 'none' }}
+                                        style={{ color: '#144c74', textDecoration: 'none' }}
                                     >
                                         Your Orders
                                     </a>
@@ -319,6 +424,16 @@ const VerifyAmazonOrder = () => {
                     <a href="mailto:support@youguide.com">Contact</a>
                 </footer>
             </div>
+
+            {popupProfiles && (
+                <EsimPopup
+                    profiles={popupProfiles.profiles}
+                    orderNumber={popupProfiles.orderNumber}
+                    emailSent={popupProfiles.emailSent}
+                    customerEmail={popupProfiles.customerEmail}
+                    onClose={closePopup}
+                />
+            )}
         </div>
     );
 };
