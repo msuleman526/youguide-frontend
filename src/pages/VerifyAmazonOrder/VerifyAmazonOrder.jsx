@@ -210,19 +210,6 @@ const VerifyAmazonOrder = () => {
                             className="nav-link"
                         >
                             <svg className="ico-sm" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="9" />
-                                <path d="M9.5 9a2.6 2.6 0 1 1 4.5 1.8c-.9.7-1.7 1.2-1.7 2.7" />
-                                <path d="M12 17h.01" />
-                            </svg>
-                            <span>Help Center</span>
-                        </a>
-                        <a
-                            href="https://appadmin.youguide.com/#/contact"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="nav-link"
-                        >
-                            <svg className="ico-sm" viewBox="0 0 24 24">
                                 <path d="M4 13v-1a8 8 0 0 1 16 0v1" />
                                 <path d="M4 13h3v6H4zM17 13h3v6h-3z" />
                                 <path d="M20 18c0 2-2 3-5 3" />
@@ -379,7 +366,12 @@ const VerifyAmazonOrder = () => {
                         <p>Our support team is available around the clock.</p>
                     </div>
                     <div className="support">
-                        <a className="outline" href="mailto:support@youguide.com">Contact Support</a>
+                        <a
+                            className="outline"
+                            href={`mailto:support@youguide.com?subject=${encodeURIComponent('Amazon eSIM support')}${orderId.trim() ? `&body=${encodeURIComponent(`Amazon Order Number: ${orderId.trim()}\n\nPlease describe your issue below:\n`)}` : ''}`}
+                        >
+                            Contact Support
+                        </a>
                         <a className="mail" href="mailto:support@youguide.com">support@youguide.com</a>
                     </div>
                 </section>

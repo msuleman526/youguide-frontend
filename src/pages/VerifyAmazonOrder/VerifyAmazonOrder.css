@@ -1,7 +1,7 @@
 /* Scoped Amazon eSIM activation page — rebranded to youguide.com palette */
 .yg-amz, .yg-amz *{box-sizing:border-box}
 .yg-amz{
-  --yg-primary:#65d2f2;
+  --yg-primary:#00358f;
   --yg-primary-dark:#3bb7dc;
   --yg-secondary:#144c74;
   --yg-secondary-dark:#0e375a;
@@ -127,7 +127,7 @@
 .yg-amz-modal__close:hover{background:#f0f4f8;color:#144c74}
 .yg-amz-modal__tabs{display:flex;gap:6px;padding:10px 18px 0;flex-wrap:wrap;border-bottom:1px solid #e6eef5}
 .yg-amz-modal__tab{background:#f3f8fc;border:1px solid #d6e6f3;color:#144c74;padding:7px 14px;border-radius:999px 999px 0 0;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:-1px}
-.yg-amz-modal__tab.is-active{background:#65d2f2;border-color:#65d2f2;color:#144c74}
+.yg-amz-modal__tab.is-active{background:#00358f;border-color:#00358f;color:#144c74}
 .yg-amz-modal__body{flex:1;min-height:480px;display:flex;flex-direction:column;background:#f5fbff}
 .yg-amz-modal__frame{width:100%;height:560px;border:0;display:block;background:#fff}
 .yg-amz-modal__foot{padding:12px 22px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border-top:1px solid #e6eef5;flex-wrap:wrap}
