@@ -43,8 +43,7 @@
 .yg-amz .info::before{content:"";position:absolute;bottom:calc(100% + 4px);right:22px;width:0;height:0;border:6px solid transparent;border-top-color:var(--yg-secondary);opacity:0;visibility:hidden;transition:opacity .15s ease,visibility .15s;pointer-events:none;z-index:10}
 .yg-amz .info:hover::after,.yg-amz .info:focus::after,.yg-amz .info:hover::before,.yg-amz .info:focus::before{opacity:1;visibility:visible;transform:translateY(0)}
 
-.yg-amz .primary-btn{width:100%;min-height:58px;border:0;border-radius:14px;background:var(--yg-primary);color:var(--yg-secondary);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;margin:14px 0 16px;box-shadow:0 10px 18px rgba(101,210,242,.45);cursor:pointer;font-family:inherit;transition:background .15s ease,box-shadow .15s ease}
-.yg-amz .primary-btn:hover{background:var(--yg-primary-dark);color:#fff}
+.yg-amz .primary-btn{width:100%;min-height:58px;border:0;border-radius:14px;background:var(--yg-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;margin:14px 0 16px;box-shadow:0 10px 18px rgba(101,210,242,.45);cursor:pointer;font-family:inherit}
 .yg-amz .primary-btn:disabled{opacity:.7;cursor:not-allowed}
 
 .yg-amz .reassurance{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0 20px}
@@ -112,7 +111,7 @@
 .yg-amz .amazon p{font-size:13px;line-height:1.5;margin:0;color:var(--yg-ink)}
 .yg-amz .amazon a{color:var(--yg-secondary);font-weight:900}
 
-.yg-amz .footer{min-height:52px;background:var(--yg-primary);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:14px;padding-top:14px;padding-bottom:14px;padding-left:max(30px,calc((100% - 1260px) / 2));padding-right:max(30px,calc((100% - 1260px) / 2));font-size:12px;flex-wrap:wrap;border:0}
+.yg-amz .footer{min-height:52px;background:var(--yg-primary);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;gap:14px;padding-top:14px;padding-bottom:14px;padding-left:max(30px,calc((100% - 1260px) / 2));padding-right:max(30px,calc((100% - 1260px) / 2));font-size:12px;flex-wrap:wrap;border:0}
 .yg-amz .footer a{color:#fff;text-decoration:none;font-weight:700}
 .yg-amz .footer a:hover{text-decoration:underline}
 
