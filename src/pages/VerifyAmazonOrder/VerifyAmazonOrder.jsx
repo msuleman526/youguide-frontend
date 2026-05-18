@@ -412,8 +412,6 @@ const VerifyAmazonOrder = () => {
 
                 <footer className="footer">
                     <span>© 2026-2027 YouGuide. All rights reserved.</span>
-                    <a href="/#/privacy-policy">Privacy Policy</a>
-                    <a href="mailto:support@youguide.com">Contact</a>
                 </footer>
             </div>
 
