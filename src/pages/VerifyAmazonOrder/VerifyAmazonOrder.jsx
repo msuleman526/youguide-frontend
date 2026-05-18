@@ -247,8 +247,9 @@ const VerifyAmazonOrder = () => {
                         <div className="eyebrow"><span>Amazon eSIM activation</span></div>
                         <h1 className="headline">Get your eSIM instantly</h1>
                         <p className="sub">
-                            Enter your <strong>Amazon Order Number</strong> below. Your eSIM QR code opens
-                            right here — and if you add your email, we'll send it there too.
+                            Enter your <strong>Amazon Order Number</strong> below to instantly access your eSIM QR code and installation link.
+                            <br />
+                            Optionally add your email address to receive a copy of your activation details by email.
                         </p>
                     </section>
 
