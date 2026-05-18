@@ -129,6 +129,12 @@
 .yg-amz-modal__tab.is-active{background:#00358f;border-color:#00358f;color:#144c74}
 .yg-amz-modal__body{flex:1;min-height:480px;display:flex;flex-direction:column;background:#f5fbff}
 .yg-amz-modal__frame{width:100%;height:560px;border:0;display:block;background:#fff}
+.yg-amz-modal__note{margin:12px 22px;padding:12px 16px;background:#fff3cd;border-left:4px solid #ffc107;border-radius:8px;color:#856404;font-size:13px;line-height:1.5}
+.yg-amz-modal__guide{margin:0 22px 12px;padding:14px 16px;background:#e8f5e9;border-radius:10px;text-align:center}
+.yg-amz-modal__guide-title{margin:0 0 6px;color:#2e7d32;font-size:14px;font-weight:700}
+.yg-amz-modal__guide-sub{margin:0 0 10px;color:#666;font-size:12px}
+.yg-amz-modal__guide-btn{display:inline-block;padding:10px 24px;background-color:#2e7d32;color:#fff;font-size:13px;font-weight:600;text-decoration:none;border-radius:22px}
+.yg-amz-modal__guide-btn:hover{background-color:#256528}
 .yg-amz-modal__foot{padding:12px 22px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border-top:1px solid #e6eef5;flex-wrap:wrap}
 .yg-amz-modal__open{color:#144c74;font-size:13px;font-weight:800;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
 .yg-amz-modal__open:hover{color:#0e375a;text-decoration:underline}

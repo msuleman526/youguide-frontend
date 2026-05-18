@@ -86,6 +86,29 @@ const EsimPopup = ({ profiles, orderNumber, emailSent, customerEmail, onClose })
                     )}
                 </div>
 
+                <div className="yg-amz-modal__note">
+                    <strong>Important:</strong> Make sure you enabled <strong>DATA ROAMING</strong> on your installed eSIM, otherwise it will not work.
+                </div>
+
+                {current.freeGuideUrl && (
+                    <div className="yg-amz-modal__guide">
+                        <p className="yg-amz-modal__guide-title">
+                            🎁 Free Travel Guide for {current.freeGuideCountry}!
+                        </p>
+                        <p className="yg-amz-modal__guide-sub">
+                            We've included a free travel guide to help you plan your trip.
+                        </p>
+                        <a
+                            className="yg-amz-modal__guide-btn"
+                            href={current.freeGuideUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            View Free {current.freeGuideCountry} Travel Guide
+                        </a>
+                    </div>
+                )}
+
                 <div className="yg-amz-modal__foot">
                     <a
                         className="yg-amz-modal__open"
