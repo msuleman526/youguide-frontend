@@ -1308,6 +1308,82 @@ class ApiService {
         }
     }
 
+    // =================== Bundles ===================
+    static async getBundles(params = {}) {
+        try {
+            const qs = new URLSearchParams(params).toString();
+            const response = await axios.get(`${this.baseURL}/bundles${qs ? `?${qs}` : ''}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching bundles:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async getBundleEsimOptions(search = '') {
+        try {
+            const response = await axios.get(`${this.baseURL}/bundles/esim-options?search=${encodeURIComponent(search)}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching eSIM options:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async createBundle(data) {
+        try {
+            const response = await axios.post(`${this.baseURL}/bundles`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error creating bundle:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async updateBundle(id, data) {
+        try {
+            const response = await axios.put(`${this.baseURL}/bundles/${id}`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error updating bundle:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    static async deleteBundle(id) {
+        try {
+            const response = await axios.delete(`${this.baseURL}/bundles/${id}`, {
+                headers: {
+                    "Authorization": "Bearer " + localStorage.getItem("token")
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error deleting bundle:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
     static async extendHotelAffiliateSubscription(hotelId, data) {
         try {
             const response = await axios.put(`${this.baseURL}/hotels/extend/${hotelId}`, data, {

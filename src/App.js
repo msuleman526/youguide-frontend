@@ -52,6 +52,7 @@ import ApiAccessList from './pages/ApiAccess/ApiAccessList'
 import ApiDocumentation from './pages/ApiDocumentation/ApiDocumentation'
 import Unauthorized from './pages/Unauthorized/Unauthorized'
 import LanguageGuides from './pages/LanguageGuides/LanguageGuides'
+import Bundles from './pages/Bundles/Bundles'
 import Coupons from './pages/Coupons/Coupons'
 import Discounts from './pages/Discounts/Discounts'
 import AmazonPurchases from './pages/AmazonPurchases/AmazonPurchases'
@@ -116,6 +117,7 @@ const App = () => {
           <Route path="/users" element={<Users />} />
           <Route path="/books" element={<Books />} />
           <Route path="/language-guides" element={<LanguageGuides />} />
+          <Route path="/bundles" element={<Bundles />} />
           <Route path="/coupons" element={<Coupons />} />
           <Route path="/discounts" element={<Discounts />} />
           <Route path="/all-requests" element={<AllRequests />} />
