@@ -65,7 +65,6 @@ import ApiAccessRequestQueue from './pages/Admin/ApiAccessRequestQueue'
 import AdminPayouts from './pages/Admin/AdminPayouts'
 import AdminEarningsReport from './pages/Admin/AdminEarningsReport'
 import WebsiteOrders from './pages/WebsiteOrders/WebsiteOrders'
-import WebsitePackages from './pages/WebsitePackages/WebsitePackages'
 
 const App = () => {
   return (
@@ -125,7 +124,6 @@ const App = () => {
           <Route path="/newsletters" element={<AllNewsletters />} />
           <Route path="/amazon-purchases" element={<AmazonPurchases />} />
           <Route path="/website-orders" element={<WebsiteOrders />} />
-          <Route path="/website-packages" element={<WebsitePackages />} />
           <Route path="/api-access/dashboard" element={<ApiAccessDashboard />} />
           <Route path="/api-access/list" element={<ApiAccessList />} />
           <Route path="/link-approvals" element={<LinkApprovalQueue />} />
