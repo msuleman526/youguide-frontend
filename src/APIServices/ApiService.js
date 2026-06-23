@@ -2145,6 +2145,21 @@ class ApiService {
         }
     }
 
+    static async getAmazonBuyerInfo(id) {
+        try {
+            const response = await axios.post(`${this.baseURL}/amazon-orders/${id}/buyer-info`, {}, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching Amazon buyer info:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
     static async createAmazonEsimCheckout({ order_number, customer_email, amount }) {
         try {
             const response = await axios.post(`${this.baseURL}/amazon-orders/stripe-checkout`, { order_number, customer_email, amount }, {
