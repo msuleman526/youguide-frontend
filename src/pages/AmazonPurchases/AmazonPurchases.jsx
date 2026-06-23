@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Tag, Button, Typography, Flex, Input, Select, Modal, Drawer, Timeline, Tabs, message } from 'antd';
-import { EyeOutlined, QrcodeOutlined, UnorderedListOutlined, SearchOutlined, MailOutlined, DownloadOutlined, EditOutlined, CreditCardOutlined, SolutionOutlined } from '@ant-design/icons';
+import { EyeOutlined, QrcodeOutlined, UnorderedListOutlined, SearchOutlined, MailOutlined, DownloadOutlined, EditOutlined, CreditCardOutlined, MessageOutlined, FileTextOutlined } from '@ant-design/icons';
 import ApiService from '../../APIServices/ApiService';
 import CustomCard from '../../components/Card';
 
@@ -20,8 +20,7 @@ const logActionColors = {
     esim_purchased: 'green',
     email_sent: 'cyan',
     error: 'red',
-    buyer_email_fetched: 'purple',
-    welcome_email_sent: 'magenta',
+    amazon_message_sent: 'purple',
 };
 
 const fulfillmentLabel = (channel) => {
@@ -80,11 +79,15 @@ const AmazonPurchases = () => {
     const [stripeAmount, setStripeAmount] = useState('');
     const [stripeLoading, setStripeLoading] = useState(false);
 
-    // Buyer Info (SP-API) Modal
-    const [buyerModalVisible, setBuyerModalVisible] = useState(false);
-    const [buyerOrder, setBuyerOrder] = useState(null);
-    const [buyerLoading, setBuyerLoading] = useState(false);
-    const [buyerResult, setBuyerResult] = useState(null);
+    // Amazon Message (SP-API) — send result modal
+    const [msgModalVisible, setMsgModalVisible] = useState(false);
+    const [msgOrder, setMsgOrder] = useState(null);
+    const [msgLoading, setMsgLoading] = useState(false);
+    const [msgResult, setMsgResult] = useState(null);
+
+    // View the message text that was sent
+    const [viewMsgVisible, setViewMsgVisible] = useState(false);
+    const [viewMsgOrder, setViewMsgOrder] = useState(null);
 
     const fetchOrders = useCallback(async () => {
         setLoading(true);
@@ -232,27 +235,32 @@ const AmazonPurchases = () => {
         }
     };
 
-    const showBuyerInfo = async (record) => {
-        setBuyerOrder(record);
-        setBuyerResult(null);
-        setBuyerModalVisible(true);
-        setBuyerLoading(true);
+    const sendAmazonMessage = async (record) => {
+        setMsgOrder(record);
+        setMsgResult(null);
+        setMsgModalVisible(true);
+        setMsgLoading(true);
         try {
-            const data = await ApiService.getAmazonBuyerInfo(record._id);
-            setBuyerResult(data);
-            if (data.success && data.buyerInfo?.email) {
-                message.success(data.message || 'Buyer email fetched.');
+            const data = await ApiService.sendAmazonMessage(record._id);
+            setMsgResult(data);
+            if (data.sent) {
+                message.success(data.message || 'Message sent via Amazon.');
             } else {
-                message.info(data.message || 'No buyer email available yet.');
+                message.warning(data.message || 'Message could not be sent.');
             }
             fetchOrders();
         } catch (error) {
-            const msg = error.response?.data?.message || 'Failed to fetch buyer info';
-            setBuyerResult({ success: false, message: msg });
+            const msg = error.response?.data?.message || 'Failed to send Amazon message';
+            setMsgResult({ success: false, sent: false, message: msg });
             message.error(msg);
         } finally {
-            setBuyerLoading(false);
+            setMsgLoading(false);
         }
+    };
+
+    const viewMessage = (record) => {
+        setViewMsgOrder(record);
+        setViewMsgVisible(true);
     };
 
     /** Check if order has any profiles */
@@ -322,20 +330,34 @@ const AmazonPurchases = () => {
             title: 'Customer Email',
             dataIndex: 'customer_email',
             key: 'customer_email',
-            width: 240,
-            render: (text, record) => {
-                const email = text || record.amazon_buyer_email;
-                if (!email) return <Text type="secondary">—</Text>;
-                const isAmazon = !text && record.amazon_buyer_email;
-                return (
-                    <Flex vertical gap={2}>
-                        <span>{email}</span>
-                        {(record.amazon_buyer_email || isAmazon) && (
-                            <Tag color="purple" style={{ width: 'fit-content', margin: 0 }}>Amazon (SP-API)</Tag>
-                        )}
-                    </Flex>
-                );
-            },
+            width: 220,
+            render: (text) => text || <Text type="secondary">—</Text>,
+        },
+        {
+            title: 'Amazon Message',
+            key: 'amazon_message',
+            width: 170,
+            render: (_, record) => (
+                <Flex vertical gap={4} align="start">
+                    {record.amazon_message_sent ? (
+                        <Tag color="green" style={{ margin: 0 }}>Sent</Tag>
+                    ) : record.amazon_message_error ? (
+                        <Tag color="red" style={{ margin: 0 }} title={record.amazon_message_error}>Not sent</Tag>
+                    ) : (
+                        <Tag color="default" style={{ margin: 0 }}>—</Tag>
+                    )}
+                    {record.amazon_message_at && (
+                        <Text type="secondary" style={{ fontSize: 11 }}>
+                            {new Date(record.amazon_message_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        </Text>
+                    )}
+                    {record.amazon_message_text && (
+                        <Button type="link" size="small" style={{ padding: 0, height: 'auto', fontSize: 12 }} icon={<FileTextOutlined />} onClick={() => viewMessage(record)}>
+                            View message
+                        </Button>
+                    )}
+                </Flex>
+            ),
         },
         {
             title: 'Status',
@@ -373,9 +395,9 @@ const AmazonPurchases = () => {
                     />
                     <Button
                         type="link"
-                        icon={<SolutionOutlined />}
-                        onClick={() => showBuyerInfo(record)}
-                        title="Get buyer email & info (Amazon SP-API)"
+                        icon={<MessageOutlined />}
+                        onClick={() => sendAmazonMessage(record)}
+                        title="Send activation message to buyer via Amazon"
                         style={{ color: '#722ed1' }}
                     />
                     <Button
@@ -682,48 +704,46 @@ const AmazonPurchases = () => {
                 </div>
             </Modal>
 
-            {/* Buyer Info (SP-API) Modal */}
+            {/* Amazon Message — send result modal */}
             <Modal
-                title={`Amazon Buyer Info — Order #${buyerOrder?.order_number || ''}`}
-                open={buyerModalVisible}
-                onCancel={() => setBuyerModalVisible(false)}
-                footer={[<Button key="close" onClick={() => setBuyerModalVisible(false)}>Close</Button>]}
+                title={`Send Amazon Message — Order #${msgOrder?.order_number || ''}`}
+                open={msgModalVisible}
+                onCancel={() => setMsgModalVisible(false)}
+                footer={[<Button key="close" onClick={() => setMsgModalVisible(false)}>Close</Button>]}
                 centered
-                width={480}
+                width={500}
             >
-                {buyerLoading ? (
-                    <p style={{ textAlign: 'center', padding: 20 }}>Fetching from Amazon SP-API…</p>
-                ) : !buyerResult ? null : !buyerResult.success ? (
-                    <p style={{ color: '#cf1322' }}>{buyerResult.message || 'Failed to fetch buyer info.'}</p>
-                ) : (
+                {msgLoading ? (
+                    <p style={{ textAlign: 'center', padding: 20 }}>Sending via Amazon Buyer-Seller Messaging…</p>
+                ) : !msgResult ? null : (
                     <div>
-                        {buyerResult.buyerInfo?.email ? (
-                            <div style={{ background: '#f6ffed', border: '1px solid #b7eb8f', borderRadius: 8, padding: '12px 14px', marginBottom: 16 }}>
-                                <Text type="secondary" style={{ fontSize: 12 }}>Buyer email (Amazon alias)</Text>
-                                <div style={{ fontSize: 16, fontWeight: 600, wordBreak: 'break-all' }}>{buyerResult.buyerInfo.email}</div>
-                                {buyerResult.buyerInfo.name && <div style={{ color: '#555' }}>{buyerResult.buyerInfo.name}</div>}
-                                <div style={{ marginTop: 8 }}>
-                                    <Tag color={buyerResult.welcomeEmailSent ? 'green' : 'orange'}>
-                                        {buyerResult.welcomeEmailSent ? 'Welcome email sent' : 'Welcome email not sent yet'}
-                                    </Tag>
+                        <div style={{
+                            background: msgResult.sent ? '#f6ffed' : '#fffbe6',
+                            border: `1px solid ${msgResult.sent ? '#b7eb8f' : '#ffe58f'}`,
+                            borderRadius: 8, padding: '12px 14px', marginBottom: 16,
+                        }}>
+                            <Tag color={msgResult.sent ? 'green' : 'orange'} style={{ marginBottom: 6 }}>
+                                {msgResult.sent ? 'Message sent' : 'Not sent'}
+                            </Tag>
+                            <div style={{ fontSize: 13 }}>{msgResult.message}</div>
+                        </div>
+
+                        {Array.isArray(msgResult.availableActions) && msgResult.availableActions.length > 0 && (
+                            <div style={{ marginBottom: 14 }}>
+                                <Text type="secondary" style={{ fontSize: 12 }}>Amazon-permitted message types for this order:</Text>
+                                <div style={{ marginTop: 6 }}>
+                                    {msgResult.availableActions.map((a) => <Tag key={a}>{a}</Tag>)}
                                 </div>
-                            </div>
-                        ) : (
-                            <div style={{ background: '#fffbe6', border: '1px solid #ffe58f', borderRadius: 8, padding: '12px 14px', marginBottom: 16 }}>
-                                <Text>{buyerResult.message || 'No buyer email available from Amazon for this order yet (common for FBA orders).'}</Text>
                             </div>
                         )}
 
-                        {buyerResult.buyerInfo && (
+                        {msgResult.orderInfo && (
                             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                 <tbody>
                                     {[
-                                        ['Order status', buyerResult.buyerInfo.orderStatus],
-                                        ['Fulfillment', fulfillmentLabel(buyerResult.buyerInfo.fulfillmentChannel)],
-                                        ['Purchase date', buyerResult.buyerInfo.purchaseDate ? new Date(buyerResult.buyerInfo.purchaseDate).toLocaleString('en-GB') : '—'],
-                                        ['Order total', buyerResult.buyerInfo.orderTotal ? `${buyerResult.buyerInfo.orderTotal} ${buyerResult.buyerInfo.currency || ''}` : '—'],
-                                        ['Marketplace', `${buyerResult.buyerInfo.marketplaceId || '—'}${buyerResult.buyerInfo.region ? ` (${buyerResult.buyerInfo.region.toUpperCase()})` : ''}`],
-                                        ['Items shipped / unshipped', `${buyerResult.buyerInfo.itemsShipped ?? '—'} / ${buyerResult.buyerInfo.itemsUnshipped ?? '—'}`],
+                                        ['Order status', msgResult.orderInfo.orderStatus],
+                                        ['Fulfillment', fulfillmentLabel(msgResult.orderInfo.fulfillmentChannel)],
+                                        ['Marketplace', `${msgResult.orderInfo.marketplaceId || '—'}${msgResult.orderInfo.region ? ` (${msgResult.orderInfo.region.toUpperCase()})` : ''}`],
                                     ].map(([label, value]) => (
                                         <tr key={label}>
                                             <td style={{ padding: '6px 0', color: '#888', fontSize: 13 }}>{label}</td>
@@ -735,6 +755,20 @@ const AmazonPurchases = () => {
                         )}
                     </div>
                 )}
+            </Modal>
+
+            {/* View the message text that was sent */}
+            <Modal
+                title={`Message Sent — Order #${viewMsgOrder?.order_number || ''}`}
+                open={viewMsgVisible}
+                onCancel={() => setViewMsgVisible(false)}
+                footer={[<Button key="close" onClick={() => setViewMsgVisible(false)}>Close</Button>]}
+                centered
+                width={520}
+            >
+                <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'inherit', fontSize: 13, background: '#fafafa', border: '1px solid #f0f0f0', borderRadius: 8, padding: 14, margin: 0 }}>
+                    {viewMsgOrder?.amazon_message_text || 'No message recorded.'}
+                </pre>
             </Modal>
 
             {/* Logs Drawer */}
