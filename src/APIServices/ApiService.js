@@ -2145,9 +2145,9 @@ class ApiService {
         }
     }
 
-    static async getAmazonBuyerInfo(id) {
+    static async sendAmazonMessage(id) {
         try {
-            const response = await axios.post(`${this.baseURL}/amazon-orders/${id}/buyer-info`, {}, {
+            const response = await axios.post(`${this.baseURL}/amazon-orders/${id}/send-amazon-message`, {}, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -2155,7 +2155,7 @@ class ApiService {
             });
             return response.data;
         } catch (error) {
-            console.error('Error fetching Amazon buyer info:', error.response?.data || error.message);
+            console.error('Error sending Amazon message:', error.response?.data || error.message);
             throw error;
         }
     }
