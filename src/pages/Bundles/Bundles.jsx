@@ -132,6 +132,17 @@ const Bundles = () => {
       render: (price) => `€${price}`,
     },
     {
+      title: 'Stock',
+      dataIndex: 'quantity',
+      key: 'quantity',
+      render: (qty) => {
+        const q = qty || 0;
+        return q > 0
+          ? <Tag color="blue">{q} in stock</Tag>
+          : <Tag color="red">Sold Out</Tag>;
+      },
+    },
+    {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
