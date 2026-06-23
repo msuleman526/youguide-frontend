@@ -356,6 +356,15 @@ const AmazonPurchases = () => {
                             View message
                         </Button>
                     )}
+                    <Button
+                        type="link"
+                        size="small"
+                        style={{ padding: 0, height: 'auto', fontSize: 12 }}
+                        icon={<MessageOutlined />}
+                        onClick={() => sendAmazonMessage(record)}
+                    >
+                        {record.amazon_message_sent ? 'Resend' : (record.amazon_message_error ? 'Retry' : 'Send now')}
+                    </Button>
                 </Flex>
             ),
         },
