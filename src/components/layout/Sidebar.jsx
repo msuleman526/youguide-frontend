@@ -30,7 +30,7 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
   };
 
   const managementKeys = ['roles', 'users', 'teams', 'all-requests', 'all-contacts', 'newsletters'];
-  const websiteAppKeys = ['categories', 'books', 'language-guides', 'website-packages', 'coupons', 'discounts'];
+  const websiteAppKeys = ['categories', 'books', 'language-guides', 'bundles', 'website-packages', 'coupons', 'discounts'];
   const affiliatesKeys = ['affiliates', 'link-approvals', 'api-access-approvals', 'admin-payouts', 'admin-earnings-report'];
 
   useEffect(() => {
@@ -111,6 +111,7 @@ const Sidebar = ({ collapsed, drawerVisible, setDrawerVisible}) => {
         { key: 'categories', label: 'Categories' },
         { key: 'books', label: 'Travel Guides' },
         { key: 'language-guides', label: 'Language Guides' },
+        { key: 'bundles', label: 'Bundles' },
         { key: 'website-packages', label: 'Website Packages' },
         { key: 'coupons', label: 'Coupons' },
         { key: 'discounts', label: 'Discounts' },
