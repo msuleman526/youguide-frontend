@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Table, Tag, Button, Typography, Flex, Input, Select, Modal, Drawer, Timeline, Tabs, message } from 'antd';
-import { EyeOutlined, QrcodeOutlined, UnorderedListOutlined, SearchOutlined, MailOutlined, DownloadOutlined, EditOutlined, CreditCardOutlined } from '@ant-design/icons';
+import { EyeOutlined, QrcodeOutlined, UnorderedListOutlined, SearchOutlined, MailOutlined, DownloadOutlined, EditOutlined, CreditCardOutlined, SolutionOutlined } from '@ant-design/icons';
 import ApiService from '../../APIServices/ApiService';
 import CustomCard from '../../components/Card';
 
@@ -20,6 +20,14 @@ const logActionColors = {
     esim_purchased: 'green',
     email_sent: 'cyan',
     error: 'red',
+    buyer_email_fetched: 'purple',
+    welcome_email_sent: 'magenta',
+};
+
+const fulfillmentLabel = (channel) => {
+    if (channel === 'AFN') return 'FBA (Amazon)';
+    if (channel === 'MFN') return 'Seller-fulfilled';
+    return channel || '—';
 };
 
 /** Collect all esim_profiles from packages array or legacy flat field */
@@ -71,6 +79,12 @@ const AmazonPurchases = () => {
     const [stripeEmail, setStripeEmail] = useState('');
     const [stripeAmount, setStripeAmount] = useState('');
     const [stripeLoading, setStripeLoading] = useState(false);
+
+    // Buyer Info (SP-API) Modal
+    const [buyerModalVisible, setBuyerModalVisible] = useState(false);
+    const [buyerOrder, setBuyerOrder] = useState(null);
+    const [buyerLoading, setBuyerLoading] = useState(false);
+    const [buyerResult, setBuyerResult] = useState(null);
 
     const fetchOrders = useCallback(async () => {
         setLoading(true);
@@ -218,6 +232,29 @@ const AmazonPurchases = () => {
         }
     };
 
+    const showBuyerInfo = async (record) => {
+        setBuyerOrder(record);
+        setBuyerResult(null);
+        setBuyerModalVisible(true);
+        setBuyerLoading(true);
+        try {
+            const data = await ApiService.getAmazonBuyerInfo(record._id);
+            setBuyerResult(data);
+            if (data.success && data.buyerInfo?.email) {
+                message.success(data.message || 'Buyer email fetched.');
+            } else {
+                message.info(data.message || 'No buyer email available yet.');
+            }
+            fetchOrders();
+        } catch (error) {
+            const msg = error.response?.data?.message || 'Failed to fetch buyer info';
+            setBuyerResult({ success: false, message: msg });
+            message.error(msg);
+        } finally {
+            setBuyerLoading(false);
+        }
+    };
+
     /** Check if order has any profiles */
     const hasProfiles = (record) => collectProfiles(record).length > 0;
 
@@ -285,8 +322,20 @@ const AmazonPurchases = () => {
             title: 'Customer Email',
             dataIndex: 'customer_email',
             key: 'customer_email',
-            width: 220,
-            render: (text) => text || <Text type="secondary">—</Text>,
+            width: 240,
+            render: (text, record) => {
+                const email = text || record.amazon_buyer_email;
+                if (!email) return <Text type="secondary">—</Text>;
+                const isAmazon = !text && record.amazon_buyer_email;
+                return (
+                    <Flex vertical gap={2}>
+                        <span>{email}</span>
+                        {(record.amazon_buyer_email || isAmazon) && (
+                            <Tag color="purple" style={{ width: 'fit-content', margin: 0 }}>Amazon (SP-API)</Tag>
+                        )}
+                    </Flex>
+                );
+            },
         },
         {
             title: 'Status',
@@ -311,7 +360,7 @@ const AmazonPurchases = () => {
         {
             title: 'Actions',
             key: 'actions',
-            width: 180,
+            width: 220,
             fixed: 'right',
             render: (_, record) => (
                 <Flex gap={8}>
@@ -321,6 +370,13 @@ const AmazonPurchases = () => {
                         onClick={() => showQrCode(record)}
                         disabled={!hasProfiles(record)}
                         title="View QR Code"
+                    />
+                    <Button
+                        type="link"
+                        icon={<SolutionOutlined />}
+                        onClick={() => showBuyerInfo(record)}
+                        title="Get buyer email & info (Amazon SP-API)"
+                        style={{ color: '#722ed1' }}
                     />
                     <Button
                         type="link"
@@ -624,6 +680,61 @@ const AmazonPurchases = () => {
                         style={{ marginTop: 4 }}
                     />
                 </div>
+            </Modal>
+
+            {/* Buyer Info (SP-API) Modal */}
+            <Modal
+                title={`Amazon Buyer Info — Order #${buyerOrder?.order_number || ''}`}
+                open={buyerModalVisible}
+                onCancel={() => setBuyerModalVisible(false)}
+                footer={[<Button key="close" onClick={() => setBuyerModalVisible(false)}>Close</Button>]}
+                centered
+                width={480}
+            >
+                {buyerLoading ? (
+                    <p style={{ textAlign: 'center', padding: 20 }}>Fetching from Amazon SP-API…</p>
+                ) : !buyerResult ? null : !buyerResult.success ? (
+                    <p style={{ color: '#cf1322' }}>{buyerResult.message || 'Failed to fetch buyer info.'}</p>
+                ) : (
+                    <div>
+                        {buyerResult.buyerInfo?.email ? (
+                            <div style={{ background: '#f6ffed', border: '1px solid #b7eb8f', borderRadius: 8, padding: '12px 14px', marginBottom: 16 }}>
+                                <Text type="secondary" style={{ fontSize: 12 }}>Buyer email (Amazon alias)</Text>
+                                <div style={{ fontSize: 16, fontWeight: 600, wordBreak: 'break-all' }}>{buyerResult.buyerInfo.email}</div>
+                                {buyerResult.buyerInfo.name && <div style={{ color: '#555' }}>{buyerResult.buyerInfo.name}</div>}
+                                <div style={{ marginTop: 8 }}>
+                                    <Tag color={buyerResult.welcomeEmailSent ? 'green' : 'orange'}>
+                                        {buyerResult.welcomeEmailSent ? 'Welcome email sent' : 'Welcome email not sent yet'}
+                                    </Tag>
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ background: '#fffbe6', border: '1px solid #ffe58f', borderRadius: 8, padding: '12px 14px', marginBottom: 16 }}>
+                                <Text>{buyerResult.message || 'No buyer email available from Amazon for this order yet (common for FBA orders).'}</Text>
+                            </div>
+                        )}
+
+                        {buyerResult.buyerInfo && (
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <tbody>
+                                    {[
+                                        ['Order status', buyerResult.buyerInfo.orderStatus],
+                                        ['Fulfillment', fulfillmentLabel(buyerResult.buyerInfo.fulfillmentChannel)],
+                                        ['Purchase date', buyerResult.buyerInfo.purchaseDate ? new Date(buyerResult.buyerInfo.purchaseDate).toLocaleString('en-GB') : '—'],
+                                        ['Order total', buyerResult.buyerInfo.orderTotal ? `${buyerResult.buyerInfo.orderTotal} ${buyerResult.buyerInfo.currency || ''}` : '—'],
+                                        ['Marketplace', `${buyerResult.buyerInfo.marketplaceId || '—'}${buyerResult.buyerInfo.region ? ` (${buyerResult.buyerInfo.region.toUpperCase()})` : ''}`],
+                                        ['Items shipped / unshipped', `${buyerResult.buyerInfo.itemsShipped ?? '—'} / ${buyerResult.buyerInfo.itemsUnshipped ?? '—'}`],
+                                    ].map(([label, value]) => (
+                                        <tr key={label}>
+                                            <td style={{ padding: '6px 0', color: '#888', fontSize: 13 }}>{label}</td>
+                                            <td style={{ padding: '6px 0', fontSize: 13, fontWeight: 500, textAlign: 'right' }}>{value || '—'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                )}
             </Modal>
 
             {/* Logs Drawer */}
