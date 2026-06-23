@@ -55,7 +55,6 @@ import LanguageGuides from './pages/LanguageGuides/LanguageGuides'
 import Coupons from './pages/Coupons/Coupons'
 import Discounts from './pages/Discounts/Discounts'
 import AmazonPurchases from './pages/AmazonPurchases/AmazonPurchases'
-import VerifyAmazonOrder from './pages/VerifyAmazonOrder/VerifyAmazonOrder'
 import FreeGuide from './pages/FreeGuide/FreeGuide'
 import OrderSuccess from './pages/Affiliate/OrderSuccess'
 import MyEarnings from './pages/Affiliate/MyEarnings'
@@ -99,7 +98,6 @@ const App = () => {
         <Route path="/otp" element={<OTPScreen />} />
         <Route path="/forget-password" element={<ForgotPassword />} />
         <Route path="/set-new-password" element={<SetNewPassword />} />
-        <Route path="/verify-amazon-order" element={<VerifyAmazonOrder />} />
         <Route path="/free-guide/:orderNumber" element={<FreeGuide />} />
         <Route path="/generate-video/:tripId" element={<VideoGenerator />} />
         <Route path="/generate-pdf/:tripId" element={<PDFGenerator />} />
