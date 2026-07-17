@@ -382,6 +382,16 @@ const ApiDocumentation = () => {
           label: 'HTML/JSON Paid',
           icon: <ApiOutlined />,
         },
+        {
+          key: 'snippet-language-free',
+          label: 'Language Guides Free',
+          icon: <CodeOutlined />,
+        },
+        {
+          key: 'snippet-language-paid',
+          label: 'Language Guides Paid',
+          icon: <DollarOutlined />,
+        },
       ],
     },
   ];
@@ -1306,6 +1316,8 @@ Returns full HTML page with applied styling`
     const showPdfPaid = selectedSection === 'code-snippets' || selectedSection === 'snippet-pdf-paid';
     const showHtmlPrepaid = selectedSection === 'code-snippets' || selectedSection === 'snippet-html-prepaid';
     const showHtmlPaid = selectedSection === 'code-snippets' || selectedSection === 'snippet-html-paid';
+    const showLanguageFree = selectedSection === 'code-snippets' || selectedSection === 'snippet-language-free';
+    const showLanguagePaid = selectedSection === 'code-snippets' || selectedSection === 'snippet-language-paid';
 
     return (
       <div>
@@ -3191,11 +3203,523 @@ Returns full HTML page with applied styling`
           </>
         )}
 
+        {showLanguageFree && (
+          <>
+            <Divider orientation="left">5. Language Guides Free (HTML/JSON) - Complete Application</Divider>
+
+            <Card style={{ marginBottom: 24, backgroundColor: '#f9f9f9' }}>
+              <Title level={4}>Full HTML Application - Language Guide Browser &amp; Viewer</Title>
+              <Paragraph type="secondary">
+                Features: Search, pagination, guide grid, JSON viewer and styled HTML viewer. Language guides
+                have no categories, so there is no category filter.
+              </Paragraph>
+
+              <Card style={{ marginBottom: '15px', backgroundColor: '#fff7e6', border: '1px solid #ffd591' }}>
+                <Text strong style={{ color: '#d46b08' }}>🔑 Enter Your API Token to View Live Preview</Text>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                  <Input.Password
+                    placeholder="Enter your Language Guide Free token"
+                    value={languageFreeToken}
+                    onChange={(e) => setLanguageFreeToken(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <Button type="primary" onClick={() => saveToken('languageFreeToken', languageFreeToken)}>
+                    Save Token
+                  </Button>
+                </div>
+                <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#8c8c8c' }}>
+                  Token type must be <Text code>html_json</Text> with <Text code>guide_type=language_guide</Text> and <Text code>payment_type=free</Text>.
+                </p>
+              </Card>
+
+              <Card style={{ marginBottom: '15px', backgroundColor: '#f0f5ff', border: '1px solid #adc6ff' }}>
+                <Text strong>📡 APIs Used in this Snippet:</Text>
+                <ul style={{ marginTop: '10px', marginBottom: '10px', lineHeight: '1.8' }}>
+                  <li><Text code>GET /api/travel-content/guides</Text> - List language guides (search + pagination)</li>
+                  <li><Text code>GET /api/travel-guides/digital/content/data/:guideId</Text> - JSON content (deducts quota on first access)</li>
+                  <li><Text code>GET /api/travel-guides/digital/content/view/:guideId</Text> - Styled HTML content</li>
+                </ul>
+              </Card>
+
+              <Button
+                type="primary"
+                icon={<ApiOutlined />}
+                size="large"
+                onClick={() => openPreview(document.getElementById('language-free-html').textContent, languageFreeToken)}
+                style={{ marginBottom: '15px', width: '100%', height: '45px', fontSize: '16px' }}
+              >
+                🚀 View Live Design
+              </Button>
+
+              <div className="code-block" style={{ backgroundColor: '#1e1e1e', padding: '16px', borderRadius: '4px', overflow: 'auto' }}>
+                <pre id="language-free-html" style={{ color: '#d4d4d4', margin: 0, fontSize: '13px' }}>{`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Language Guides — Free</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: #f5f5f5; color: #222; }
+    header { background: #722ed1; color: #fff; padding: 20px; }
+    header h1 { margin: 0 0 4px; font-size: 22px; }
+    .bar { display: flex; gap: 10px; flex-wrap: wrap; padding: 16px 20px; background: #fff; border-bottom: 1px solid #eee; }
+    .bar input, .bar select, .bar button { padding: 9px 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; }
+    .bar button { background: #722ed1; color: #fff; border: none; cursor: pointer; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; padding: 20px; }
+    .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.12); display: flex; flex-direction: column; }
+    .card img { width: 100%; height: 150px; object-fit: cover; background: #eee; }
+    .card .body { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .card h3 { margin: 0; font-size: 15px; }
+    .lang { font-size: 12px; color: #722ed1; font-weight: 600; }
+    .actions { display: flex; gap: 8px; margin-top: auto; }
+    .actions button { flex: 1; padding: 8px; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; }
+    .btn-json { background: #2f54eb; color: #fff; }
+    .btn-html { background: #722ed1; color: #fff; }
+    .pager { display: flex; justify-content: center; gap: 10px; padding: 20px; }
+    .pager button { padding: 8px 16px; border: 1px solid #d9d9d9; background: #fff; border-radius: 6px; cursor: pointer; }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 10; padding: 20px; }
+    .modal.open { display: block; }
+    .modal-inner { background: #fff; max-width: 1000px; height: 100%; margin: 0 auto; border-radius: 8px; display: flex; flex-direction: column; }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid #eee; }
+    .modal-head button { border: none; background: #f0f0f0; border-radius: 5px; padding: 6px 12px; cursor: pointer; }
+    .modal-body { flex: 1; overflow: auto; }
+    .modal-body pre { margin: 0; padding: 16px; font-size: 12px; white-space: pre-wrap; word-break: break-word; }
+    .modal-body iframe { width: 100%; height: 100%; border: none; }
+    .status { padding: 20px; text-align: center; color: #888; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Language Guides — Free (HTML/JSON)</h1>
+    <div style="font-size:13px;opacity:.85">Language guides have no categories — browse and search only.</div>
+  </header>
+
+  <div class="bar">
+    <input id="search" placeholder="Search phrasebooks..." style="flex:1;min-width:200px">
+    <input id="lang" placeholder="Language (e.g. English)">
+    <select id="mode">
+      <option value="light">Light mode</option>
+      <option value="dark">Dark mode</option>
+    </select>
+    <select id="headingVisible">
+      <option value="1">Show heading numbers</option>
+      <option value="0">Hide heading numbers</option>
+    </select>
+    <button onclick="loadGuides(1)">Search</button>
+  </div>
+
+  <div id="grid" class="grid"></div>
+  <div id="status" class="status">Loading language guides...</div>
+  <div class="pager">
+    <button id="prev" onclick="changePage(-1)">← Prev</button>
+    <span id="pageInfo" style="align-self:center"></span>
+    <button id="next" onclick="changePage(1)">Next →</button>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal-inner">
+      <div class="modal-head">
+        <strong id="modalTitle"></strong>
+        <button onclick="closeModal()">✕ Close</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    var API = 'https://appapi.youguide.com';
+    var TOKEN = 'YOUR_TOKEN_HERE';
+    var page = 1, totalPages = 1;
+
+    function headers() {
+      return { 'Authorization': 'Bearer ' + TOKEN };
+    }
+
+    async function loadGuides(p) {
+      page = p || 1;
+      document.getElementById('status').textContent = 'Loading language guides...';
+      document.getElementById('grid').innerHTML = '';
+
+      var params = new URLSearchParams({ page: page, limit: 12 });
+      var q = document.getElementById('search').value.trim();
+      var lang = document.getElementById('lang').value.trim();
+      if (q) params.append('query', q);
+      if (lang) params.append('lang', lang);
+
+      try {
+        var res = await fetch(API + '/api/travel-content/guides?' + params, { headers: headers() });
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Request failed');
+
+        var books = data.books || [];
+        totalPages = data.totalPages || 1;
+        document.getElementById('pageInfo').textContent = 'Page ' + (data.currentPage || page) + ' of ' + totalPages;
+        document.getElementById('status').textContent = books.length ? '' : 'No language guides found.';
+
+        document.getElementById('grid').innerHTML = books.map(function (b) {
+          var langLine = [b.in_language, b.to_language].filter(Boolean).join(' → ');
+          return '<div class="card">' +
+            '<img src="' + (b.imagePath || b.fullCover || '') + '" alt="">' +
+            '<div class="body">' +
+              '<h3>' + (b.name || 'Untitled') + '</h3>' +
+              (langLine ? '<div class="lang">' + langLine + '</div>' : '') +
+              '<div class="actions">' +
+                '<button class="btn-json" onclick="viewJson(\\'' + b._id + '\\', \\'' + (b.name || '').replace(/'/g, "") + '\\')">JSON</button>' +
+                '<button class="btn-html" onclick="viewHtml(\\'' + b._id + '\\', \\'' + (b.name || '').replace(/'/g, "") + '\\')">HTML</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      } catch (e) {
+        document.getElementById('status').textContent = 'Error: ' + e.message;
+      }
+    }
+
+    function changePage(delta) {
+      var next = page + delta;
+      if (next >= 1 && next <= totalPages) loadGuides(next);
+    }
+
+    // JSON content — deducts one quota unit on first access to a guide
+    async function viewJson(id, name) {
+      openModal(name + ' — JSON');
+      document.getElementById('modalBody').innerHTML = '<div class="status">Loading JSON...</div>';
+      try {
+        var res = await fetch(API + '/api/travel-guides/digital/content/data/' + id, { headers: headers() });
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Request failed');
+        document.getElementById('modalBody').innerHTML = '<pre></pre>';
+        document.querySelector('#modalBody pre').textContent = JSON.stringify(data, null, 2);
+      } catch (e) {
+        document.getElementById('modalBody').innerHTML = '<div class="status">Error: ' + e.message + '</div>';
+      }
+    }
+
+    // Rendered HTML — same styling params as the travel-guide HTML endpoint
+    async function viewHtml(id, name) {
+      openModal(name + ' — HTML');
+      document.getElementById('modalBody').innerHTML = '<div class="status">Loading HTML...</div>';
+      var params = new URLSearchParams({
+        mode: document.getElementById('mode').value,
+        heading_visible: document.getElementById('headingVisible').value,
+        title_size: 28,
+        heading_size: 22,
+        sub_heading_size: 18,
+        paragraph_size: 16
+      });
+      try {
+        var res = await fetch(API + '/api/travel-guides/digital/content/view/' + id + '?' + params, { headers: headers() });
+        if (!res.ok) {
+          var err = await res.json();
+          throw new Error(err.message || 'Request failed');
+        }
+        var html = await res.text();
+        document.getElementById('modalBody').innerHTML = '<iframe id="frame"></iframe>';
+        document.getElementById('frame').srcdoc = html;
+      } catch (e) {
+        document.getElementById('modalBody').innerHTML = '<div class="status">Error: ' + e.message + '</div>';
+      }
+    }
+
+    function openModal(title) {
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modal').classList.add('open');
+    }
+    function closeModal() {
+      document.getElementById('modal').classList.remove('open');
+      document.getElementById('modalBody').innerHTML = '';
+    }
+
+    loadGuides(1);
+  </script>
+</body>
+</html>`}</pre>
+              </div>
+            </Card>
+          </>
+        )}
+
+        {showLanguagePaid && (
+          <>
+            <Divider orientation="left">6. Language Guides Paid (HTML/JSON) - Complete Application</Divider>
+
+            <Card style={{ marginBottom: 24, backgroundColor: '#f9f9f9' }}>
+              <Title level={4}>Full HTML Application - Language Guide Store with Stripe Checkout</Title>
+              <Paragraph type="secondary">
+                Features: Search, pagination, Stripe checkout, and unlocking JSON/HTML content with the
+                returned <Text code>transaction_id</Text>.
+              </Paragraph>
+
+              <Card style={{ marginBottom: '15px', backgroundColor: '#fff7e6', border: '1px solid #ffd591' }}>
+                <Text strong style={{ color: '#d46b08' }}>🔑 Enter Your API Token to View Live Preview</Text>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                  <Input.Password
+                    placeholder="Enter your Language Guide Paid token"
+                    value={languagePaidToken}
+                    onChange={(e) => setLanguagePaidToken(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  <Button type="primary" onClick={() => saveToken('languagePaidToken', languagePaidToken)}>
+                    Save Token
+                  </Button>
+                </div>
+                <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: '#8c8c8c' }}>
+                  Token type must be <Text code>html_json</Text> with <Text code>guide_type=language_guide</Text> and <Text code>payment_type=paid</Text>.
+                </p>
+              </Card>
+
+              <Card style={{ marginBottom: '15px', backgroundColor: '#f0f5ff', border: '1px solid #adc6ff' }}>
+                <Text strong>📡 APIs Used in this Snippet:</Text>
+                <ul style={{ marginTop: '10px', marginBottom: '10px', lineHeight: '1.8' }}>
+                  <li><Text code>GET /api/travel-content/guides</Text> - List language guides (search + pagination)</li>
+                  <li><Text code>POST /api/travel-guides/digital/secure/checkout</Text> - Create a Stripe checkout session</li>
+                  <li><Text code>GET /api/travel-guides/digital/secure/data</Text> - JSON content after payment</li>
+                  <li><Text code>GET /api/travel-guides/digital/secure/view</Text> - Styled HTML content after payment</li>
+                </ul>
+              </Card>
+
+              <Button
+                type="primary"
+                icon={<ApiOutlined />}
+                size="large"
+                onClick={() => openPreview(document.getElementById('language-paid-html').textContent, languagePaidToken)}
+                style={{ marginBottom: '15px', width: '100%', height: '45px', fontSize: '16px' }}
+              >
+                🚀 View Live Design
+              </Button>
+
+              <div className="code-block" style={{ backgroundColor: '#1e1e1e', padding: '16px', borderRadius: '4px', overflow: 'auto' }}>
+                <pre id="language-paid-html" style={{ color: '#d4d4d4', margin: 0, fontSize: '13px' }}>{`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Language Guides — Paid</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: #f5f5f5; color: #222; }
+    header { background: #fa8c16; color: #fff; padding: 20px; }
+    header h1 { margin: 0 0 4px; font-size: 22px; }
+    .bar { display: flex; gap: 10px; flex-wrap: wrap; padding: 16px 20px; background: #fff; border-bottom: 1px solid #eee; }
+    .bar input, .bar button { padding: 9px 12px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 14px; }
+    .bar button { background: #fa8c16; color: #fff; border: none; cursor: pointer; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; padding: 20px; }
+    .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.12); display: flex; flex-direction: column; }
+    .card img { width: 100%; height: 150px; object-fit: cover; background: #eee; }
+    .card .body { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .card h3 { margin: 0; font-size: 15px; }
+    .lang { font-size: 12px; color: #fa8c16; font-weight: 600; }
+    .price { font-weight: 700; }
+    .actions { display: flex; gap: 8px; margin-top: auto; flex-wrap: wrap; }
+    .actions button { flex: 1; padding: 8px; border: none; border-radius: 5px; cursor: pointer; font-size: 13px; }
+    .btn-buy { background: #fa8c16; color: #fff; }
+    .btn-json { background: #2f54eb; color: #fff; }
+    .btn-html { background: #722ed1; color: #fff; }
+    .paid-badge { font-size: 11px; color: #389e0d; font-weight: 700; }
+    .pager { display: flex; justify-content: center; gap: 10px; padding: 20px; }
+    .pager button { padding: 8px 16px; border: 1px solid #d9d9d9; background: #fff; border-radius: 6px; cursor: pointer; }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 10; padding: 20px; }
+    .modal.open { display: block; }
+    .modal-inner { background: #fff; max-width: 1000px; height: 100%; margin: 0 auto; border-radius: 8px; display: flex; flex-direction: column; }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid #eee; }
+    .modal-head button { border: none; background: #f0f0f0; border-radius: 5px; padding: 6px 12px; cursor: pointer; }
+    .modal-body { flex: 1; overflow: auto; }
+    .modal-body pre { margin: 0; padding: 16px; font-size: 12px; white-space: pre-wrap; word-break: break-word; }
+    .modal-body iframe { width: 100%; height: 100%; border: none; }
+    .status { padding: 20px; text-align: center; color: #888; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Language Guides — Paid (HTML/JSON)</h1>
+    <div style="font-size:13px;opacity:.85">Buy a phrasebook via Stripe, then unlock its JSON or HTML.</div>
+  </header>
+
+  <div class="bar">
+    <input id="search" placeholder="Search phrasebooks..." style="flex:1;min-width:200px">
+    <input id="lang" placeholder="Language (e.g. English)">
+    <button onclick="loadGuides(1)">Search</button>
+  </div>
+
+  <div id="grid" class="grid"></div>
+  <div id="status" class="status">Loading language guides...</div>
+  <div class="pager">
+    <button onclick="changePage(-1)">← Prev</button>
+    <span id="pageInfo" style="align-self:center"></span>
+    <button onclick="changePage(1)">Next →</button>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal-inner">
+      <div class="modal-head">
+        <strong id="modalTitle"></strong>
+        <button onclick="closeModal()">✕ Close</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    var API = 'https://appapi.youguide.com';
+    var TOKEN = 'YOUR_TOKEN_HERE';
+    var page = 1, totalPages = 1;
+
+    // transaction_id per guide, kept so content stays unlockable after payment
+    var txns = JSON.parse(localStorage.getItem('langTxns') || '{}');
+    function saveTxn(guideId, txnId) {
+      txns[guideId] = txnId;
+      localStorage.setItem('langTxns', JSON.stringify(txns));
+    }
+
+    function headers(json) {
+      var h = { 'Authorization': 'Bearer ' + TOKEN };
+      if (json) h['Content-Type'] = 'application/json';
+      return h;
+    }
+
+    // Stripe returns to the success URL with ?payment=success — refresh the list so
+    // the just-purchased guide shows its unlock buttons.
+    (function handleReturn() {
+      var qs = new URLSearchParams(location.search);
+      if (qs.get('transaction_id') && qs.get('guide_id')) {
+        saveTxn(qs.get('guide_id'), qs.get('transaction_id'));
+      }
+    })();
+
+    async function loadGuides(p) {
+      page = p || 1;
+      document.getElementById('status').textContent = 'Loading language guides...';
+      document.getElementById('grid').innerHTML = '';
+
+      var params = new URLSearchParams({ page: page, limit: 12 });
+      var q = document.getElementById('search').value.trim();
+      var lang = document.getElementById('lang').value.trim();
+      if (q) params.append('query', q);
+      if (lang) params.append('lang', lang);
+
+      try {
+        var res = await fetch(API + '/api/travel-content/guides?' + params, { headers: headers() });
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Request failed');
+
+        var books = data.books || [];
+        totalPages = data.totalPages || 1;
+        document.getElementById('pageInfo').textContent = 'Page ' + (data.currentPage || page) + ' of ' + totalPages;
+        document.getElementById('status').textContent = books.length ? '' : 'No language guides found.';
+
+        document.getElementById('grid').innerHTML = books.map(function (b) {
+          var langLine = [b.in_language, b.to_language].filter(Boolean).join(' → ');
+          var safeName = (b.name || '').replace(/'/g, "");
+          var bought = !!txns[b._id];
+          var actions = bought
+            ? '<div class="paid-badge">✓ Purchased</div>' +
+              '<div class="actions">' +
+                '<button class="btn-json" onclick="viewJson(\\'' + b._id + '\\', \\'' + safeName + '\\')">JSON</button>' +
+                '<button class="btn-html" onclick="viewHtml(\\'' + b._id + '\\', \\'' + safeName + '\\')">HTML</button>' +
+              '</div>'
+            : '<div class="actions"><button class="btn-buy" onclick="buy(\\'' + b._id + '\\')">Buy — €' + (b.price || '9.99') + '</button></div>';
+          return '<div class="card">' +
+            '<img src="' + (b.imagePath || b.fullCover || '') + '" alt="">' +
+            '<div class="body">' +
+              '<h3>' + (b.name || 'Untitled') + '</h3>' +
+              (langLine ? '<div class="lang">' + langLine + '</div>' : '') +
+              actions +
+            '</div>' +
+          '</div>';
+        }).join('');
+      } catch (e) {
+        document.getElementById('status').textContent = 'Error: ' + e.message;
+      }
+    }
+
+    function changePage(delta) {
+      var next = page + delta;
+      if (next >= 1 && next <= totalPages) loadGuides(next);
+    }
+
+    async function buy(guideId) {
+      try {
+        var res = await fetch(API + '/api/travel-guides/digital/secure/checkout', {
+          method: 'POST',
+          headers: headers(true),
+          body: JSON.stringify({ guide_id: guideId })
+        });
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Checkout failed');
+        // Store the transaction now so the guide unlocks on return from Stripe
+        saveTxn(guideId, data.transaction_id);
+        window.location.href = data.checkout_url;
+      } catch (e) {
+        alert('Error: ' + e.message);
+      }
+    }
+
+    async function viewJson(guideId, name) {
+      openModal(name + ' — JSON');
+      document.getElementById('modalBody').innerHTML = '<div class="status">Loading JSON...</div>';
+      var params = new URLSearchParams({ transaction_id: txns[guideId], guide_id: guideId });
+      try {
+        var res = await fetch(API + '/api/travel-guides/digital/secure/data?' + params, { headers: headers() });
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Request failed');
+        document.getElementById('modalBody').innerHTML = '<pre></pre>';
+        document.querySelector('#modalBody pre').textContent = JSON.stringify(data, null, 2);
+      } catch (e) {
+        document.getElementById('modalBody').innerHTML = '<div class="status">Error: ' + e.message + '</div>';
+      }
+    }
+
+    async function viewHtml(guideId, name) {
+      openModal(name + ' — HTML');
+      document.getElementById('modalBody').innerHTML = '<div class="status">Loading HTML...</div>';
+      var params = new URLSearchParams({
+        transaction_id: txns[guideId],
+        guide_id: guideId,
+        mode: 'light',
+        title_size: 28,
+        heading_size: 22,
+        sub_heading_size: 18,
+        paragraph_size: 16
+      });
+      try {
+        var res = await fetch(API + '/api/travel-guides/digital/secure/view?' + params, { headers: headers() });
+        if (!res.ok) {
+          var err = await res.json();
+          throw new Error(err.message || 'Request failed');
+        }
+        var html = await res.text();
+        document.getElementById('modalBody').innerHTML = '<iframe id="frame"></iframe>';
+        document.getElementById('frame').srcdoc = html;
+      } catch (e) {
+        document.getElementById('modalBody').innerHTML = '<div class="status">Error: ' + e.message + '</div>';
+      }
+    }
+
+    function openModal(title) {
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modal').classList.add('open');
+    }
+    function closeModal() {
+      document.getElementById('modal').classList.remove('open');
+      document.getElementById('modalBody').innerHTML = '';
+    }
+
+    loadGuides(1);
+  </script>
+</body>
+</html>`}</pre>
+              </div>
+            </Card>
+          </>
+        )}
+
         <Card style={{ marginBottom: 24, backgroundColor: '#fff3cd', border: '1px solid #ffc107' }}>
           <Title level={4}>💡 Implementation Notes</Title>
         <ul style={{ marginLeft: 20, lineHeight: '2' }}>
           <li><strong>🎉 READY TO USE:</strong> All code snippets above contain <strong>real, active API tokens</strong> - copy any snippet and run it immediately in your browser!</li>
-          <li><strong>Token Details:</strong> Each snippet uses a different token (PDF Prepaid, PDF Paid, HTML/JSON Prepaid, HTML/JSON Paid) to demonstrate all API types</li>
+          <li><strong>Token Details:</strong> Each snippet uses a different token (PDF Prepaid, PDF Paid, HTML/JSON Prepaid, HTML/JSON Paid, Language Guides Free, Language Guides Paid) to demonstrate all API types</li>
+          <li><strong>Language Guides:</strong> Require a token with <Text code>guide_type=language_guide</Text>. They have no categories, so the snippets offer search only — no category filter</li>
           <li><strong>Prepaid APIs:</strong> Automatically deduct quota on first access to each guide</li>
           <li><strong>Paid APIs:</strong> Integrate Stripe checkout - set your success URL to redirect back with <Text code>?payment=success</Text> parameter</li>
           <li><strong>Heading Filters:</strong> Use comma-separated numbers (e.g., "2,3,4") based on the Heading Reference section for each category</li>
@@ -3844,6 +4368,8 @@ Returns a full styled HTML page`
       case 'snippet-pdf-paid':
       case 'snippet-html-prepaid':
       case 'snippet-html-paid':
+      case 'snippet-language-free':
+      case 'snippet-language-paid':
         return renderCodeSnippets();
       default:
         return renderOverview();
