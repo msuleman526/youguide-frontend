@@ -172,11 +172,22 @@ const ApiAccessList = () => {
             ),
         },
         {
+            title: 'Guide Type',
+            dataIndex: 'guide_type',
+            key: 'guide_type',
+            width: 120,
+            render: (guideType) => (
+                <Tag color={guideType === 'language_guide' ? 'purple' : 'geekblue'}>
+                    {guideType === 'language_guide' ? 'Language' : 'Travel'}
+                </Tag>
+            ),
+        },
+        {
             title: 'Type',
             dataIndex: 'type',
             key: 'type',
             width: 100,
-            render: (type) => <Tag color="blue">{type}</Tag>,
+            render: (type) => <Tag color="blue">{type === 'html_json' ? 'HTML/JSON' : 'PDF'}</Tag>,
         },
         {
             title: 'Payment Type',

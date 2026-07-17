@@ -14,6 +14,7 @@ const EditTokenModal = ({
     categories
 }) => {
     const [form] = Form.useForm();
+    const isLanguageGuide = token?.guide_type === 'language_guide';
     const [quotaDetails, setQuotaDetails] = useState(null);
     const [quotaLoading, setQuotaLoading] = useState(false);
     const [selectedAffiliateDetails, setSelectedAffiliateDetails] = useState(null);
@@ -64,8 +65,12 @@ const EditTokenModal = ({
                 company_name: values.company_name,
                 end_date: values.end_date.format('YYYY-MM-DD'),
                 allowed_travel_guides: values.allowed_travel_guides,
-                categories: values.categories,
             };
+
+            // Categories only apply to travel-guide tokens.
+            if (!isLanguageGuide) {
+                payload.categories = values.categories;
+            }
             await ApiService.updateApiAccessToken(token._id, payload);
             onSuccess();
             form.resetFields();
@@ -87,6 +92,20 @@ const EditTokenModal = ({
             width={700}
         >
             <Form form={form} layout="vertical" onFinish={handleSubmit}>
+                <div style={{ marginBottom: 16 }}>
+                    <Space size={[4, 4]} wrap>
+                        <Tag color={isLanguageGuide ? 'purple' : 'geekblue'}>
+                            {isLanguageGuide ? 'Language Guide' : 'Travel Guide'}
+                        </Tag>
+                        {token?.type && <Tag color="blue">{token.type === 'html_json' ? 'HTML/JSON' : 'PDF'}</Tag>}
+                        {token?.payment_type && (
+                            <Tag color={token.payment_type === 'free' ? 'green' : 'orange'}>{token.payment_type}</Tag>
+                        )}
+                    </Space>
+                    <Text type="secondary" style={{ display: 'block', marginTop: 4, fontSize: 12 }}>
+                        Guide type, content type and payment type are fixed at creation and cannot be edited.
+                    </Text>
+                </div>
                 <Row gutter={16}>
                     <Col span={12}>
                         <Form.Item
@@ -111,7 +130,7 @@ const EditTokenModal = ({
                 <Row gutter={16}>
                     <Col span={12}>
                         <Form.Item
-                            label="Allowed Travel Guides"
+                            label={isLanguageGuide ? 'Allowed Language Guides' : 'Allowed Travel Guides'}
                             name="allowed_travel_guides"
                             rules={[
                                 { required: true, message: 'Please enter quota' },
@@ -195,17 +214,19 @@ const EditTokenModal = ({
                     </Col>
                 </Row>
 
-                <Form.Item
-                    label="Categories"
-                    name="categories"
-                    rules={[{ required: true, message: 'Please select at least one category' }]}
-                >
-                    <Select mode="multiple" placeholder="Select categories">
-                        {categories.map(cat => (
-                            <Option key={cat._id} value={cat._id}>{cat.name}</Option>
-                        ))}
-                    </Select>
-                </Form.Item>
+                {!isLanguageGuide && (
+                    <Form.Item
+                        label="Categories"
+                        name="categories"
+                        rules={[{ required: true, message: 'Please select at least one category' }]}
+                    >
+                        <Select mode="multiple" placeholder="Select categories">
+                            {categories.map(cat => (
+                                <Option key={cat._id} value={cat._id}>{cat.name}</Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+                )}
 
                 <Form.Item>
                     <Space>

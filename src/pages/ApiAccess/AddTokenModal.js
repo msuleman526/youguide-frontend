@@ -14,6 +14,8 @@ const AddTokenModal = ({
     affiliates
 }) => {
     const [form] = Form.useForm();
+    const guideType = Form.useWatch('guide_type', form) || 'travel_guide';
+    const isLanguageGuide = guideType === 'language_guide';
     const [assignmentType, setAssignmentType] = useState('user');
     const [quotaDetails, setQuotaDetails] = useState(null);
     const [quotaLoading, setQuotaLoading] = useState(false);
@@ -63,13 +65,18 @@ const AddTokenModal = ({
             const payload = {
                 name: values.name,
                 company_name: values.company_name,
+                guide_type: values.guide_type || 'travel_guide',
                 type: values.type,
                 payment_type: values.payment_type,
                 allowed_travel_guides: values.allowed_travel_guides,
                 end_date: values.end_date.format('YYYY-MM-DD'),
-                categories: values.categories,
                 is_active: true,
             };
+
+            // Categories only apply to travel guides; language guides have none.
+            if ((values.guide_type || 'travel_guide') !== 'language_guide') {
+                payload.categories = values.categories;
+            }
 
             if (values.user_id) {
                 payload.user_id = values.user_id;
@@ -122,7 +129,7 @@ const AddTokenModal = ({
             footer={null}
             width={700}
         >
-            <Form form={form} layout="vertical" onFinish={handleSubmit}>
+            <Form form={form} layout="vertical" onFinish={handleSubmit} initialValues={{ guide_type: 'travel_guide' }}>
                 <Row gutter={16}>
                     <Col span={12}>
                         <Form.Item
@@ -147,6 +154,22 @@ const AddTokenModal = ({
                 <Row gutter={16}>
                     <Col span={8}>
                         <Form.Item
+                            label="Guide Type"
+                            name="guide_type"
+                            rules={[{ required: true, message: 'Please select guide type' }]}
+                            tooltip="Travel guides are scoped by categories. Language guides have no categories."
+                        >
+                            <Select
+                                placeholder="Select guide type"
+                                onChange={() => form.setFieldsValue({ categories: undefined })}
+                            >
+                                <Option value="travel_guide">Travel Guide</Option>
+                                <Option value="language_guide">Language Guide</Option>
+                            </Select>
+                        </Form.Item>
+                    </Col>
+                    <Col span={8}>
+                        <Form.Item
                             label="Type"
                             name="type"
                             rules={[{ required: true, message: 'Please select type' }]}
@@ -169,20 +192,26 @@ const AddTokenModal = ({
                             </Select>
                         </Form.Item>
                     </Col>
-                    <Col span={8}>
-                        <Form.Item
-                            label="Categories"
-                            name="categories"
-                            rules={[{ required: true, message: 'Please select categories' }]}
-                        >
-                            <Select mode="multiple" placeholder="Select categories">
-                                {categories.map(cat => (
-                                    <Option key={cat._id} value={cat._id}>{cat.name}</Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
-                    </Col>
                 </Row>
+
+                {/* Categories apply to travel guides only */}
+                {!isLanguageGuide && (
+                    <Row gutter={16}>
+                        <Col span={24}>
+                            <Form.Item
+                                label="Categories"
+                                name="categories"
+                                rules={[{ required: true, message: 'Please select categories' }]}
+                            >
+                                <Select mode="multiple" placeholder="Select categories" allowClear>
+                                    {categories.map(cat => (
+                                        <Option key={cat._id} value={cat._id}>{cat.name}</Option>
+                                    ))}
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                )}
 
                 <Divider orientation="left">Assign To</Divider>
 
@@ -257,7 +286,7 @@ const AddTokenModal = ({
                 <Row gutter={16}>
                     <Col span={12}>
                         <Form.Item
-                            label="Allowed Travel Guides"
+                            label={isLanguageGuide ? 'Allowed Language Guides' : 'Allowed Travel Guides'}
                             name="allowed_travel_guides"
                             rules={[
                                 { required: true, message: 'Please enter quota' },

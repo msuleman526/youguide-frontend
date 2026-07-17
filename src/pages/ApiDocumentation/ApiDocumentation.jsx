@@ -39,6 +39,9 @@ const ApiDocumentation = () => {
   const [pdfPaidToken, setPdfPaidToken] = useState(localStorage.getItem('pdfPaidToken') || '');
   const [htmlPrepaidToken, setHtmlPrepaidToken] = useState(localStorage.getItem('htmlPrepaidToken') || '');
   const [htmlPaidToken, setHtmlPaidToken] = useState(localStorage.getItem('htmlPaidToken') || '');
+  // Language-guide tokens (type=html_json, guide_type=language_guide)
+  const [languageFreeToken, setLanguageFreeToken] = useState(localStorage.getItem('languageFreeToken') || '');
+  const [languagePaidToken, setLanguagePaidToken] = useState(localStorage.getItem('languagePaidToken') || '');
 
   const saveToken = (type, value) => {
     localStorage.setItem(type, value);
@@ -50,6 +53,8 @@ const ApiDocumentation = () => {
     { key: 'pdf-paid', label: 'PDF Paid Flow' },
     { key: 'html-json-prepaid', label: 'HTML/JSON Prepaid Flow' },
     { key: 'html-json-paid', label: 'HTML/JSON Paid Flow' },
+    { key: 'language-free', label: 'Language Guides Free Flow' },
+    { key: 'language-paid', label: 'Language Guides Paid Flow' },
   ];
 
   const handleFlowChartSelect = ({ key }) => {
@@ -206,6 +211,66 @@ const ApiDocumentation = () => {
           { id: 'e13-15', source: '13', target: '15', markerEnd: { type: MarkerType.ArrowClosed } },
           { id: 'e14-15', source: '14', target: '15', markerEnd: { type: MarkerType.ArrowClosed } },
         ]
+      },
+      'language-free': {
+        title: 'Language Guides Free (HTML/JSON) Flow',
+        nodes: [
+          { id: '1', position: { x: 300, y: 0 }, data: { label: 'START' }, style: { ...nodeStyle, background: '#d9f7be', border: '2px solid #52c41a' } },
+          { id: '2', position: { x: 300, y: 80 }, data: { label: 'GET /api/travel-content/guides\n(returns LANGUAGE guides — no categories)' }, style: { ...nodeStyle, background: '#e6f7ff', border: '1px solid #1890ff', width: 240 } },
+          { id: '3', position: { x: 300, y: 180 }, data: { label: 'User selects language guide\nChoose format: JSON or HTML' }, style: { ...nodeStyle, background: '#fff7e6', border: '1px solid #ffa940' } },
+          { id: '4', position: { x: 120, y: 290 }, data: { label: 'JSON Format\nGET /digital/content/data/:id' }, style: { ...nodeStyle, background: '#f0f5ff', border: '1px solid #2f54eb', width: 190 } },
+          { id: '5', position: { x: 480, y: 290 }, data: { label: 'HTML Format\nGET /digital/content/view/:id\n+ styling params' }, style: { ...nodeStyle, background: '#f9f0ff', border: '1px solid #722ed1', width: 200 } },
+          { id: '6', position: { x: 300, y: 410 }, data: { label: 'VALIDATION\n✓ Token type = html_json?\n✓ guide_type = language_guide?\n✓ Payment = free?\n✓ Quota > 0?' }, style: { ...nodeStyle, background: '#fff1f0', border: '2px solid #ff4d4f', width: 230, height: 100 } },
+          { id: '7', position: { x: 100, y: 560 }, data: { label: '❌ FAILED\nReturn 403 Error' }, style: { ...nodeStyle, background: '#fff1f0', border: '1px solid #ff4d4f' } },
+          { id: '8', position: { x: 500, y: 560 }, data: { label: '✅ PASSED\nFirst access deducts quota' }, style: { ...nodeStyle, background: '#f6ffed', border: '1px solid #52c41a' } },
+          { id: '9', position: { x: 250, y: 680 }, data: { label: 'JSON Response\n{ guide, content, access_info }' }, style: { ...nodeStyle, background: '#f0f5ff', border: '1px solid #2f54eb' } },
+          { id: '10', position: { x: 500, y: 680 }, data: { label: 'HTML Response\nFull styled HTML page' }, style: { ...nodeStyle, background: '#f9f0ff', border: '1px solid #722ed1' } },
+          { id: '11', position: { x: 380, y: 780 }, data: { label: 'END' }, style: { ...nodeStyle, background: '#d9f7be', border: '2px solid #52c41a' } },
+        ],
+        edges: [
+          { id: 'e1-2', source: '1', target: '2', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e2-3', source: '2', target: '3', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e3-4', source: '3', target: '4', label: 'JSON', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e3-5', source: '3', target: '5', label: 'HTML', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e4-6', source: '4', target: '6', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e5-6', source: '5', target: '6', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e6-7', source: '6', target: '7', label: 'No', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: '#ff4d4f' } },
+          { id: 'e6-8', source: '6', target: '8', label: 'Yes', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: '#52c41a' } },
+          { id: 'e8-9', source: '8', target: '9', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e8-10', source: '8', target: '10', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e9-11', source: '9', target: '11', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e10-11', source: '10', target: '11', markerEnd: { type: MarkerType.ArrowClosed } },
+        ]
+      },
+      'language-paid': {
+        title: 'Language Guides Paid (HTML/JSON) Flow',
+        nodes: [
+          { id: '1', position: { x: 300, y: 0 }, data: { label: 'START' }, style: { ...nodeStyle, background: '#d9f7be', border: '2px solid #52c41a' } },
+          { id: '2', position: { x: 300, y: 80 }, data: { label: 'GET /api/travel-content/guides\n(LANGUAGE guides — no categories)' }, style: { ...nodeStyle, background: '#e6f7ff', border: '1px solid #1890ff', width: 240 } },
+          { id: '3', position: { x: 300, y: 180 }, data: { label: 'User selects guide to PURCHASE' }, style: { ...nodeStyle, background: '#fff7e6', border: '1px solid #ffa940' } },
+          { id: '4', position: { x: 300, y: 270 }, data: { label: 'POST /digital/secure/checkout\n{ guide_id }' }, style: { ...nodeStyle, background: '#f0f5ff', border: '1px solid #2f54eb', width: 230 } },
+          { id: '5', position: { x: 300, y: 360 }, data: { label: 'Response:\n{ checkout_url, transaction_id }' }, style: { ...nodeStyle, background: '#f9f0ff', border: '1px solid #722ed1' } },
+          { id: '6', position: { x: 300, y: 450 }, data: { label: 'Redirect to Stripe Checkout' }, style: { ...nodeStyle, background: '#e6fffb', border: '1px solid #13c2c2' } },
+          { id: '7', position: { x: 100, y: 550 }, data: { label: '❌ Payment Failed' }, style: { ...nodeStyle, background: '#fff1f0', border: '1px solid #ff4d4f' } },
+          { id: '8', position: { x: 500, y: 550 }, data: { label: '✅ Payment Success' }, style: { ...nodeStyle, background: '#f6ffed', border: '1px solid #52c41a' } },
+          { id: '9', position: { x: 300, y: 650 }, data: { label: 'JSON: GET /digital/secure/data\nHTML: GET /digital/secure/view\n?transaction_id&guide_id' }, style: { ...nodeStyle, background: '#f0f5ff', border: '1px solid #2f54eb', width: 240, height: 80 } },
+          { id: '10', position: { x: 300, y: 780 }, data: { label: 'VALIDATION\n✓ Transaction completed?\n✓ Guide matches?' }, style: { ...nodeStyle, background: '#fff1f0', border: '2px solid #ff4d4f', height: 80 } },
+          { id: '11', position: { x: 300, y: 900 }, data: { label: 'JSON / HTML Response' }, style: { ...nodeStyle, background: '#f9f0ff', border: '1px solid #722ed1' } },
+          { id: '12', position: { x: 300, y: 980 }, data: { label: 'END' }, style: { ...nodeStyle, background: '#d9f7be', border: '2px solid #52c41a' } },
+        ],
+        edges: [
+          { id: 'e1-2', source: '1', target: '2', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e2-3', source: '2', target: '3', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e3-4', source: '3', target: '4', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e4-5', source: '4', target: '5', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e5-6', source: '5', target: '6', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e6-7', source: '6', target: '7', label: 'Failed', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: '#ff4d4f' } },
+          { id: 'e6-8', source: '6', target: '8', label: 'Success', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: '#52c41a' } },
+          { id: 'e8-9', source: '8', target: '9', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e9-10', source: '9', target: '10', markerEnd: { type: MarkerType.ArrowClosed } },
+          { id: 'e10-11', source: '10', target: '11', label: 'Yes', markerEnd: { type: MarkerType.ArrowClosed }, style: { stroke: '#52c41a' } },
+          { id: 'e11-12', source: '11', target: '12', markerEnd: { type: MarkerType.ArrowClosed } },
+        ]
       }
     };
 
@@ -281,6 +346,16 @@ const ApiDocumentation = () => {
       key: 'html-json-paid',
       icon: <ApiOutlined />,
       label: 'HTML/JSON Paid API',
+    },
+    {
+      key: 'language-free',
+      icon: <CodeOutlined />,
+      label: 'Language Guides Free',
+    },
+    {
+      key: 'language-paid',
+      icon: <DollarOutlined />,
+      label: 'Language Guides Paid',
     },
     {
       key: 'code-snippets',
@@ -3410,6 +3485,342 @@ Returns full HTML page with applied styling`
     </div>
   );
 
+  const renderLanguageGuideFreeApis = () => (
+    <div>
+      <Title level={2}>Language Guides — Free (HTML/JSON)</Title>
+      <Paragraph>
+        These endpoints are for tokens with <Tag color="green">type=html_json</Tag>,{' '}
+        <Tag color="purple">guide_type=language_guide</Tag> and <Tag color="cyan">payment_type=free</Tag>.
+      </Paragraph>
+
+      <Card style={{ marginBottom: 24, backgroundColor: '#f9f0ff', border: '1px solid #d3adf7' }}>
+        <Text strong style={{ fontSize: 14 }}>📘 What is a Language Guide?</Text>
+        <Paragraph style={{ marginTop: 8, marginBottom: 0 }}>
+          Language guides teach a language (e.g. an English → Spanish phrasebook) instead of describing a
+          destination. Unlike travel guides they are <strong>not organised by category</strong>, so the{' '}
+          <Text code>/categories</Text> endpoint returns an empty list and the <Text code>category_id</Text>{' '}
+          filter is ignored. Each guide's content is delivered from its stored JSON file (its{' '}
+          <Text code>jsonPath</Text>, e.g. <Text code>language.json</Text>); the same JSON is used to render HTML.
+          The request/response shapes are otherwise identical to the HTML/JSON travel-guide API.
+        </Paragraph>
+      </Card>
+
+      <Card style={{ marginBottom: 24, backgroundColor: '#f6ffed', border: '1px solid #b7eb8f' }}>
+        <div style={{ marginBottom: 8 }}>
+          <Text strong>🔑 Enter Your Language Guide (Free) Token to Save It for Previews</Text>
+        </div>
+        <Space.Compact style={{ width: '100%' }}>
+          <Input
+            placeholder="Enter your Language Guide Free token"
+            value={languageFreeToken}
+            onChange={(e) => setLanguageFreeToken(e.target.value)}
+          />
+          <Button type="primary" onClick={() => saveToken('languageFreeToken', languageFreeToken)}>Save</Button>
+        </Space.Compact>
+      </Card>
+
+      <div style={{ marginBottom: 24 }}>
+        <Button icon={<PartitionOutlined />} onClick={() => handleFlowChartSelect({ key: 'language-free' })}>
+          View Flow Chart
+        </Button>
+      </div>
+
+      <Divider orientation="left">Browse Language Guides</Divider>
+
+      {renderApiEndpoint(
+        'GET',
+        '/api/travel-content/guides',
+        'List available language guides (no categories). Supports optional text search and pagination.',
+        [
+          { name: 'query', description: 'Search by name / description / language', required: false },
+          { name: 'lang', description: 'Filter by source or target language (e.g. "English")', required: false },
+          { name: 'page', description: 'Page number (default 1)', required: false },
+          { name: 'limit', description: 'Page size (default 20, max 100)', required: false },
+        ],
+        `{
+  "currentPage": 1,
+  "pageSize": 20,
+  "totalPages": 3,
+  "totalBooks": 42,
+  "books": [
+    {
+      "_id": "6650a1f0c2b1a4e2d1234567",
+      "name": "English → Spanish Phrasebook",
+      "description": "Essential phrases for travellers learning Spanish.",
+      "price": 4.99,
+      "in_language": "English",
+      "to_language": "Spanish",
+      "imagePath": "https://presigned-url...",
+      "fullCover": "https://presigned-url..."
+    }
+  ]
+}`
+      )}
+
+      {renderApiEndpoint(
+        'GET',
+        '/api/travel-content/guides/:guideId',
+        'Get a single language guide. No category is returned; has_pdf / has_json indicate available formats.',
+        [
+          { name: 'guideId', description: 'Language guide ID', required: true },
+        ],
+        `{
+  "success": true,
+  "guide": {
+    "_id": "6650a1f0c2b1a4e2d1234567",
+    "name": "English → Spanish Phrasebook",
+    "description": "Essential phrases for travellers learning Spanish.",
+    "price": 4.99,
+    "in_language": "English",
+    "to_language": "Spanish",
+    "imagePath": "https://presigned-url...",
+    "fullCover": "https://presigned-url...",
+    "has_pdf": true,
+    "has_json": true
+  }
+}`
+      )}
+
+      <Card style={{ marginBottom: 24, backgroundColor: '#fffbe6', border: '1px solid #ffe58f' }}>
+        <Text>
+          <strong>Note:</strong> The <Text code>/api/travel-content/categories</Text> endpoint responds with{' '}
+          <Text code>{`{ "success": true, "data": [] }`}</Text> for language-guide tokens, and{' '}
+          <Text code>/guides/:guideId/headings</Text> returns an empty <Text code>headings</Text> array
+          (language guides carry their headings inside their own JSON).
+        </Text>
+      </Card>
+
+      <Divider orientation="left">Digital Content Endpoints</Divider>
+
+      {renderApiEndpoint(
+        'GET',
+        '/api/travel-guides/digital/content/data/:guideId',
+        'Get the JSON content of the language guide (deducts quota on first access).',
+        [
+          { name: 'guideId', description: 'Language guide ID', required: true },
+          { name: 'headings', description: 'Filter by heading numbers (comma-separated), based on the guide\'s own JSON headings', required: false },
+          { name: 'heading_format', description: '"normal" (default) or "sequential"', required: false },
+        ],
+        `{
+  "success": true,
+  "guide": {
+    "_id": "6650a1f0c2b1a4e2d1234567",
+    "name": "English → Spanish Phrasebook"
+  },
+  "content": [
+    { "type": "paragraph", "text": "Hola — Hello" }
+  ],
+  "headings": [
+    { "text": "1. Greetings", "level": 1 }
+  ],
+  "access_info": {
+    "first_access": true,
+    "remaining_quota": 99
+  }
+}`
+      )}
+
+      {renderApiEndpoint(
+        'GET',
+        '/api/travel-guides/digital/content/view/:guideId',
+        'Get the rendered HTML version of the language guide with customizable styling (same styling params as travel guides).',
+        [
+          { name: 'guideId', description: 'Language guide ID (in URL path)', required: true },
+          { name: 'title_color / heading_color / sub_heading_color / paragraph_color / table_of_content_color', description: 'Colors (name or hex)', required: false },
+          { name: 'title_size / heading_size / sub_heading_size / paragraph_size', description: 'Font sizes in px', required: false },
+          { name: 'mode', description: '"light" or "dark" (default light)', required: false },
+          { name: 'heading_visible', description: '1 (show numbers) or 0 (hide)', required: false },
+          { name: 'headings / heading_format', description: 'Optional heading filtering', required: false },
+          { name: 'hosted_page', description: '1 to return a hosted URL instead of raw HTML', required: false },
+        ],
+        `Example: /api/travel-guides/digital/content/view/6650a1f0c2b1a4e2d1234567?mode=dark&title_size=40&heading_color=%23722ed1
+
+Returns a full styled HTML page`
+      )}
+
+      <Divider orientation="left">Usage Statistics</Divider>
+
+      {renderApiEndpoint(
+        'GET',
+        '/api/travel-content/stats',
+        'Get usage statistics for your token (category breakdown is empty for language-guide tokens).',
+        [],
+        `{
+  "success": true,
+  "data": {
+    "token_info": {
+      "name": "Language School XYZ",
+      "type": "html_json",
+      "payment_type": "free",
+      "guide_type": "language_guide",
+      "is_active": true
+    },
+    "usage_summary": {
+      "total_accesses": 58,
+      "unique_guides_accessed": 12,
+      "remaining_quota": 88
+    }
+  }
+}`
+      )}
+    </div>
+  );
+
+  const renderLanguageGuidePaidApis = () => (
+    <div>
+      <Title level={2}>Language Guides — Paid (HTML/JSON)</Title>
+      <Paragraph>
+        These endpoints are for tokens with <Tag color="green">type=html_json</Tag>,{' '}
+        <Tag color="purple">guide_type=language_guide</Tag> and <Tag color="orange">payment_type=paid</Tag>.
+      </Paragraph>
+
+      <Card style={{ marginBottom: 24, backgroundColor: '#f9f0ff', border: '1px solid #d3adf7' }}>
+        <Text strong style={{ fontSize: 14 }}>📘 About Paid Language Guides</Text>
+        <Paragraph style={{ marginTop: 8, marginBottom: 0 }}>
+          The purchase flow mirrors the paid HTML/JSON travel-guide API: create a Stripe checkout, then read the
+          content with the returned <Text code>transaction_id</Text>. There are <strong>no categories</strong>,
+          and content is delivered from each guide's stored JSON file (e.g. <Text code>language.json</Text>).
+        </Paragraph>
+      </Card>
+
+      <Card style={{ marginBottom: 24, backgroundColor: '#fff7e6', border: '1px solid #ffd591' }}>
+        <div style={{ marginBottom: 8 }}>
+          <Text strong>🔑 Enter Your Language Guide (Paid) Token to Save It for Previews</Text>
+        </div>
+        <Space.Compact style={{ width: '100%' }}>
+          <Input
+            placeholder="Enter your Language Guide Paid token"
+            value={languagePaidToken}
+            onChange={(e) => setLanguagePaidToken(e.target.value)}
+          />
+          <Button type="primary" onClick={() => saveToken('languagePaidToken', languagePaidToken)}>Save</Button>
+        </Space.Compact>
+      </Card>
+
+      <div style={{ marginBottom: 24 }}>
+        <Button icon={<PartitionOutlined />} onClick={() => handleFlowChartSelect({ key: 'language-paid' })}>
+          View Flow Chart
+        </Button>
+      </div>
+
+      <Divider orientation="left">Browse Language Guides</Divider>
+
+      {renderApiEndpoint(
+        'GET',
+        '/api/travel-content/guides',
+        'List language guides available for purchase (no categories).',
+        [
+          { name: 'query', description: 'Search by name / description / language', required: false },
+          { name: 'lang', description: 'Filter by source or target language', required: false },
+          { name: 'page', description: 'Page number', required: false },
+        ],
+        `{
+  "currentPage": 1,
+  "pageSize": 20,
+  "totalPages": 3,
+  "totalBooks": 42,
+  "books": [
+    {
+      "_id": "6650a1f0c2b1a4e2d1234567",
+      "name": "English → Spanish Phrasebook",
+      "price": 4.99,
+      "in_language": "English",
+      "to_language": "Spanish",
+      "imagePath": "https://presigned-url...",
+      "fullCover": "https://presigned-url..."
+    }
+  ]
+}`
+      )}
+
+      <Divider orientation="left">Payment & Digital Content Access</Divider>
+
+      {renderApiEndpoint(
+        'POST',
+        '/api/travel-guides/digital/secure/checkout',
+        'Generate a Stripe checkout link to purchase a language guide.',
+        [
+          { name: 'guide_id', description: 'Language guide ID (in request body)', required: true },
+        ],
+        `{
+  "success": true,
+  "checkout_url": "https://checkout.stripe.com/...",
+  "transaction_id": "550e8400-e29b-41d4-a716-446655440000",
+  "content_type": "digital",
+  "expires_in": 1800
+}`
+      )}
+
+      {renderApiEndpoint(
+        'GET',
+        '/api/travel-guides/digital/secure/data',
+        'Get the JSON content after payment, using the transaction ID.',
+        [
+          { name: 'transaction_id', description: 'Transaction ID from checkout', required: true },
+          { name: 'guide_id', description: 'Language guide ID', required: true },
+          { name: 'headings / heading_format', description: 'Optional heading filtering', required: false },
+        ],
+        `{
+  "success": true,
+  "guide": {
+    "_id": "6650a1f0c2b1a4e2d1234567",
+    "name": "English → Spanish Phrasebook"
+  },
+  "content": {
+    "content": [ { "type": "paragraph", "text": "Hola — Hello" } ],
+    "headings": [ { "text": "1. Greetings", "level": 1 } ]
+  },
+  "transaction": {
+    "transaction_id": "550e8400-e29b-41d4-a716-446655440000",
+    "paid_at": "2026-01-02T10:30:00Z",
+    "amount": 4.99,
+    "currency": "eur"
+  }
+}`
+      )}
+
+      {renderApiEndpoint(
+        'GET',
+        '/api/travel-guides/digital/secure/view',
+        'Get the rendered HTML after payment, using the transaction ID (same styling params as the free endpoint).',
+        [
+          { name: 'transaction_id', description: 'Transaction ID from payment', required: true },
+          { name: 'guide_id', description: 'Language guide ID', required: true },
+          { name: 'title_color / heading_color / paragraph_color / mode / ...', description: 'Optional styling params', required: false },
+          { name: 'hosted_page', description: '1 to return a hosted URL instead of raw HTML', required: false },
+        ],
+        `Example: /api/travel-guides/digital/secure/view?transaction_id=550e8400...&guide_id=6650a1f0c2b1a4e2d1234567&mode=dark
+
+Returns a full styled HTML page`
+      )}
+
+      <Divider orientation="left">Usage Statistics</Divider>
+
+      {renderApiEndpoint(
+        'GET',
+        '/api/travel-content/stats',
+        'Get usage statistics for your token.',
+        [],
+        `{
+  "success": true,
+  "data": {
+    "token_info": {
+      "name": "Language School XYZ",
+      "type": "html_json",
+      "payment_type": "paid",
+      "guide_type": "language_guide",
+      "is_active": true
+    },
+    "usage_summary": {
+      "total_accesses": 30,
+      "unique_guides_accessed": 8
+    }
+  }
+}`
+      )}
+    </div>
+  );
+
   const renderContent = () => {
     switch (selectedSection) {
       case 'overview':
@@ -3424,6 +3835,10 @@ Returns full HTML page with applied styling`
         return renderHtmlJsonFreeApis();
       case 'html-json-paid':
         return renderHtmlJsonPaidApis();
+      case 'language-free':
+        return renderLanguageGuideFreeApis();
+      case 'language-paid':
+        return renderLanguageGuidePaidApis();
       case 'code-snippets':
       case 'snippet-pdf-prepaid':
       case 'snippet-pdf-paid':
