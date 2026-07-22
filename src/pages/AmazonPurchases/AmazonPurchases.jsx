@@ -12,6 +12,7 @@ const statusColors = {
     purchased: 'green',
     email_sent: 'cyan',
     failed: 'red',
+    cancelled: 'magenta',
 };
 
 const logActionColors = {
@@ -21,6 +22,8 @@ const logActionColors = {
     email_sent: 'cyan',
     error: 'red',
     amazon_message_sent: 'purple',
+    order_cancelled: 'magenta',
+    esim_cancelled: 'volcano',
 };
 
 const fulfillmentLabel = (channel) => {
@@ -573,6 +576,7 @@ const AmazonPurchases = () => {
                             { label: 'Purchased', value: 'purchased' },
                             { label: 'Email Sent', value: 'email_sent' },
                             { label: 'Failed', value: 'failed' },
+                            { label: 'Cancelled', value: 'cancelled' },
                         ]}
                     />
                 </Flex>
@@ -668,6 +672,7 @@ const AmazonPurchases = () => {
                         { label: 'Purchased', value: 'purchased' },
                         { label: 'Email Sent', value: 'email_sent' },
                         { label: 'Failed', value: 'failed' },
+                        { label: 'Cancelled', value: 'cancelled' },
                     ]}
                 />
             </Modal>
