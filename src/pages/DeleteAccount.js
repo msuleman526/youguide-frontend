@@ -1,24 +1,35 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Form, Input, Button, Space, Card, Typography, message } from 'antd';
 import axios from 'axios';
 import { API_URL } from '../Utils/Apis';
 import ApiService from '../APIServices/ApiService';
+import Turnstile from '../components/Turnstile';
 
 const { Title } = Typography;
 
 const DeleteAccount = () => {
     const [loading, setLoading] = useState(false);
+    const [captchaToken, setCaptchaToken] = useState('');
+    const turnstileRef = useRef(null);
 
     const onFinish = async (values) => {
+        if (!captchaToken) {
+            message.warning('Please complete the captcha to verify you are human.');
+            return;
+        }
+
         setLoading(true);
         try {
-            const response = await axios.post(ApiService.URLL + '/delete-account', values);
+            const response = await axios.post(ApiService.URLL + '/delete-account', { ...values, captchaToken });
             console.log(response);
             message.success(response.data.message || 'Account deletion request submitted successfully.');
             form.resetFields();
         } catch (error) {
             message.error(error.response?.data?.message || 'Something went wrong. Please try again.');
         } finally {
+            // Turnstile tokens are single-use — re-arm so a retry can succeed.
+            setCaptchaToken('');
+            if (turnstileRef.current) turnstileRef.current.reset();
             setLoading(false);
         }
     };
@@ -81,8 +92,18 @@ const DeleteAccount = () => {
                     </Form.Item>
 
                     <Form.Item>
+                        <Turnstile
+                            ref={turnstileRef}
+                            theme="light"
+                            onVerify={setCaptchaToken}
+                            onExpire={() => setCaptchaToken('')}
+                            onError={() => setCaptchaToken('')}
+                        />
+                    </Form.Item>
+
+                    <Form.Item>
                         <Space style={{ width: '100%', justifyContent: 'center' }}>
-                            <Button type="primary" htmlType="submit" loading={loading}>
+                            <Button type="primary" htmlType="submit" loading={loading} disabled={!captchaToken}>
                                 Submit
                             </Button>
                         </Space>

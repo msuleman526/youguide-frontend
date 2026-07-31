@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Card, Form, Input, Select, Button, message, Row, Col, Typography } from 'antd';
 import { SendOutlined } from '@ant-design/icons';
 import ApiService from '../APIServices/ApiService';
+import Turnstile from '../components/Turnstile';
 import logo from '../assets/large_logo.png';
 
 const { TextArea } = Input;
@@ -11,8 +12,15 @@ const { Title } = Typography;
 const RequestForm = () => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
+    const [captchaToken, setCaptchaToken] = useState('');
+    const turnstileRef = useRef(null);
 
     const handleSubmit = async (values) => {
+        if (!captchaToken) {
+            message.warning('Please complete the captcha to verify you are human.');
+            return;
+        }
+
         try {
             setLoading(true);
 
@@ -22,7 +30,8 @@ const RequestForm = () => {
                 email_address: values.email_address,
                 phone_no: values.phone_no || undefined,
                 interested_id: values.interested_id || undefined,
-                additional_information: values.additional_information || undefined
+                additional_information: values.additional_information || undefined,
+                captchaToken
             };
 
             // Remove undefined values
@@ -36,6 +45,9 @@ const RequestForm = () => {
             console.error('Error submitting request:', error);
             message.error(error.response?.data?.message || 'Failed to submit request. Please try again.');
         } finally {
+            // Turnstile tokens are single-use — re-arm so a retry can succeed.
+            setCaptchaToken('');
+            if (turnstileRef.current) turnstileRef.current.reset();
             setLoading(false);
         }
     };
@@ -169,6 +181,17 @@ const RequestForm = () => {
                         />
                     </Form.Item>
 
+                    {/* Captcha */}
+                    <Form.Item style={{ marginBottom: 16 }}>
+                        <Turnstile
+                            ref={turnstileRef}
+                            theme="light"
+                            onVerify={setCaptchaToken}
+                            onExpire={() => setCaptchaToken('')}
+                            onError={() => setCaptchaToken('')}
+                        />
+                    </Form.Item>
+
                     {/* Submit Button */}
                     <Form.Item style={{ marginBottom: 0 }}>
                         <Button
@@ -177,6 +200,7 @@ const RequestForm = () => {
                             size="large"
                             icon={<SendOutlined />}
                             loading={loading}
+                            disabled={!captchaToken}
                             block
                             style={{
                                 height: 48,
