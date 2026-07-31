@@ -19,7 +19,7 @@ import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef 
 // Used when no key is configured so local dev works without setup.
 const DUMMY_ALWAYS_PASSES = '1x00000000000000000000AA';
 
-const SITE_KEY = process.env.REACT_APP_TURNSTILE_SITE_KEY || DUMMY_ALWAYS_PASSES;
+const SITE_KEY = "0x4AAAAAAECmSnytQMUY8a8h";
 
 const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 
