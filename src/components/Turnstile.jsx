@@ -11,15 +11,21 @@ import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef 
  * The token is only a claim; `youguide-backend/src/middleware/verifyCaptcha.js`
  * is what actually validates it with Cloudflare.
  *
- * Configure with REACT_APP_TURNSTILE_SITE_KEY (CRA inlines it at build time, so a
- * rebuild is required after changing it).
+ * The site key is hardcoded below (this project ships without a .env);
+ * REACT_APP_TURNSTILE_SITE_KEY overrides it if one is ever provided. Either way
+ * CRA inlines the value at build time, so changing it requires a rebuild.
  */
 
 // Cloudflare's published test site key — renders a real widget that always passes.
 // Used when no key is configured so local dev works without setup.
 const DUMMY_ALWAYS_PASSES = '1x00000000000000000000AA';
 
-const SITE_KEY = "0x4AAAAAAECmSnytQMUY8a8h";
+// Production site key for the shared "youguide.com (Spin)" widget. Public by
+// design (it ships to the browser). Hardcoded because this project has no .env;
+// REACT_APP_TURNSTILE_SITE_KEY still overrides it when someone does set one.
+const PRODUCTION_SITE_KEY = '0x4AAAAAAECmSnytQMUY8a8h';
+
+const SITE_KEY = process.env.REACT_APP_TURNSTILE_SITE_KEY || PRODUCTION_SITE_KEY;
 
 const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 
