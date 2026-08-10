@@ -2,7 +2,7 @@ import axios from 'axios';
 // LOCAL DEV: true -> http://localhost:5001, false -> https://appapi.youguide.com
 // NOTE: this is a tracked file. Set back to false before committing or the
 // deployed build will point at localhost.
-const isDev = true
+const isDev = false
 
 class ApiService {
     static URLL = !isDev ? "https://appapi.youguide.com" : 'http://localhost:5001'
