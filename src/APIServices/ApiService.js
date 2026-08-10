@@ -1,5 +1,8 @@
 import axios from 'axios';
-const isDev = false
+// LOCAL DEV: true -> http://localhost:5001, false -> https://appapi.youguide.com
+// NOTE: this is a tracked file. Set back to false before committing or the
+// deployed build will point at localhost.
+const isDev = true
 
 class ApiService {
     static URLL = !isDev ? "https://appapi.youguide.com" : 'http://localhost:5001'
@@ -2410,6 +2413,307 @@ class ApiService {
             `${this.baseURL}/website/admin/orders/${orderId}/provision-esims`,
             {},
             { headers: this._adminHeaders() }
+        );
+        return r.data;
+    }
+
+    // ----------------------------------------------------------------------
+    // Google Drive
+    // ----------------------------------------------------------------------
+
+    /** Links a publicly shared Drive folder. Returns the connection + its storageToken. */
+    static async linkGoogleDrive({ folderUrl, displayName, recursive }) {
+        const r = await axios.post(
+            `${this.baseURL}/google-drive/connections`,
+            { folderUrl, displayName, recursive },
+            { headers: this._adminHeaders() }
+        );
+        return r.data;
+    }
+
+    static async getDriveConnections(params = {}) {
+        const r = await axios.get(`${this.baseURL}/google-drive/connections`, {
+            params,
+            headers: this._adminHeaders(),
+        });
+        return r.data;
+    }
+
+    static async getDriveConnection(storageToken) {
+        const r = await axios.get(`${this.baseURL}/google-drive/connections/${storageToken}`, {
+            headers: this._adminHeaders(),
+        });
+        return r.data;
+    }
+
+    /**
+     * Lists files. Omit `recursive` and the backend decides: browsing a folder
+     * stays in that folder, while a type filter or search spans every level.
+     */
+    static async getDriveFiles(storageToken, params = {}) {
+        const r = await axios.get(`${this.baseURL}/google-drive/connections/${storageToken}/files`, {
+            params,
+            headers: this._adminHeaders(),
+        });
+        return r.data;
+    }
+
+    static async getDriveFileMetadata(fileToken, params = {}) {
+        const r = await axios.get(`${this.baseURL}/google-drive/files/${encodeURIComponent(fileToken)}`, {
+            params,
+            headers: this._adminHeaders(),
+        });
+        return r.data;
+    }
+
+    /**
+     * Downloads a file by token or by exact name.
+     *
+     * Returns the raw blob plus the filename the SERVER sent in
+     * Content-Disposition, so the original Drive name is preserved. The backend
+     * exposes that header via Access-Control-Expose-Headers - without it the
+     * browser cannot read it cross-origin and every file saves as "download".
+     */
+    static async downloadDriveFile(storageToken, { fileToken, name, folder }) {
+        const r = await axios.get(`${this.baseURL}/google-drive/connections/${storageToken}/download`, {
+            params: { fileToken, name, folder },
+            headers: { Authorization: 'Bearer ' + localStorage.getItem('token') },
+            responseType: 'blob',
+        });
+
+        let filename = name || 'download';
+        const disposition = r.headers['content-disposition'] || '';
+        const utf8 = /filename\*=UTF-8''([^;]+)/i.exec(disposition);
+        const plain = /filename="([^"]+)"/i.exec(disposition);
+        if (utf8) filename = decodeURIComponent(utf8[1]);
+        else if (plain) filename = plain[1];
+
+        return { blob: r.data, filename };
+    }
+
+    /** Rebuilds the search index and revalidates the folder. Also reconnects. */
+    static async syncDriveConnection(storageToken) {
+        const r = await axios.post(
+            `${this.baseURL}/google-drive/connections/${storageToken}/sync`,
+            {},
+            { headers: this._adminHeaders() }
+        );
+        return r.data;
+    }
+
+    /** Soft disconnect - nothing is deleted in Google Drive or the database. */
+    static async disconnectDriveConnection(storageToken) {
+        const r = await axios.post(
+            `${this.baseURL}/google-drive/connections/${storageToken}/disconnect`,
+            {},
+            { headers: this._adminHeaders() }
+        );
+        return r.data;
+    }
+
+    // ----------------------------------------------------------------------
+    // Google Drive - /api/drive/*
+    //
+    // These endpoints do NOT accept the admin JWT. They authenticate with a
+    // Drive API bearer token (ygdrv_...) minted by the admin router, so the
+    // panel provisions one on first use and caches it in localStorage. A
+    // rejected token is re-minted once and the request retried, which covers
+    // the token being revoked, expired, or wiped from the database.
+    // ----------------------------------------------------------------------
+
+    static DRIVE_TOKEN_KEY = 'driveApiToken';
+
+    static async _mintDriveToken() {
+        const r = await axios.post(
+            `${this.baseURL}/drive/admin/tokens`,
+            // can_delete is off by default on the API. The panel is the admin
+            // surface, so its own token carries it - and a token minted before
+            // the delete feature existed is re-minted on the first 403, see
+            // _drive() below.
+            { name: 'Admin Panel', can_delete: true },
+            { headers: this._adminHeaders() }
+        );
+        const token = r.data?.data?.token;
+        if (!token) throw new Error('Drive API token was not returned');
+        localStorage.setItem(this.DRIVE_TOKEN_KEY, token);
+        return token;
+    }
+
+    static async _driveToken(forceNew = false) {
+        if (!forceNew) {
+            const cached = localStorage.getItem(this.DRIVE_TOKEN_KEY);
+            if (cached) return cached;
+        }
+        return this._mintDriveToken();
+    }
+
+    /**
+     * Runs a Drive request with a token, re-minting once if the server rejects
+     * it. `request` receives the headers to use and returns the axios promise.
+     */
+    static async _drive(request, { retried = false } = {}) {
+        const token = await this._driveToken(retried);
+        try {
+            return await request({ Authorization: 'Bearer ' + token });
+        } catch (error) {
+            const status = error?.response?.status;
+            const code = error?.response?.data?.code || '';
+            const rejected = status === 401 && code.startsWith('TOKEN_');
+            // A cached token minted before a permission existed lacks it. Re-mint
+            // once rather than making the user clear localStorage to get a
+            // feature that is supposed to just work.
+            const underprivileged = status === 403 && code === 'DELETE_FORBIDDEN';
+            if ((rejected || underprivileged) && !retried) {
+                return this._drive(request, { retried: true });
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Crawl state per configured root folder. Doubles as the folder list - the
+     * roots are configured server-side, so this is where the UI learns what
+     * exists rather than from a per-user connections table.
+     */
+    static async getDriveRoots() {
+        return this._drive(async (headers) => {
+            const r = await axios.get(`${this.baseURL}/drive/sync/status`, { headers });
+            return r.data;
+        });
+    }
+
+    /**
+     * Paginated, filterable listing straight from the index.
+     * @param {object} params root_folder_id, folder_id, in_folder, type, q,
+     *        search_in, extension, include_folders, sort, order, page, limit
+     */
+    static async getDriveFilesV2(params = {}) {
+        return this._drive(async (headers) => {
+            const r = await axios.get(`${this.baseURL}/drive/files`, { params, headers });
+            return r.data;
+        });
+    }
+
+    /** Counts and total bytes per type. Same filters as the listing. */
+    static async getDriveStats(params = {}) {
+        return this._drive(async (headers) => {
+            const r = await axios.get(`${this.baseURL}/drive/stats`, { params, headers });
+            return r.data;
+        });
+    }
+
+    /** One file's metadata plus its breadcrumb. */
+    static async getDriveFileV2(fileId) {
+        return this._drive(async (headers) => {
+            const r = await axios.get(
+                `${this.baseURL}/drive/files/${encodeURIComponent(fileId)}`,
+                { headers }
+            );
+            return r.data;
+        });
+    }
+
+    /**
+     * Mints a short-lived signed download URL.
+     *
+     * The URL carries its own credential, so it is opened directly rather than
+     * fetched with an Authorization header - which also lets the browser stream
+     * a large file to disk instead of buffering it in memory as a blob.
+     */
+    static async createDriveDownloadLink(fileId) {
+        return this._drive(async (headers) => {
+            const r = await axios.post(
+                `${this.baseURL}/drive/files/${encodeURIComponent(fileId)}/download-link`,
+                {},
+                { headers }
+            );
+            return r.data;
+        });
+    }
+
+    /**
+     * Moves a file to the Google Drive trash - the real Drive, not just the
+     * index. The owner can restore it from their own Trash for 30 days; after
+     * that Google purges it and nothing here can bring it back.
+     *
+     * @param {boolean} recursive required for folders, since deleting one takes
+     *        everything inside it.
+     */
+    static async deleteDriveFile(fileId, { recursive = false } = {}) {
+        return this._drive(async (headers) => {
+            const r = await axios.delete(
+                `${this.baseURL}/drive/files/${encodeURIComponent(fileId)}`,
+                { params: recursive ? { recursive: 'true' } : {}, headers }
+            );
+            return r.data;
+        });
+    }
+
+    /** Starts a crawl. Returns 202 immediately - a large tree takes minutes. */
+    static async triggerDriveSync(body = {}) {
+        const r = await axios.post(`${this.baseURL}/drive/admin/sync`, body, {
+            headers: this._adminHeaders(),
+        });
+        return r.data;
+    }
+
+    // --- Root folder registry (admin JWT, not the Drive token) -------------
+    // Which folders get indexed. Stored server-side in MongoDB rather than in
+    // an environment variable, so this list is editable from the panel.
+
+    /**
+     * Which credential the server holds, and the address a private folder has to
+     * be shared with. Needed before the UI can sensibly ask for a folder link.
+     */
+    static async getDriveAccessInfo() {
+        const r = await axios.get(`${this.baseURL}/drive/admin/access-info`, {
+            headers: this._adminHeaders(),
+        });
+        return r.data;
+    }
+
+    /**
+     * Asks Drive whether the server can actually read a folder, before adding it.
+     * Always resolves - "not reachable" is an answer, not an error.
+     */
+    static async checkDriveFolder(folderUrl) {
+        const r = await axios.post(
+            `${this.baseURL}/drive/admin/check-folder`,
+            { folder_url: folderUrl },
+            { headers: this._adminHeaders() }
+        );
+        return r.data;
+    }
+
+    static async getDriveRootFolders() {
+        const r = await axios.get(`${this.baseURL}/drive/admin/root-folders`, {
+            headers: this._adminHeaders(),
+        });
+        return r.data;
+    }
+
+    /** Registers a folder and starts indexing it. Accepts a share URL or an id. */
+    static async addDriveRootFolder({ folderUrl, name, accessMode }) {
+        const r = await axios.post(
+            `${this.baseURL}/drive/admin/root-folders`,
+            {
+                folder_url: folderUrl,
+                name: name || undefined,
+                access_mode: accessMode || undefined,
+            },
+            { headers: this._adminHeaders() }
+        );
+        return r.data;
+    }
+
+    /**
+     * @param {boolean} purge also deletes the folder's indexed rows. Without it
+     *        the folder is only deactivated and its files stay searchable.
+     */
+    static async removeDriveRootFolder(folderId, { purge = false } = {}) {
+        const r = await axios.delete(
+            `${this.baseURL}/drive/admin/root-folders/${encodeURIComponent(folderId)}`,
+            { params: purge ? { purge: 'true' } : {}, headers: this._adminHeaders() }
         );
         return r.data;
     }
