@@ -67,6 +67,7 @@ import AdminEarningsReport from './pages/Admin/AdminEarningsReport'
 import WebsiteOrders from './pages/WebsiteOrders/WebsiteOrders'
 import GoogleDrive from './pages/GoogleDrive/GoogleDrive'
 import DriveFolderView from './pages/GoogleDrive/DriveFolderView'
+import DriveApiDocs from './pages/DriveApiDocs/DriveApiDocs'
 
 const App = () => {
   return (
@@ -81,6 +82,8 @@ const App = () => {
         <Route path="/request-form" element={<RequestForm />} />
         <Route path="/contact" element={<ContactForm />} />
         <Route path="/api-documentation" element={<ApiDocumentation />} />
+        {/* Public on purpose - this is the link handed to Drive API clients. */}
+        <Route path="/drive-api-docs" element={<DriveApiDocs />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/payment/cancel" element={<PaymentError />} />
         <Route path="/guide-success/pdf" element={<PdfGuideSuccess />} />

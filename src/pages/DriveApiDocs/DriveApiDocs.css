@@ -1,0 +1,119 @@
+/* Public Drive API documentation. Deliberately plain and light-only: it is
+   read by people outside the platform, often in a shared browser, and it has to
+   print and copy cleanly. */
+
+.drive-docs {
+  background: #fff;
+  min-height: 100vh;
+  color: #1f1f1f;
+}
+
+.drive-docs-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+.drive-docs-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.drive-docs-nav {
+  flex: 0 0 220px;
+  position: sticky;
+  top: 24px;
+}
+
+.drive-docs-hero {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 24px;
+  margin-bottom: 8px;
+}
+
+.drive-docs h2.ant-typography {
+  margin-top: 40px;
+  scroll-margin-top: 24px;
+}
+
+.drive-docs h3.ant-typography {
+  margin-top: 24px;
+}
+
+/* Code blocks scroll on their own so a long curl never widens the page. */
+.drive-code {
+  background: #f6f8fa;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  margin: 12px 0;
+  position: relative;
+}
+
+.drive-code pre {
+  margin: 0;
+  white-space: pre;
+}
+
+.drive-code-copy {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.drive-code:hover .drive-code-copy {
+  opacity: 1;
+}
+
+.drive-endpoint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 12px 0;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.drive-docs .ant-table {
+  font-size: 13px;
+}
+
+.drive-docs-tokenbox {
+  background: #f0f5ff;
+  border: 1px solid #adc6ff;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 24px 0;
+}
+
+@media (max-width: 992px) {
+  .drive-docs-nav {
+    display: none;
+  }
+
+  .drive-docs-inner {
+    padding: 20px 16px 60px;
+    gap: 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .drive-code {
+    font-size: 11px;
+  }
+}

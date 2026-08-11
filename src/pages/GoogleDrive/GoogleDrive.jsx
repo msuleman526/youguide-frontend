@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Flex, Table, Typography, Tag, message, Alert, Spin, Popconfirm } from 'antd';
-import { EyeOutlined, ReloadOutlined, DeleteOutlined, ExclamationCircleFilled } from '@ant-design/icons';
+import { Button, Flex, Table, Typography, Tag, message, Alert, Spin, Popconfirm, Tooltip } from 'antd';
+import {
+    EyeOutlined,
+    ReloadOutlined,
+    DeleteOutlined,
+    ExclamationCircleFilled,
+    SyncOutlined,
+    BookOutlined,
+} from '@ant-design/icons';
 import { HiOutlineLink } from 'react-icons/hi';
 import CustomCard from '../../components/Card';
 import ApiService from '../../APIServices/ApiService';
@@ -14,7 +21,19 @@ import LinkDrivePopup from './LinkDrivePopup';
  * added and removed here without an .env edit and a server restart. Each row
  * joins the registry entry with the state of its last crawl, and opens the file
  * browser for that folder.
+ *
+ * Each row shows the folder's API TOKEN rather than its Drive folder id. The id
+ * is of no use to anyone outside this panel - it is not a credential, and the
+ * API rejects a request that carries only an id. The token is the one thing a
+ * client actually needs, so that is what is copyable here, alongside a link to
+ * the public documentation with the token already filled in.
  */
+
+/** Public API docs, same deployment. HashRouter, so the token stays client-side. */
+const docsUrl = (token) => {
+    const base = `${window.location.origin}${window.location.pathname}#/drive-api-docs`;
+    return token ? `${base}?token=${encodeURIComponent(token)}` : base;
+};
 
 const STATUS_COLOUR = {
     completed: 'green',
@@ -34,11 +53,32 @@ const GoogleDrive = () => {
     // The registry - which folders this deployment indexes. Held server-side in
     // MongoDB, so it is editable here rather than in .env.
     const [folders, setFolders] = useState([]);
+    // folder_id -> its share token row. Fetched separately because tokens are
+    // admin-only: the crawl status endpoint authenticates with a Drive token
+    // itself, and no Drive token should ever be able to read another one.
+    const [tokens, setTokens] = useState({});
+    const [tokensFailed, setTokensFailed] = useState(false);
+    const [rotating, setRotating] = useState(null);
     const [removing, setRemoving] = useState(null);
     const [tableLoading, setTableLoading] = useState(false);
     const [syncing, setSyncing] = useState(false);
     const [problem, setProblem] = useState(null);
     const [linkOpen, setLinkOpen] = useState(false);
+
+    const fetchTokens = async () => {
+        try {
+            const res = await ApiService.getDriveShareTokens();
+            const byFolder = {};
+            (res?.data || []).forEach((row) => { byFolder[row.folder_id] = row; });
+            setTokens(byFolder);
+            setTokensFailed(false);
+        } catch (error) {
+            // A missing token is not worth blocking the folder list over - the
+            // rest of the page still works, the column just says so.
+            console.error('Drive share tokens:', error?.response?.data || error.message);
+            setTokensFailed(true);
+        }
+    };
 
     const fetchRoots = async (silent = false) => {
         if (!silent) setTableLoading(true);
@@ -49,6 +89,7 @@ const GoogleDrive = () => {
             setAuthMode(data.auth_mode || null);
             setFolders(data.folders || []);
             setProblem(null);
+            if (!silent) fetchTokens();
         } catch (error) {
             const d = error?.response?.data;
             setProblem({
@@ -86,6 +127,34 @@ const GoogleDrive = () => {
         }
     };
 
+    /** The one link to send a client: docs + their token, ready to use. */
+    const copyDocsLink = async (token) => {
+        const url = docsUrl(token);
+        try {
+            await navigator.clipboard.writeText(url);
+            message.success('Documentation link copied — it already contains the token.');
+        } catch {
+            // Clipboard access is refused outside a secure context, so fall
+            // back to showing the link rather than failing silently.
+            message.info(url);
+        }
+    };
+
+    const onRotate = async (folderId) => {
+        setRotating(folderId);
+        try {
+            const res = await ApiService.rotateDriveShareToken(folderId);
+            const row = res?.data;
+            if (row) setTokens((prev) => ({ ...prev, [folderId]: row }));
+            message.success(res?.message || 'A new token was issued.');
+        } catch (error) {
+            const d = error?.response?.data;
+            message.error(d?.message || d?.error || 'Could not issue a new token.');
+        } finally {
+            setRotating(null);
+        }
+    };
+
     const columns = [
         {
             title: 'Folder',
@@ -96,12 +165,94 @@ const GoogleDrive = () => {
             ),
         },
         {
-            title: 'Folder ID',
-            dataIndex: 'root_folder_id',
-            key: 'root_folder_id',
-            render: (id) => (
-                <Typography.Text copyable code style={{ fontSize: 12 }}>{id}</Typography.Text>
-            ),
+            // What a client is actually sent. Shown in full and in one piece so
+            // it can be copied straight out of here into an email - a masked or
+            // truncated value would have to be looked up somewhere else first.
+            title: 'API Token',
+            key: 'token',
+            width: 380,
+            render: (_, record) => {
+                const row = tokens[record.root_folder_id];
+
+                if (!row) {
+                    return (
+                        <Flex gap="small" align="center">
+                            <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                                {tokensFailed ? 'Could not load the token.' : 'Loading…'}
+                            </Typography.Text>
+                            {tokensFailed && (
+                                <Button
+                                    size="small"
+                                    type="link"
+                                    style={{ padding: 0, height: 'auto' }}
+                                    onClick={fetchTokens}
+                                >
+                                    Retry
+                                </Button>
+                            )}
+                        </Flex>
+                    );
+                }
+
+                return (
+                    <Flex vertical gap={4}>
+                        <Typography.Text
+                            copyable={{ text: row.token, tooltips: ['Copy token', 'Copied'] }}
+                            code
+                            style={{ fontSize: 12, wordBreak: 'break-all' }}
+                        >
+                            {row.token}
+                        </Typography.Text>
+                        <Flex gap="small" align="center" wrap="wrap">
+                            <Tooltip title="Open the client-facing API documentation with this token filled in">
+                                <Button
+                                    size="small"
+                                    type="link"
+                                    icon={<BookOutlined />}
+                                    style={{ padding: 0, height: 'auto' }}
+                                    href={docsUrl(row.token)}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
+                                    API docs
+                                </Button>
+                            </Tooltip>
+                            <Button
+                                size="small"
+                                type="link"
+                                style={{ padding: 0, height: 'auto' }}
+                                onClick={() => copyDocsLink(row.token)}
+                            >
+                                Copy docs link
+                            </Button>
+                            <Popconfirm
+                                icon={<ExclamationCircleFilled style={{ color: '#faad14' }} />}
+                                title="Issue a new token?"
+                                description={
+                                    <div style={{ maxWidth: 300 }}>
+                                        The current token stops working immediately, so anyone
+                                        already using it loses access until you send them the
+                                        new one.
+                                    </div>
+                                }
+                                okText="Issue new token"
+                                cancelText="Cancel"
+                                onConfirm={() => onRotate(record.root_folder_id)}
+                            >
+                                <Button
+                                    size="small"
+                                    type="link"
+                                    danger
+                                    icon={<SyncOutlined spin={rotating === record.root_folder_id} />}
+                                    style={{ padding: 0, height: 'auto' }}
+                                >
+                                    Rotate
+                                </Button>
+                            </Popconfirm>
+                        </Flex>
+                    </Flex>
+                );
+            },
         },
         {
             title: 'Access',
@@ -229,6 +380,15 @@ const GoogleDrive = () => {
                     </Typography.Title>
                 </div>
                 <Flex gap="small" align="center">
+                    <Button
+                        size="large"
+                        icon={<BookOutlined />}
+                        href={docsUrl()}
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        API Docs
+                    </Button>
                     <Button
                         size="large"
                         icon={<ReloadOutlined />}

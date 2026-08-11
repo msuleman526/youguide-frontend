@@ -2707,6 +2707,28 @@ class ApiService {
     }
 
     /**
+     * The shareable API token for each folder - the thing an admin copies and
+     * sends to a client. Values come back in full, and a folder that has never
+     * had one gets it minted on this call.
+     */
+    static async getDriveShareTokens() {
+        const r = await axios.get(`${this.baseURL}/drive/admin/share-tokens`, {
+            headers: this._adminHeaders(),
+        });
+        return r.data;
+    }
+
+    /** Revokes the folder's current token and issues a new one. */
+    static async rotateDriveShareToken(folderId) {
+        const r = await axios.post(
+            `${this.baseURL}/drive/admin/share-tokens/${encodeURIComponent(folderId)}/rotate`,
+            {},
+            { headers: this._adminHeaders() }
+        );
+        return r.data;
+    }
+
+    /**
      * @param {boolean} purge also deletes the folder's indexed rows. Without it
      *        the folder is only deactivated and its files stay searchable.
      */
